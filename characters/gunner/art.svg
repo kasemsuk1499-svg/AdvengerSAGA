@@ -1,0 +1,56 @@
+<svg viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg" aria-label="มือปืนหญิงอนิเมะ ผมสีเงินฟ้า สวมเสื้อคลุมยุทธวิธีและถือปืนพลังงานสองกระบอก">
+      <defs>
+       <linearGradient id="guncoat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5b9bb2"/><stop offset=".37" stop-color="#244965"/><stop offset="1" stop-color="#101d39"/></linearGradient>
+       <linearGradient id="gunhair" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ecffff"/><stop offset=".4" stop-color="#a4eaff"/><stop offset="1" stop-color="#4a8da8"/></linearGradient>
+       <linearGradient id="gunmetal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e3f7ff"/><stop offset=".4" stop-color="#789aaf"/><stop offset="1" stop-color="#182943"/></linearGradient>
+       <radialGradient id="gunem"><stop stop-color="#ffffff"/><stop offset=".33" stop-color="#95efff"/><stop offset="1" stop-color="#23619a"/></radialGradient>
+      </defs>
+      <!-- scarf and split tactical coat silhouette -->
+      <path d="M64 104 Q33 121 22 197 L41 244 L77 204 L88 131 Z" fill="#152d47" stroke="#68b6c7" stroke-width="3"/>
+      <path d="M94 126 Q112 130 123 177 L118 234 L141 213 L138 124Z" fill="#14324f" stroke="#4ea5b5" stroke-width="3"/>
+      <!-- legs, holster straps, boots -->
+      <path d="M64 164L56 233L79 243L93 176 M103 174L112 237L139 234L130 170" fill="#263b57" stroke="#8bc0d6" stroke-width="3"/>
+      <path d="M65 179L84 182M113 190L135 188" stroke="#e8b26a" stroke-width="6"/>
+      <path d="M52 229L83 232L84 252L47 255Z M111 232L139 229L150 251L107 255Z" fill="#172941" stroke="#b0deec" stroke-width="4"/>
+      <path d="M57 243L84 246M115 243L145 242" stroke="#f3c77b" stroke-width="3"/>
+      <!-- body and futuristic jacket -->
+      <path d="M65 111L88 103L118 113L138 150L123 191L70 187L49 144Z" fill="url(#guncoat)" stroke="#8ac8d4" stroke-width="4"/>
+      <path d="M72 122L94 113L120 128L115 172L77 176Z" fill="#183552" stroke="#d0dce7" stroke-width="3"/>
+      <path d="M88 121L103 121L112 141L98 160L85 140Z" fill="#224e61" stroke="#64e8f0" stroke-width="3"/>
+      <path d="M77 119L91 124L97 143M116 126L102 133" stroke="#f8c47e" stroke-width="3"/>
+      <circle cx="100" cy="146" r="7" fill="url(#gunem)" stroke="#b5fdff" stroke-width="2"/>
+      <!-- hair backing, anime head -->
+      <path d="M70 65Q65 30 93 23Q124 22 133 61L132 114L117 110L111 99L75 107L60 121L62 78Z" fill="url(#gunhair)" stroke="#34677e" stroke-width="3"/>
+      <path d="M80 85L82 108L105 117L118 94" fill="#e9b99f" stroke="#856b6e" stroke-width="2"/>
+      <path d="M74 55Q84 40 108 48L123 65L118 97L100 112L81 104L70 86Z" fill="#f6c9ae" stroke="#aa7d79" stroke-width="2.7"/>
+      <path d="M96 76Q108 71 117 75" stroke="#1a526e" stroke-width="3.4" stroke-linecap="round"/>
+      <path d="M108 78L111 84" stroke="#23b5de" stroke-width="3"/>
+      <path d="M112 96L104 97" stroke="#a7636a" stroke-width="2"/>
+      <path d="M67 55Q78 28 101 33L123 49L118 64L101 57L88 72L73 71L66 88Z" fill="url(#gunhair)" stroke="#4a7892" stroke-width="3"/>
+      <path d="M80 43Q90 14 117 29L138 51L130 71L122 58L105 49Z" fill="#d5f8ff" stroke="#9cddea" stroke-width="2"/>
+      <path d="M74 71L57 99L70 113L84 88" fill="#9bd6e7"/>
+      <!-- visor headset -->
+      <path d="M76 58Q97 47 121 63" fill="none" stroke="#243e59" stroke-width="7" stroke-linecap="round"/>
+      <path d="M113 65L128 69L128 90L119 95" fill="#274462" stroke="#9ce8ff" stroke-width="3"/>
+      <circle cx="125" cy="80" r="5" fill="url(#gunem)"/>
+      <!-- left arm + secondary pistol toward lower right -->
+      <path d="M59 123Q45 124 47 151L61 173L80 162L75 141Z" fill="url(#guncoat)" stroke="#8ac0d0" stroke-width="4"/>
+      <path d="M61 167L82 179L92 173L69 158Z" fill="#e7b69f" stroke="#a57572" stroke-width="2"/>
+      <g transform="translate(76 166) rotate(22)">
+       <path d="M0 0L48 -5L54 7L30 13L24 38L9 36L13 11L0 8Z" fill="url(#gunmetal)" stroke="#a7c7d5" stroke-width="3"/>
+       <path d="M30 -9L62 -7L66 7L28 9Z" fill="#142c45" stroke="#79efff" stroke-width="3"/>
+       <path d="M45 -6L63 -6L63 3L45 4Z" fill="#9bf7ff"/>
+      </g>
+      <!-- right arm extended, pointing a precision hand-cannon at the target -->
+      <path d="M116 124L145 137L160 148L153 165L125 156L105 143Z" fill="url(#guncoat)" stroke="#a2dae1" stroke-width="4"/>
+      <path d="M150 145L173 150L176 161L151 164Z" fill="#e9b79f" stroke="#ad7e76" stroke-width="2.8"/>
+      <g class="gun-front">
+       <path d="M161 139L191 135L196 144L190 155L170 158L171 180L155 180L154 153Z" fill="#21334d" stroke="#b9dae4" stroke-width="3"/>
+       <path d="M179 135L199 133L200 148L186 149Z" fill="#b0d9e6" stroke="#4ac8eb" stroke-width="2.5"/>
+       <rect x="186" y="138" width="13" height="5" rx="2" fill="#b0ffff"/>
+       <path d="M159 149L190 146M169 157L175 157" stroke="#70e4ff" stroke-width="3"/>
+       <path d="M166 162L161 179" stroke="#d7ac6e" stroke-width="5"/>
+      </g>
+      <!-- signature jacket flaps -->
+      <path d="M68 179L59 212L75 203M122 184L126 219L142 210" fill="none" stroke="#7de1ea" stroke-width="4"/>
+     </svg>
