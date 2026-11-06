@@ -1,11 +1,25 @@
-# Modular character folders
+# One directory per real playable character
 
-Each playable character has its own directory:
+**Classes are not characters.** `classes/catalog.js` defines reusable Saber, Mage, Tank and Gunner jobs. Any number of individual playable characters may share a job, but each keeps independent art, stats and attack logic.
 
-- `character.js`: identity, role, moves, effect colors and executable Basic/Skill/Ultimate choreography.
-- `art.svg`: current standing character artwork. To use a future transparent `sprite.png`, upload it here and edit the `art` property in this directory's `character.js`.
-- `lab.html`: original approved standalone optimized animation demo, retained for regression comparison.
+## Standard character package
 
-Do not paste a new character's skill code into `js/app.js`. Use `AdvengerCharacters.register({ ... })` in a new character folder, then add its script once to the top-level `index.html` load order. The existing roster UI uses the registry automatically.
+```text
+characters/<id>/
+  character.js
+  skills/
+    basic.js
+    skill.js
+    ultimate.js
+  assets/
+    standing.svg           temporary art, included in the template
+    standing.png           optional transparent PNG to upload
+    portrait.png           optional card portrait PNG
+    cutin.png              optional Ultimate cut-in PNG
+```
 
-The current battlefield always displays the four selected main characters at once. The two support slots are a separate system and do not count against the four visible characters.
+To add a new real character, copy `characters/_template/` to `characters/<id>/`, replace every `new-hero` identifier across the JS files, fill out the identity and profession (`classId`) in `character.js`, and replace their skill code and art as desired.
+
+Add **one manifest entry** to `characters/manifest.js` listing that folder's Basic, Skill, Ultimate and character.js in order. The loader and team selection register the unit automatically. When editing an existing character, update only its own folder and increase the manifest entry's `version`. No manual `<script>` lines in `index.html`.
+
+The current playable Saber/Mage/Tank/Gunner demo folders are temporarily retained to preserve the approved prototype animations, saved party IDs and existing battlefield. They are not new canon characters; the first real person's identity is still to be decided.
