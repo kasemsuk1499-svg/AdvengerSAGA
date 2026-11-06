@@ -1,4 +1,4 @@
-# AdvengerSAGA — Four-Hero Turn-Based Battle Arena (v0.5)
+# AdvengerSAGA — Individual Character Folders (v0.6)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield and two support slots.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,19 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v0.6 — Per-character folders (distinct from class jobs)
+
+Each new real person gets `characters/<unique-id>/` containing that character's own `character.js`, `skills/basic.js`, `skills/skill.js`, `skills/ultimate.js`, and `assets/`. Optional transparent `standing.png`, `portrait.png`, and `cutin.png` belong inside that one person's folder. Two different people can share the same Saber/Mage/Tank/Gunner profession without sharing their character files.
+
+- `classes/catalog.js` is the independent profession catalog, not a list of playable people.
+- `characters/_template/` is a **copyable example**, not a playable character.
+- `characters/manifest.js` is the **single file** used to list which character folders the browser loads. Each person's script version can be incremented independently to refresh cached code.
+- `js/character-loader.js` loads scripts in each character folder, then starts the existing game. No `index.html` edit is needed for a new character.
+- Existing `characters/saber/`, `mage/`, `tank/` and `gunner/` folders remain separate **demo characters**, preserving their approved attacks, saved IDs and the current four-person team. These are not names for the first new real character.
+- The turn-based battle, 4+2 team formation, animation timings, and the original standalone optimized labs are retained.
+
+See [characters/README.md](characters/README.md) and [characters/_template/README.md](characters/_template/README.md) for copying and registering a new character.
 
 ## v0.4 — Original Fate/Grand Order-inspired battlefield layout
 
@@ -45,56 +58,28 @@ Repository **Settings → Pages → Build and deployment → Source: Deploy from
 
 **Scope:** Training dummy with one attacking character at a time, not yet a full turn-based 4v4 battle or enemy AI. The four party characters remain visible at the same time. Support characters are abstract action slots for now and do not have field sprites.
 
-## File structure
+## Folder structure and adding a character
 
 ```text
-index.html                          Main interface and script loading
-css/team-arena.css                  Unified battlefield layout
-css/fate-inspired.css               Original cinematic command-card / RPG battle styling
-js/app.js                           Team management, save, enemy HP, action selection
-js/character-registry.js            Register character modules
-js/shared-arena.js                  Shared battle field and movement primitives
-js/team-effects.js                  Optimized cached field effects (idle pause)
-js/turn-rules.js                    Turn order, HP caps, guard and enemy attack rules
-css/turn-battle.css                 One-line 4-character formation and turn HUD
-assets/training-sentinel.svg        Practice enemy artwork
-characters/
-  saber/
-    character.js                    Saber metadata, element colors, Basic/Skill/Ult code
-    art.svg                         Current placeholder sprite
-    lab.html                        Approved optimized standalone Saber demo
-  mage/
-    character.js                    Independent Mage logic
-    art.svg
-    lab.html
-  tank/
-    character.js                    Independent Tank logic
-    art.svg
-    lab.html
-  gunner/
-    character.js                    Independent Gunner logic
-    art.svg
-    lab.html
-labs/
-  saber.html, mage.html, ...        Backward-compatible redirects only
+classes/catalog.js                  Profession roles, not individual people
+characters/manifest.js              Browser roster manifest: one entry per character
+characters/_template/              Copyable independent character package
+  character.js                      Character data and registration
+  skills/basic.js                   Basic attack logic
+  skills/skill.js                   Special skill logic
+  skills/ultimate.js                Ultimate logic
+  assets/standing.svg               Temporary sprite placeholder
+characters/saber/                   Legacy playable Saber DEMO (not a class library)
+characters/mage/                    Legacy playable Mage DEMO
+characters/tank/                    Legacy playable Tank DEMO
+characters/gunner/                  Legacy playable Gunner DEMO
+js/character-loader.js              Loads character packages before app.js
+js/character-registry.js            Validates and registers playable characters
+js/shared-arena.js                  Shared arena movements, independent of characters
+js/app.js                           Party UI, battle logic and saved state
 ```
 
-## Replacing a character sprite with a transparent PNG
-
-1. Upload a PNG into that **character's own directory**, e.g. `characters/saber/sprite.png` (a cropped transparent portrait/standing character works best).
-2. Open `characters/saber/character.js` and change only the `art` path to `characters/saber/sprite.png`.
-3. Keep `fallback:'characters/saber/art.svg'` for a safe fallback. When adding a new character, give it its own directory with a `character.js` and sprite file.
-4. Commit. GitHub Pages will publish the change with the same static site; no changes to shared battle logic are required to replace an existing character sprite.
-
-A PNG around 512×768 pixels with transparency (and reasonable compression) is a good starting point for mobile. The stage uses `object-fit:contain` so the character remains visible without cropping.
-
-## Adding a new character or skill set
-
-Each character module registers with `AdvengerCharacters.register({...})`, including `id`, `art`, `fallback`, `name`, `skills`, `colors`, `defaultElement` and an asynchronous `perform(api,kind)` method.
-
-The `perform` API provides `rush`, `strafe`, `charge`, `projectile`, `rune`, `meteor`, `shield`, `lock`, `beam`, `cinematic`, `hit` and `wait`. Calling `hit(n)` notifies the central battle engine and produces damage feedback. Each class can have completely different animations without modifying the engine.
-
-New character modules require **one script registration line** in `index.html` to load their `character.js`. Existing characters' code/art can otherwise be modified independently. The team selector automatically lists registered modules; the team still has four main slots.
+Copy `characters/_template/` to `characters/<character-id>/`, replace every `new-hero` token with that person's unique ID, set `classId` and edit their three skill scripts. Add the character's scripts to `characters/manifest.js`, loading **Basic → Skill → Ultimate → character.js**. Future edits only require changing files in that folder and incrementing that manifest entry's version. Change `art` to the person's `standing.png`, optionally provide `portrait.png` and `cutin.png`, without editing battle-system files.
 
 ## Approved animation baselines
 
