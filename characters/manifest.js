@@ -5,5 +5,11 @@ window.AdvengerCharacterManifest=[
  {id:'saber',version:2,scripts:['characters/saber/character.js']},
  {id:'mage',version:2,scripts:['characters/mage/character.js']},
  {id:'tank',version:2,scripts:['characters/tank/character.js']},
- {id:'gunner',version:2,scripts:['characters/gunner/character.js']}
+ {id:'gunner',version:2,scripts:['characters/gunner/character.js']},
+ {id:'tanjiro',version:1,scripts:[
+  'characters/tanjiro/skills/basic.js',
+  'characters/tanjiro/skills/skill.js',
+  'characters/tanjiro/skills/ultimate.js',
+  'characters/tanjiro/character.js'
+ ]}
 ];
