@@ -1,0 +1,131 @@
+/* AdvengerSAGA unified battlefield v0.3
+   Four simultaneously visible party members, a single target and a PNG-ready
+   reusable character stage. Mobile-first, designed without an iframe. */
+#battle .battle-layout{grid-template-columns:minmax(0,1.7fr) minmax(255px,.9fr)}
+#battle .battle-main-column{min-width:0}
+#battle .arena-wrap{overflow:hidden;isolation:isolate}
+#battle .as-stage{
+ height:clamp(345px,41vw,465px);
+ width:100%;position:relative;overflow:hidden;isolation:isolate;
+ background:radial-gradient(ellipse 62% 42% at 57% 28%,#385b92a9,transparent 78%),
+ linear-gradient(180deg,#091630,#192f53 56%,#132848 76%,#0a1730);
+}
+#battle .as-backdrop{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+#battle .as-moon{position:absolute;top:6%;left:62%;width:12%;aspect-ratio:1;
+ border-radius:50%;background:radial-gradient(circle,#d2eafa6b,#85aeff3a 58%,transparent 75%);
+ filter:blur(2px)}
+#battle .as-ruins{position:absolute;inset:0;
+ background:linear-gradient(90deg,transparent 4%,#2d43665c 4% 6%,transparent 6% 12%,#223b6377 12% 14%,transparent 14% 82%,#273e6066 82% 84%,transparent 84% 91%,#293f6565 91% 94%,transparent 94%),
+ linear-gradient(0deg,#1c35565c 0 30%,transparent 30%);
+ opacity:.55}
+#battle .as-ground{position:absolute;bottom:0;left:-5%;right:-5%;height:29%;
+ background:linear-gradient(180deg,#243e66a1,#081327),
+ repeating-linear-gradient(90deg,transparent 0 9%,#a8c9ff18 9.12% 9.25%,transparent 9.4% 18%);
+ border-top:2px solid #80a8d04a;
+ transform:perspective(430px) rotateX(44deg) scale(1.3);
+ transform-origin:bottom center}
+#battle .as-party-ground{position:absolute;left:5%;top:79%;width:43%;height:10%;
+ border-radius:50%;border:1px solid #9bcbff33;background:radial-gradient(ellipse,#72b5ff22,transparent 73%);
+ pointer-events:none}
+#battle .as-stage-note{position:absolute;z-index:12;left:11px;top:12px;
+ color:#d5e3f6;font-size:10px;letter-spacing:.09em;font-weight:850;
+ border:1px solid #95b7e74f;padding:6px 9px;border-radius:8px;
+ background:#08172cd6;pointer-events:none}
+#battle .as-fighter{
+ position:absolute;z-index:4;border:0;background:transparent;
+ width:16%;height:39%;margin:0;padding:0;display:flex;flex-direction:column;
+ align-items:center;justify-content:flex-end;min-width:0;
+ cursor:pointer;color:#e8f0ff;transition:filter .18s;
+ -webkit-tap-highlight-color:transparent;
+}
+#battle .as-fighter[data-slot="0"]{left:25%;top:12%}
+#battle .as-fighter[data-slot="1"]{left:7.5%;top:15%}
+#battle .as-fighter[data-slot="2"]{left:27%;top:49%}
+#battle .as-fighter[data-slot="3"]{left:8.5%;top:53%}
+#battle .as-fighter:before{content:'';position:absolute;bottom:14%;left:12%;
+ width:76%;height:10%;border-radius:50%;background:#020e26a9;filter:blur(7px)}
+#battle .as-fighter .as-sprite{position:relative;z-index:1;object-fit:contain;
+ object-position:center bottom;width:100%;flex:1;min-height:0;
+ filter:drop-shadow(0 5px 5px #020a1ab3);
+ transform-origin:50% 88%;pointer-events:none;
+ animation:asBreathe 4.2s ease-in-out infinite alternate}
+#battle .as-fighter[data-slot="1"] .as-sprite,
+#battle .as-fighter[data-slot="3"] .as-sprite{animation-delay:-2.1s}
+#battle .as-fighter.selected .as-sprite{filter:drop-shadow(0 0 7px #b7eaff75) drop-shadow(0 8px 7px #02091c)}
+#battle .as-fighter.selected:after{content:'';position:absolute;z-index:2;left:38%;top:3%;width:24%;height:12px;
+ background:#ffdf96;clip-path:polygon(50% 100%,0 0,100% 0);
+ filter:drop-shadow(0 0 6px #ffd48e);pointer-events:none}
+#battle .as-fighter.performing{z-index:16!important}
+#battle .as-fighter .as-name{z-index:2;position:relative;display:block;width:max-content;max-width:115%;
+ white-space:nowrap;text-align:center;border:1px solid #6d86b274;
+ background:#0b172de3;padding:2px 5px;border-radius:6px;
+ font-size:10px;font-weight:850;text-shadow:0 1px 3px #000}
+#battle .as-fighter.selected .as-name{color:#ffebbd;border-color:#f5c986}
+#battle .as-rank{position:absolute;left:50%;transform:translateX(-50%);top:-9px;z-index:2;
+ letter-spacing:.08em;font-weight:850;font-size:8px;opacity:.76;color:#a9c4e9}
+#battle .as-ex{z-index:2;position:relative;width:76%;height:4px;display:block;margin-top:3px;
+ overflow:hidden;border-radius:9px;background:#0a1228bd}
+#battle .as-ex i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#728edb,#f0bdff);border-radius:inherit;transition:width .25s}
+#battle .as-target{position:absolute;left:74%;top:31%;width:19%;height:47%;z-index:5;
+ display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:none}
+#battle .as-target:before{content:'';position:absolute;bottom:13%;left:13%;width:74%;height:10%;
+ border-radius:50%;background:#020c1caa;filter:blur(8px)}
+#battle .as-target img{position:relative;z-index:1;width:100%;height:84%;object-fit:contain;object-position:center bottom;
+ filter:drop-shadow(0 7px 7px #02091c)}
+#battle .as-target-name{position:relative;z-index:2;font-size:9px;letter-spacing:.06em;color:#ffcfb8;
+ border:1px solid #b47a7770;background:#0e1830d9;border-radius:6px;padding:2px 5px;
+ white-space:nowrap}
+#battle .as-lock{position:absolute;z-index:2;top:-12%;font-size:9px;
+ font-weight:850;letter-spacing:.15em;color:#ffdba2}
+#battle .as-fx{position:absolute;z-index:9;inset:0;width:100%;height:100%;pointer-events:none}
+#battle .as-action{position:absolute;z-index:20;bottom:11px;left:50%;transform:translateX(-50%);
+ white-space:nowrap;max-width:96%;overflow:hidden;text-overflow:ellipsis;
+ border:1px solid #708db582;border-radius:20px;background:#07152ddc;
+ color:#e3eeff;font-size:11px;font-weight:800;padding:5px 13px;text-align:center;pointer-events:none}
+#battle .as-number{position:absolute;z-index:30;pointer-events:none;transform:translateX(-50%);
+ font:bold clamp(18px,3vw,28px)/1.1 system-ui,'Noto Sans Thai';-webkit-text-stroke:.3px #061325;
+ text-shadow:0 2px 4px #060e23,0 0 10px currentColor}
+#battle .as-cinematic{position:absolute;inset:0;z-index:24;opacity:0;
+ visibility:hidden;background:linear-gradient(105deg,#030813ed 0%,#070b1edc 50%,#191538ef 100%);
+ display:flex;align-items:center;gap:4%;pointer-events:none;transition:opacity .18s,visibility .18s}
+#battle .as-cinematic.show{opacity:1;visibility:visible}
+#battle .as-cinematic:before,#battle .as-cinematic:after{content:'';position:absolute;left:0;right:0;
+ background:#030714;height:8%;z-index:2}
+#battle .as-cinematic:before{top:0}#battle .as-cinematic:after{bottom:0}
+#battle .as-portrait{width:38%;height:84%;align-self:end;position:relative;overflow:hidden;
+ transform:translateX(-18%);transition:transform .45s}
+#battle .as-cinematic.show .as-portrait{transform:translateX(8%)}
+#battle .as-portrait img{width:100%;height:120%;object-fit:contain;object-position:center bottom;
+ filter:drop-shadow(0 0 14px #88dfff89)}
+#battle .as-cinematic-copy{z-index:2;color:#f9f1ff;display:flex;flex-direction:column;gap:3px;
+ max-width:56%;text-shadow:0 3px 14px #000}
+#battle .as-cinematic-copy small{letter-spacing:.13em;font-size:10px;color:#d8c2fa}
+#battle .as-cinematic-copy strong{font-size:clamp(25px,4.1vw,44px);line-height:1.06;word-wrap:break-word}
+#battle .as-cinematic-copy span{font-size:10px;font-weight:800;color:#dec0ff}
+@keyframes asBreathe{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-5px) rotate(1deg)}}
+@media(max-width:950px){#battle .battle-layout{grid-template-columns:1fr}}
+@media(max-width:580px){
+ #battle .as-stage{height:345px}
+ #battle .as-stage-note{font-size:8px;padding:4px 6px;top:8px;left:8px}
+ #battle .as-fighter{width:19%;height:33%}
+ #battle .as-fighter[data-slot="0"]{left:25%;top:19%}
+ #battle .as-fighter[data-slot="1"]{left:5%;top:20%}
+ #battle .as-fighter[data-slot="2"]{left:26%;top:52%}
+ #battle .as-fighter[data-slot="3"]{left:6%;top:54%}
+ #battle .as-fighter .as-name{font-size:9px;padding:1px 3px}
+ #battle .as-rank{font-size:7px;top:-8px}
+ #battle .as-target{left:73%;top:29%;width:21%;height:47%}
+ #battle .as-target-name{font-size:7.5px}
+ #battle .as-cinematic-copy strong{font-size:26px}
+ #battle .as-action{font-size:9px;padding:5px 8px}
+ #battle .arena-wrap{border-radius:13px}
+}
+@media(max-width:390px){
+ #battle .as-stage{height:305px}
+ #battle .as-fighter .as-name{font-size:8px}
+ #battle .as-target-name{font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ #battle .as-sprite{animation:none!important}
+ #battle .as-cinematic,.as-cinematic .as-portrait{transition:none!important}
+}
