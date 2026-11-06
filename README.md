@@ -1,4 +1,4 @@
-# AdvengerSAGA — Individual Character Folders (v0.6)
+# AdvengerSAGA — Shared Class Animations + Individual Characters (v0.7)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield and two support slots.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,27 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v0.7 — Inherit approved class attacks, override moves individually
+
+The shared, previously approved Saber/Mage/Tank/Gunner attack logic has been extracted into independent role-owned modules:
+
+```text
+classes/saber/animations.js
+classes/mage/animations.js
+classes/tank/animations.js
+classes/gunner/animations.js
+js/class-animation-registry.js
+```
+
+- Every character defines a `classId` and **automatically inherits** that class's Basic, Skill and Ultimate if not overridden.
+- Any individual character can replace just Basic, just Skill, just Ultimate, any pair, or all three by implementing `AdvengerCharacterSkills[id][kind]` in its own `characters/<id>/skills/<kind>.js` file.
+- **Priority:** character-specific move override → class default. The legacy `perform(api, kind)` hook remains supported for special standalone characters if needed.
+- The existing four demo units now **actually use the shared class animations**, rather than duplicating their attack code in each character folder. Hit counts, damage values and timing are unchanged from the approved v0.6 behavior.
+- New character template skill files contain *commented examples* and inherit all moves by default. Uncomment a specific assignment to override that single move.
+- The separate common stage and cached VFX system are unchanged; no new render loop or extra Canvas is introduced by this change.
+
+A new playable character still needs only its independent folder plus one entry in `characters/manifest.js`. The class animation scripts are loaded before the character loader. To modify a shared class animation for everyone using the default, edit only its `classes/<classId>/animations.js` file and bump that script's version in `index.html`.
 
 ## v0.6 — Per-character folders (distinct from class jobs)
 
@@ -62,6 +83,8 @@ See [characters/README.md](characters/README.md) and [characters/_template/READM
 
 ```text
 classes/catalog.js                  Profession roles, not individual people
+classes/<classId>/animations.js      Approved shared Basic/Skill/Ultimate attacks
+js/class-animation-registry.js       Reusable class attack animation registry
 characters/manifest.js              Browser roster manifest: one entry per character
 characters/_template/              Copyable independent character package
   character.js                      Character data and registration
@@ -79,7 +102,7 @@ js/shared-arena.js                  Shared arena movements, independent of chara
 js/app.js                           Party UI, battle logic and saved state
 ```
 
-Copy `characters/_template/` to `characters/<character-id>/`, replace every `new-hero` token with that person's unique ID, set `classId` and edit their three skill scripts. Add the character's scripts to `characters/manifest.js`, loading **Basic → Skill → Ultimate → character.js**. Future edits only require changing files in that folder and incrementing that manifest entry's version. Change `art` to the person's `standing.png`, optionally provide `portrait.png` and `cutin.png`, without editing battle-system files.
+Copy `characters/_template/` to `characters/<character-id>/`, replace every `new-hero` token with that person's unique ID, and set `classId`. The template automatically inherits all three class moves; edit only the skill scripts whose behavior needs to be unique. Add the character's scripts to `characters/manifest.js`, loading **Basic → Skill → Ultimate → character.js**. Future edits only require changing files in that folder and incrementing that manifest entry's version. Change `art` to the person's `standing.png`, optionally provide `portrait.png` and `cutin.png`, without editing battle-system files.
 
 ## Approved animation baselines
 
