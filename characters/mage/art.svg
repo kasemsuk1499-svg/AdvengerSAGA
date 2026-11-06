@@ -1,0 +1,47 @@
+<svg viewBox="0 0 180 260" xmlns="http://www.w3.org/2000/svg" aria-label="นักเวทสาวผมสีเงินอมม่วง ถือไม้เท้าคริสตัล สวมเสื้อคลุมลายดวงดาว">
+ <defs>
+  <linearGradient id="mgCape" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5b448e"/><stop offset=".55" stop-color="#30234f"/><stop offset="1" stop-color="#11182f"/></linearGradient>
+  <linearGradient id="mgRobe" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#8268bb"/><stop offset=".42" stop-color="#473d7d"/><stop offset="1" stop-color="#191d42"/></linearGradient>
+  <linearGradient id="mgHair" x1="0" x2=".75" y1="0" y2="1"><stop stop-color="#f0edff"/><stop offset=".48" stop-color="#a9aedb"/><stop offset="1" stop-color="#616994"/></linearGradient>
+  <radialGradient id="mgCrystal"><stop stop-color="#fff"/><stop offset=".3" stop-color="#c9efff"/><stop offset=".7" stop-color="#9f84ff"/><stop offset="1" stop-color="#4b3e9a"/></radialGradient>
+ </defs>
+ <ellipse cx="89" cy="244" rx="49" ry="5" fill="#060b22" opacity=".43"/>
+ <!-- staff behind hand -->
+ <g class="staff-group"><path d="M148 240L149 64" stroke="#171a3e" stroke-width="10" stroke-linecap="round"/><path d="M148 237L149 67" stroke="#e2b67f" stroke-width="5" stroke-linecap="round"/>
+ <path d="M136 90L128 69L143 55L149 30L155 55L170 69L159 90" fill="none" stroke="#c0a4f0" stroke-width="5" stroke-linejoin="round"/>
+ <path d="M149 29L164 57L149 81L134 57Z" fill="url(#mgCrystal)" stroke="#e5d7ff" stroke-width="2.5"/>
+ <path d="M149 29L149 81M134 57L164 57" stroke="#fff" stroke-opacity=".72" stroke-width="1.4"/>
+ <path d="M139 195L157 195M141 214L155 214" stroke="#a88bdb" stroke-width="5"/></g>
+ <!-- wind-swept cape -->
+ <path d="M66 100Q28 109 15 182L37 173L18 220L63 210L80 244L104 225L141 227L137 165L122 108Z" fill="url(#mgCape)" stroke="#9880d8" stroke-width="3"/>
+ <path d="M64 127L32 196M123 128L131 209" stroke="#8e7dcc" stroke-opacity=".65" stroke-width="2"/>
+ <g fill="#b6abf5"><path d="M31 184l3 6 7 1-6 3-1 7-4-5-7-1 6-4Z"/><path d="M112 189l2 5 6 1-5 3-1 6-3-4-6-1 5-4Z"/><circle cx="48" cy="165" r="2"/><circle cx="127" cy="163" r="1.6"/></g>
+ <!-- boots and legs -->
+ <path d="M65 181L62 235L84 237L92 194M97 190L107 239L128 237L117 181" fill="#262447" stroke="#7767a0" stroke-width="3"/>
+ <path d="M61 233L83 232L85 248L53 249Z M105 234L130 233L134 250L105 250Z" fill="#14192e" stroke="#7e80af" stroke-width="2.5"/>
+ <!-- layered dress -->
+ <path d="M65 113Q83 102 113 116L121 150L136 211Q96 227 48 210L60 151Z" fill="url(#mgRobe)" stroke="#b09cdd" stroke-width="3"/>
+ <path d="M86 116L94 208L112 209L105 119" fill="#1d2346" opacity=".9"/>
+ <path d="M81 123L96 151L113 123" fill="none" stroke="#d7c8ff" stroke-width="3"/>
+ <path d="M55 195Q94 208 131 196" fill="none" stroke="#a28ee0" stroke-width="3"/>
+ <path d="M60 169L129 166" stroke="#dbcbf8" opacity=".42" stroke-width="2"/>
+ <!-- arm sleeve and staff hand -->
+ <path d="M114 124Q139 126 153 150L142 168Q117 161 105 150" fill="#493d76" stroke="#b19bd5" stroke-width="3"/>
+ <path d="M139 148L150 143L159 155L147 167L138 159Z" fill="#e8c8b8" stroke="#ad8da2" stroke-width="2"/>
+ <!-- spell casting arm -->
+ <path d="M71 128L40 142L35 132L28 143Q34 164 62 162L86 151" fill="#69568c" stroke="#b7a1d6" stroke-width="3"/>
+ <path d="M30 134Q21 123 14 129Q9 136 16 144L30 149L39 139Z" fill="#edcab8" stroke="#a7869f" stroke-width="2"/>
+ <!-- face, long hair -->
+ <path d="M70 54Q52 76 56 117L44 140Q67 129 72 113L73 74Z" fill="url(#mgHair)" stroke="#555b95" stroke-width="2.5"/>
+ <path d="M114 62Q137 89 128 129L144 148Q107 130 112 87Z" fill="url(#mgHair)" stroke="#555b95" stroke-width="2.5"/>
+ <path d="M76 65Q94 53 115 68L117 92Q113 112 96 117Q74 109 71 89Z" fill="#f3d7c5" stroke="#a5819b" stroke-width="2"/>
+ <path d="M99 84L113 82" stroke="#463a75" stroke-width="3" stroke-linecap="round"/><path d="M106 83L107 91" stroke="#8965e5" stroke-width="3"/><path d="M93 102L103 103" stroke="#b8799c" stroke-width="1.8" stroke-linecap="round"/>
+ <path d="M70 74L67 59Q75 33 100 34Q128 35 128 65L122 81L115 61L100 58L82 78L86 60Z" fill="url(#mgHair)" stroke="#68709c" stroke-width="3"/>
+ <path d="M74 70L96 41L91 75L108 48L119 69" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="3"/>
+ <!-- high collar & gem -->
+ <path d="M67 116L78 104L95 125L111 105L123 120L111 143L82 141Z" fill="#1b2346" stroke="#c0a6ec" stroke-width="3"/>
+ <path d="M95 124L105 133L95 149L85 133Z" fill="#a6eeff" stroke="#d9f7ff" stroke-width="1.5"/>
+ <!-- magical embroidery -->
+ <path d="M95 165L105 177L95 189L84 177Z" fill="none" stroke="#b5c0ff" stroke-width="1.5"/>
+ <circle cx="95" cy="177" r="2.5" fill="#ecf3ff"/>
+ </svg>
