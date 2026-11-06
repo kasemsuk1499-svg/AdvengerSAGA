@@ -87,10 +87,10 @@ function notice(msg){
 }
 function log(text){state.logs.push(text);if(state.logs.length>20)state.logs.shift()}
 function unitCard(id,i){
- const u=UNIT[id],active=state.active===id,pct=state.energy[id];
+ const u=UNIT[id],c=AdvengerCharacters.get(id),active=state.active===id,pct=state.energy[id];
  return '<button class="unit-card'+(active?' selected':'')+'" style="--accent:'+u.accent+';--accent-back:'+u.back+'" data-main-slot="'+i+'" aria-label="เลือกตัวละครในช่องหลัก '+(i+1)+'">'+
  '<span class="unit-slot">MAIN '+String(i+1).padStart(2,'0')+(active?' · IN FOCUS':'')+'</span>'+
- '<span class="class-head"><span class="unit-icon">'+u.emoji+'</span><span><span class="unit-name">'+u.name+'</span><span class="unit-meta">'+u.th+'</span></span></span>'+
+ '<span class="class-head"><span class="unit-icon"><img class="unit-portrait" src="'+esc(c.portrait||c.art)+'" data-char-fallback="'+esc(c.fallback||c.art)+'" alt="" loading="lazy"></span><span><span class="unit-name">'+esc(u.name)+'</span><span class="unit-meta">'+esc(u.th)+'</span></span></span>'+
  '<span class="unit-meta">'+esc(u.desc)+'</span>'+
  '<span class="mini-meters">EX <span class="meter"><i style="width:'+pct+'%"></i></span>'+Math.round(pct)+'</span></button>';
 }
@@ -108,7 +108,10 @@ function renderPicker(){
  $('pickerTitle').textContent=main?'เปลี่ยนตำแหน่งตัวหลัก '+(picker.index+1):'เลือกผู้ช่วย '+(picker.index+1);
  $('pickerOptions').innerHTML=(main?UNITS:SUPPORTS).map(id=>{
   const u=main?UNIT[id]:SUPPORT[id];
-  return '<button class="picker-opt" data-pick="'+id+'"><span style="font-size:20px">'+(main?u.emoji:u.icon)+'</span>'+
+  const c=main?AdvengerCharacters.get(id):null;
+  const image=main?'<img class="picker-portrait" src="'+esc(c.portrait||c.art)+'" data-char-fallback="'+esc(c.fallback||c.art)+'" alt="" loading="lazy" decoding="async">':
+    '<span style="font-size:20px">'+u.icon+'</span>';
+  return '<button class="picker-opt" data-pick="'+id+'">'+image+
     '<span><span class="pick-title">'+esc(u.name)+'</span><br><span class="small">'+esc(main?u.th:u.label)+'</span></span></button>';
  }).join('');
 }
@@ -133,7 +136,7 @@ function renderBattle(){
    (fallen?' fallen':'')+(used?' acted':'')+'" data-deploy="'+unitId+
    '" aria-pressed="'+selected+'" aria-label="'+esc(unit.name)+' HP '+hp+'/'+max+' '+status+
    '" style="--char-color:'+unit.accent+'" '+(disabled?'disabled':'')+'>'+
-   '<span class="roster-top"><img src="'+esc(c.portrait||c.art)+'" alt="" loading="lazy" decoding="async">'+
+   '<span class="roster-top"><img src="'+esc(c.portrait||c.art)+'" data-char-fallback="'+esc(c.fallback||c.art)+'" alt="" loading="lazy" decoding="async">'+
    '<span class="roster-copy"><strong>'+esc(unit.name)+'</strong><small>MAIN 0'+(i+1)+'</small></span></span>'+
    '<span class="roster-hp"><b class="roster-hp-label">HP</b><span class="roster-meter"><i style="width:'+percent+'%"></i></span><small>'+hp+'/'+max+'</small></span>'+
    '<span class="roster-ex"><span class="roster-ex-label">EX</span><span class="roster-meter"><i style="width:'+ex+'%"></i></span><small>'+ex+'%</small></span>'+
@@ -211,13 +214,30 @@ function show(tab){
  render();
 }
 function choose(type,index,id){
+ if(actionBusy)return notice('รอให้แอนิเมชันจบก่อนเปลี่ยนทีม');
+ let changed=false;
  if(type==='main'){
+  if(!UNIT[id])return;
   const other=state.party.indexOf(id),current=state.party[index];
   if(current!==id){
    state.party[index]=id;
    if(other>=0)state.party[other]=current;
+   changed=true;
+  }
+  if(changed){
+   // The reserve may not have an HP entry yet. A changed main formation
+   // starts a clean encounter so every selected character has valid HP,
+   // turn state and EX without retaining actions from the old party.
+   Object.assign(state,RULES.initial(state.party));
+   state.active=state.party[0];
+   state.enemyPct=1;
+   state.energy=Object.fromEntries(UNITS.map(unitId=>[unitId,100]));
+   state.used=[false,false];state.boost=false;
+   partyMounted='';arena?.reset();
+   log('🧩 เปลี่ยนทีมหลักแล้ว · เริ่มไฟต์ใหม่พร้อม '+state.party.map(unitId=>UNIT[unitId].name).join(', '));
   }
  }else{
+  if(!SUPPORT[id])return;
   const other=state.assist.indexOf(id),current=state.assist[index];
   if(current!==id){
    state.assist[index]=id;
@@ -369,6 +389,16 @@ function resetEncounter(){
  log('↻ เริ่มต่อสู้ใหม่ · ROUND 1 · ฟื้น HP/EX และผู้ช่วยทั้งหมด');
  render();
 }
+// Portraits and cut-ins may point to PNG files not uploaded yet.
+// Use the unit's generic SVG placeholder instead of rendering a broken image.
+document.addEventListener('error',event=>{
+ const img=event.target;
+ if(!img||img.tagName!=='IMG')return;
+ const fallback=img.getAttribute('data-char-fallback');
+ if(!fallback||img.getAttribute('src')===fallback)return;
+ img.removeAttribute('data-char-fallback');
+ img.src=fallback;
+},true);
 document.addEventListener('click',e=>{
  const btn=e.target.closest('button');if(!btn)return;
  if(btn.dataset.screen){show(btn.dataset.screen);return}
