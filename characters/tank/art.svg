@@ -1,0 +1,43 @@
+<svg viewBox="0 0 180 260" xmlns="http://www.w3.org/2000/svg" aria-label="นักรบแท็งค์ชุดเกราะเหล็กสีเงินทองถือโล่ใหญ่และค้อนศึก">
+      <defs>
+       <linearGradient id="tanksteel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e5edf0"/><stop offset=".24" stop-color="#a2bbce"/><stop offset=".55" stop-color="#59758f"/><stop offset="1" stop-color="#213951"/></linearGradient>
+       <linearGradient id="tankgold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff3ae"/><stop offset=".33" stop-color="#dcb66f"/><stop offset=".74" stop-color="#997343"/><stop offset="1" stop-color="#5d4a32"/></linearGradient>
+       <linearGradient id="tankshield" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c5e2d7"/><stop offset=".25" stop-color="#5b989c"/><stop offset=".65" stop-color="#274e66"/><stop offset="1" stop-color="#132e4a"/></linearGradient>
+       <radialGradient id="tankcore"><stop stop-color="#fff9d8"/><stop offset=".32" stop-color="#ffdb86"/><stop offset=".7" stop-color="#65c4b5"/><stop offset="1" stop-color="#184e63"/></radialGradient>
+      </defs>
+      <!-- heavy cape, under-armor and boots -->
+      <path d="M69 105Q42 115 20 180L43 225L62 211L79 222L105 142Z" fill="#263a55" stroke="#7a9e9f" stroke-width="3"/>
+      <path d="M67 167L55 241L81 245L93 182Z M98 171L112 242L143 241L126 166Z" fill="#2b4056" stroke="#8e9ea8" stroke-width="3"/>
+      <path d="M50 231L84 235L85 254L46 254Z M109 231L143 233L150 255L106 255Z" fill="url(#tanksteel)" stroke="#e1c68e" stroke-width="3"/>
+      <path d="M58 123Q79 101 114 110L138 158L125 191L67 192L49 149Z" fill="url(#tanksteel)" stroke="#d7c49a" stroke-width="4"/>
+      <path d="M67 129L99 119L123 136L113 174L78 180Z" fill="#31546b" stroke="#a1cfd0" stroke-width="3"/>
+      <path d="M86 132L103 134L110 154L95 163L80 153Z" fill="url(#tankgold)" stroke="#f9e6ac" stroke-width="2"/>
+      <!-- hammer behind shoulder -->
+      <path d="M29 218L61 77" stroke="#2a324a" stroke-width="10" stroke-linecap="round"/>
+      <path d="M29 216L61 77" stroke="#d2bb83" stroke-width="3" stroke-linecap="round"/>
+      <path d="M37 57L71 52L82 77L48 85Z" fill="url(#tanksteel)" stroke="#e5d4a4" stroke-width="4"/>
+      <path d="M41 61L53 45L81 51L82 75L68 82" fill="url(#tankgold)" stroke="#fff1bc" stroke-width="2"/>
+      <!-- shoulder pauldrons and forearm -->
+      <path d="M59 112Q38 105 32 123L35 146L69 146L80 117Z" fill="url(#tanksteel)" stroke="#e8d19d" stroke-width="4"/>
+      <path d="M119 111Q143 101 155 122L151 144L125 148L111 119Z" fill="url(#tanksteel)" stroke="#f5d99f" stroke-width="4"/>
+      <path d="M59 144L49 173L63 189L80 156Z" fill="#607e95" stroke="#d5c59c" stroke-width="3"/>
+      <!-- armored helmet: anime face window -->
+      <path d="M78 84L83 108L105 112L111 87" fill="#c59b80"/>
+      <path d="M67 56Q74 35 97 34Q120 41 125 63L122 95L106 113L82 109L68 91Z" fill="url(#tanksteel)" stroke="#d9bc7f" stroke-width="4"/>
+      <path d="M77 62L117 62L112 88L95 100L76 87Z" fill="#e2b7a4" stroke="#f1dbb5" stroke-width="2"/>
+      <path d="M94 77L111 75" stroke="#34536b" stroke-width="3" stroke-linecap="round"/>
+      <path d="M105 79L106 86" stroke="#24877e" stroke-width="3"/>
+      <path d="M80 51L96 39L120 52L124 67L104 61L91 65L71 67Z" fill="#1b344b" stroke="#d9bd7c" stroke-width="3"/>
+      <path d="M83 49L90 17L107 35L112 49" fill="url(#tankgold)" stroke="#fff2b6" stroke-width="3"/>
+      <path d="M70 74L65 93L77 101 M121 76L127 95L114 101" stroke="#e5d19e" stroke-width="5" fill="none"/>
+      <!-- monumental right-side kite shield. Face the enemy. -->
+      <g class="shield-art">
+       <path d="M104 131Q139 110 168 130L168 205Q154 229 134 246Q111 226 101 195Z" fill="#0b243a" stroke="#513b28" stroke-width="8"/>
+       <path d="M106 131Q138 111 167 133L166 203Q153 224 135 239Q110 220 103 196Z" fill="url(#tankgold)" stroke="#f5e6bd" stroke-width="3"/>
+       <path d="M115 140Q137 127 157 143L157 196L134 222L113 197Z" fill="url(#tankshield)" stroke="#75b8b7" stroke-width="4"/>
+       <path d="M134 135L134 217M116 165L154 166" stroke="#f7dda0" stroke-width="6" opacity=".8"/>
+       <path d="M133 151L149 169L134 188L119 169Z" fill="url(#tankcore)" stroke="#fff4b5" stroke-width="4"/>
+       <circle cx="134" cy="169" r="6" fill="#fffadd" opacity=".95"/>
+       <path d="M114 144L103 151M157 145L169 151M121 205L113 213M153 205L159 213" stroke="#fff2bd" stroke-width="3"/>
+      </g>
+     </svg>
