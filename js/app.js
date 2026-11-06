@@ -1,6 +1,6 @@
-/* AdvengerSAGA foundation — 4 main party + 2 support slots.
-   The approved class labs remain self-contained; the bridge synchronizes demo
-   target HP and per-character EX without replacing their original animations. */
+/* AdvengerSAGA v0.3 — 4 visible main-party characters + 2 support slots.
+   Each character owns its skills, element colors, artwork and attack code.
+   The approved standalone labs remain in character-owned folders for reference. */
 (function(){
 'use strict';
 const KEY='AdvengerSAGA_FORMATION_V1';
