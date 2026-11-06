@@ -1,18 +1,35 @@
-# Individual character starter folder
+# Individual character starter — class inheritance + optional custom skills
 
-Copy this folder to `characters/<character-id>/` and edit all occurrences of
-`new-hero` in the scripts to your new unique ID (lowercase letters, numbers and hyphens).
+Copy this folder into `characters/<character-id>/` and replace every `new-hero` identifier in its JavaScript files with a unique ID (lowercase letters, numbers and hyphens).
 
-- `character.js` — unique ID, display name, classId, maxHP, image paths, elemental palettes, skill names and character registration
-- `skills/basic.js` — Basic choreography
-- `skills/skill.js` — special skill choreography
-- `skills/ultimate.js` — Ultimate choreography
-- `assets/standing.svg` — *temporary* illustrated standing sprite; replace with transparent `standing.png` and update `art` in `character.js` when ready
-- `assets/` — future `portrait.png`, `cutin.png`, effects, audio and other assets **for this one character only**
+```text
+<character-id>/
+  character.js           # identity, classId, HP, sprite / portrait / cut-in PNG paths
+  skills/
+    basic.js             # optional Basic override
+    skill.js             # optional Skill override
+    ultimate.js          # optional Ultimate override
+  assets/
+    standing.svg         # temporary, replaceable by transparent standing.png
+```
 
-The scripts are loaded in this order via `characters/manifest.js`: Basic, Skill, Ultimate, **then** character.js.
+**Default: all three attacks inherit the class's approved animation.** The skill files contain commented-out examples and don't replace the default until you uncomment and implement the relevant `kit.basic`, `kit.skill` or `kit.ultimate` assignment.
 
-Add just one entry to `characters/manifest.js` after creating the folder:
+For example, a Mage character can inherit the Mage Basic and Skill, but customize only its Ultimate by assigning:
+
+```js
+const kit=(window.AdvengerCharacterSkills ||= {})['new-hero'] ||= {};
+kit.ultimate=async function(a){
+  await a.cinematic('MY ULTIMATE', 'CHARACTER EXCLUSIVE', 900);
+  await a.charge(350);
+  a.hit(250, 'magic', true);
+};
+```
+
+Only the overridden move changes; the other two still use their class animation. For a complete custom set, implement all three skill files. To restore a class move, leave its override unassigned or omit that skill file from the manifest.
+
+When ready, add **one entry** to `characters/manifest.js` with skill scripts first and `character.js` last:
+
 ```js
 {
  id:'new-hero',version:1,
@@ -25,8 +42,6 @@ Add just one entry to `characters/manifest.js` after creating the folder:
 }
 ```
 
-The templates in this `_template` folder are deliberately **not registered in the game**. The four existing demo characters remain playable and keep their approved animations.
+Update an individual character's script or PNG and increment only that entry's version. There is no need to edit `js/app.js`, `js/shared-arena.js`, or class presets unless intentionally changing the shared class attack.
 
-Changing skill code: edit only `characters/<character-id>/skills/<move>.js` and increment that character's `version` in `characters/manifest.js`. You do not have to edit the central battle engine.
-
-For future anime character images, upload or supply licensed / appropriately usable transparent PNG images; avoid committing huge uncompressed files.
+Class ID, role display text, element palette and HP are initially set for Saber in this template; update them together if selecting another class. The template itself is not a playable character until copied and registered in the manifest. The four approved demo characters remain available.
