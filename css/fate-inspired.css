@@ -1,0 +1,268 @@
+/* AdvengerSAGA v0.4 — FGO-inspired cinematic battle composition.
+   Original design: layered 2.5D staging and command-card visual hierarchy.
+   4 main heroes + 2 support actions remain specific to this game.
+   Never uses Fate/Grand Order art, marks, named command cards or assets. */
+#battle{--cmd-gold:#d6bd86;--cmd-navy:#121d37}
+#battle .battle-layout{grid-template-columns:minmax(0,1fr) 252px;align-items:start;gap:12px}
+#battle .battle-main-column{gap:9px;min-width:0}
+#battle .battle-aside{gap:10px}
+#battle .battle-heading{margin-bottom:10px;align-items:center}
+#battle .battle-title{font-size:clamp(23px,2.8vw,33px);letter-spacing:.025em;
+ font-weight:950;filter:drop-shadow(0 2px 7px #6f8cce25)}
+#battle .battle-heading .eyebrow{color:#dfcfaa}
+#battle .arena-wrap{
+ border:1px solid #8fa5cb78;border-radius:12px;
+ box-shadow:0 20px 34px #0008,0 0 0 1px #a9c2e01c;
+ background:#0a162d;
+}
+#battle .arena-hud{
+ padding:8px 13px 9px;
+ background:linear-gradient(115deg,#283b60 0%,#15274a 52%,#111a34 100%);
+ border-bottom:1px solid #99b0d166;
+}
+#battle .hud-enemy-top{display:flex;justify-content:space-between;align-items:center;gap:9px}
+#battle .hud-enemy-top .hud-tag{font-weight:950;font-size:10px;letter-spacing:.115em;color:#f7e2ba}
+#battle .hud-enemy-icon{color:#e59a96;font-size:15px;padding-right:5px}
+#battle .arena-hud strong{font-size:15px;color:#fff4d8;text-shadow:0 1px 7px #ed997155}
+#battle .hud-meter{height:7px;border:1px solid #65768a80;background:#07101f;border-radius:3px;margin-top:5px}
+#battle .hud-meter i{border-radius:2px;background:linear-gradient(90deg,#aa3c65,#e06c74 65%,#ffd2a0)}
+#battle .as-stage{
+ height:clamp(365px,38vw,472px);
+ background:
+  radial-gradient(ellipse 46% 30% at 47% 38%,#b1beeb24,transparent 85%),
+  radial-gradient(ellipse 70% 48% at 48% 0%,#4e639789,transparent 80%),
+  linear-gradient(180deg,#15264b 0%,#1b3b61 43%,#172a4a 62%,#09162b 100%);
+}
+#battle .as-backdrop{background:
+ repeating-linear-gradient(90deg,transparent 0 12%,#d9eafa06 12.4% 12.6%,transparent 13% 23%);
+ opacity:1}
+#battle .as-ruins{
+ background:
+ linear-gradient(90deg,#091634aa 0 5%,transparent 5% 8%,#162a4b95 8% 11%,transparent 11% 16%,#1426489c 16% 18%,transparent 18% 82%,#1b315490 82% 85%,transparent 85% 90%,#1b315590 90% 94%,transparent 94%),
+ linear-gradient(0deg,#092142 0 22%,#274b7052 27%,transparent 29%),
+ repeating-linear-gradient(90deg,transparent 0 14%,#d2e4ff09 14% 14.2%,transparent 14.3% 28%);
+ opacity:.72;
+}
+#battle .as-moon{left:44%;top:6%;width:11%;opacity:.65}
+#battle .as-ground{
+ bottom:0;height:29%;
+ background:
+  repeating-linear-gradient(90deg,#99bfff0a 0 1px,transparent 1px 72px),
+  repeating-linear-gradient(0deg,transparent 0 32px,#b7ceeb1d 33px 34px),
+  linear-gradient(180deg,#3a547675 0%,#0b1730 86%);
+ border-top:1px solid #abc2df44;
+ transform:perspective(480px) rotateX(50deg) scale(1.45);
+}
+#battle .as-party-ground{
+ left:52%;top:82%;width:40%;height:12%;
+ background:radial-gradient(ellipse,#6fa4d43b 0%,transparent 72%);
+ border:1px solid #bdd7ff33;
+}
+#battle .as-stage-note{
+ left:auto;right:10px;top:10px;
+ font-size:10px;color:#fff1cc;font-weight:950;letter-spacing:.12em;
+ background:#0a1731ce;border:1px solid #d8c09589;
+ padding:6px 10px;border-radius:4px;
+}
+/* Reverse the practice fight: enemy is LEFT, the four allies are RIGHT. */
+#battle .as-target{left:9.5%;top:30%;width:22%;height:58%;z-index:5}
+#battle .as-target-name{font-size:9px;color:#ffdcc4;background:#151c30e8;
+ border-color:#e6a08c88;padding:3px 7px}
+#battle .as-target img{height:85%;filter:drop-shadow(0 6px 7px #000a)}
+#battle .as-lock{color:#ffe0ab;font-size:10px;font-weight:950}
+#battle .as-fighter{width:17%;height:40%;z-index:7}
+#battle .as-fighter[data-slot="0"]{left:53%;top:46%;width:20%;height:43%;z-index:9}
+#battle .as-fighter[data-slot="1"]{left:73%;top:37%;width:17%;height:40%;z-index:6}
+#battle .as-fighter[data-slot="2"]{left:54%;top:15%;width:18%;height:39%;z-index:8}
+#battle .as-fighter[data-slot="3"]{left:76%;top:13%;width:15%;height:36%;z-index:5}
+#battle .as-fighter .as-sprite{
+ animation:asBreatheReverse 4.2s ease-in-out infinite alternate;
+ filter:drop-shadow(1px 5px 6px #020b1be8) drop-shadow(0 0 4px #b0c6ff1d);
+}
+#battle .as-fighter.selected .as-sprite{
+ filter:drop-shadow(0 0 7px #b6d3ff99) drop-shadow(0 7px 6px #000d1e)
+}
+#battle .as-fighter .as-name{font-size:10px;color:#eff4fe;background:#09152cdd;
+ border-color:#536789c7;letter-spacing:.01em;max-width:112%;text-overflow:ellipsis;overflow:hidden}
+#battle .as-fighter.selected .as-name{background:#3c3546ed;border-color:#fce0a9;color:#fff4d8}
+#battle .as-fighter.selected:after{background:#ffdc89}
+#battle .as-fighter:focus-visible{outline:2px solid #ffe5a5;outline-offset:3px;border-radius:9px}
+#battle .as-fighter .as-ex i{background:linear-gradient(90deg,#749bea,#d7b2ff)}
+#battle .as-fighter.performing{z-index:18!important}
+#battle .as-action{color:#faf1dd;background:#0a1735e9;border-color:#8ca6d188;
+ font-size:10px;bottom:8px;border-radius:6px}
+#battle .as-cinematic{background:linear-gradient(115deg,#1b122af6,#071123ef 55%,#172c4cf0)}
+#battle .as-portrait{margin-left:4%}
+#battle .as-portrait img{transform:scaleX(-1)}
+@keyframes asBreatheReverse{
+ 0%,100%{transform:scaleX(-1) translateY(0) rotate(-.5deg)}
+ 50%{transform:scaleX(-1) translateY(-5px) rotate(.8deg)}
+}
+/* FGO-derived information hierarchy, original party cards with EX meters. */
+#battle .party-console{
+ padding:11px 12px 12px;
+ border:1px solid #748bad88;border-radius:11px;
+ background:linear-gradient(165deg,#1b2c4b,#111a31)
+}
+#battle .party-console .panel-head{margin-bottom:5px}
+#battle .party-console h2{font-size:13px;letter-spacing:.105em;color:#f7e0a9}
+#battle .party-console p.small{font-size:10px!important;margin-bottom:9px!important}
+#battle .battle-roster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+#battle .battle-member{
+ --char-color:#95b9e6;
+ min-width:0;min-height:100px;
+ border:1px solid #6480a8bb;
+ border-radius:7px 7px 10px 10px;
+ background:linear-gradient(160deg,#263d65 0%,#14213d 65%,#101a34 100%);
+ position:relative;padding:6px 8px 8px;display:flex;flex-direction:column;gap:3px;
+ box-shadow:inset 0 0 0 1px #d5e7ff0b,0 5px 10px #0003;
+ transition:transform .13s,filter .13s,border-color .13s
+}
+#battle .battle-member:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.14)}
+#battle .battle-member.active{
+ border-color:#f7d58b;background:linear-gradient(155deg,#42577a,#302f4c 76%,#171c34);
+ box-shadow:inset 0 0 0 1px #ebd4a366,0 0 16px #e2b96336
+}
+#battle .roster-top{display:flex;align-items:center;gap:7px;min-width:0}
+#battle .roster-top img{width:34px;height:47px;object-fit:contain;object-position:center bottom;
+ filter:drop-shadow(0 2px 3px #000a);flex:none;transform:scaleX(-1)}
+#battle .roster-copy{display:flex;flex-direction:column;min-width:0}
+#battle .roster-copy strong{font-size:12px;line-height:1.2;color:#fff4d6;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#battle .roster-copy small{color:#bdd0ea;font-size:9px;line-height:1.35}
+#battle .roster-ex{display:flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums;margin-top:auto}
+#battle .roster-ex-label{font-size:10px;font-weight:950;color:#b4d9ff}
+#battle .roster-ex small{font-size:10px;min-width:33px;text-align:right;color:#eff5ff;font-weight:800}
+#battle .roster-meter{height:6px;border-radius:2px;background:#071125;overflow:hidden;flex:1}
+#battle .roster-meter i{height:100%;width:100%;display:block;background:linear-gradient(90deg,#4a82c8,#d8b4ff);transition:width .25s}
+#battle .roster-select{font-size:9px;color:#b5c2dc;text-align:center;letter-spacing:.03em}
+#battle .battle-member.active .roster-select{color:#f6daa0}
+#battle .arena-foot{background:linear-gradient(120deg,#172541,#1b2742);
+ border-top:1px solid #8198b67a;font-size:12px}
+#battle .arena-active-info{display:flex;align-items:center;gap:6px}
+#battle .foot-active-icon{color:#ffdb92}
+#battle .arena-foot b{color:#f9e9c7}
+/* Command cards: recognizable anime RPG rhythm, no FGO proprietary visuals. */
+#battle .combat-console{padding:12px 13px;border-radius:10px;
+ background:linear-gradient(155deg,#202d49,#131b33 77%);border-color:#7786a275}
+#battle .command-topline{align-items:center;margin-bottom:7px}
+#battle .command-topline h2{font-size:13px;letter-spacing:.11em;color:#e6d5ae}
+#battle .command-topline .small{font-size:10px}
+#battle .command-indicator{border-radius:4px}
+#battle .battle-notice{border-radius:5px;margin-bottom:8px;padding:6px 9px;
+ font-size:11px;background:#0b172dd8;border-color:#435a7d;min-height:29px}
+#battle .combat-command-grid{gap:10px}
+#battle .combat-command{
+ --card-stroke:#7ac5ee;
+ border:2px solid var(--card-stroke);border-radius:9px 9px 14px 14px;
+ background:linear-gradient(158deg,#2c567d,#172e53 67%,#101b36);
+ min-height:133px;padding:11px 12px 15px;
+ text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ overflow:hidden;isolation:isolate;box-shadow:inset 0 0 0 2px #d5f0ff1b,0 6px 12px #0005;
+ transform-origin:center bottom;transition:transform .12s,filter .12s,box-shadow .12s
+}
+#battle .combat-command:before{content:'';position:absolute;inset:4px;
+ border:1px solid #d7f2ff3a;border-radius:5px 5px 11px 11px;transform:none;width:auto;height:auto;
+ z-index:-1;pointer-events:none}
+#battle .combat-command:after{content:'';position:absolute;inset:0;
+ background:radial-gradient(ellipse at 50% 37%,#e7f9ff1d,transparent 61%);
+ z-index:-1;pointer-events:none}
+#battle .combat-command:hover:not(:disabled){filter:brightness(1.14);transform:translateY(-3px)}
+#battle .combat-command:active:not(:disabled){transform:translateY(1px) scale(.98)}
+#battle .combat-command.skill{--card-stroke:#82c8b7;
+ background:linear-gradient(157deg,#28645a,#1b414c 68%,#13243b)}
+#battle .combat-command.ultimate{--card-stroke:#d7af76;
+ background:linear-gradient(155deg,#633c64,#3b294f 58%,#201c3c)}
+#battle .combat-command.ultimate:after{
+ background:radial-gradient(ellipse at 50% 33%,#f5d29b3c,transparent 67%)}
+#battle .command-seal{position:absolute;top:5px;left:9px;font-family:Georgia,serif;
+ color:#dceafa9c;font-size:12px;font-weight:bold}
+#battle .combat-command-icon{font-size:28px;margin:1px 0 5px;line-height:1.1;
+ color:#f9f7ed;text-shadow:0 0 10px #fff8}
+#battle .command-type{font-size:9px;font-weight:900;letter-spacing:.18em;color:#c6def3;line-height:1.2}
+#battle .combat-command strong{font-size:17px;font-weight:1000;letter-spacing:.04em;
+ line-height:1.2;color:#fff8e9;text-shadow:0 2px 4px #0008}
+#battle .combat-command small{font-size:10px;color:#cfe5fb;line-height:1.35;max-width:96%}
+#battle .combat-command em{bottom:5px;right:6px;font-size:9px;border-color:#d6deea5c}
+#battle .combat-command:disabled{filter:grayscale(.55);opacity:.48}
+#battle .element-picker{border-top:1px solid #647b9d6b;margin-top:9px;padding:9px 2px 0}
+#battle .element-picker summary{cursor:pointer;display:flex;gap:12px;
+ align-items:center;justify-content:space-between;font-size:11px;font-weight:900;
+ color:#ccdff2;list-style:none}
+#battle .element-picker summary::-webkit-details-marker{display:none}
+#battle .element-picker summary:before{content:'▸';color:#f4d7a6}
+#battle .element-picker[open] summary:before{content:'▾'}
+#battle .element-choices{padding:6px 0 2px}
+#battle .support-console{border-color:#7786a27a;background:linear-gradient(155deg,#1c2944,#121a30)}
+#battle .support-console h2{font-size:14px;color:#f8deb1}
+#battle .support-button{background:linear-gradient(125deg,#273756,#182743);
+ border-color:#6d81a5;border-radius:7px}
+#battle .battle-log-panel{background:#141e34;border-color:#7081a15b}
+@media(max-width:1000px){
+ #battle .battle-layout{grid-template-columns:1fr}
+ #battle .battle-aside{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+ #battle .battle-log-panel,#battle .lab-fallback{grid-column:1/-1}
+}
+@media(max-width:580px){
+ #battle .battle-heading{gap:5px}
+ #battle .battle-heading .small{font-size:10px}
+ #battle .arena-hud{padding:7px 9px}
+ #battle .as-stage{height:335px}
+ #battle .as-stage-note{font-size:8px;top:8px;right:8px;max-width:52%;overflow:hidden;text-overflow:ellipsis}
+ #battle .as-target{left:8%;top:34%;width:24%;height:49%}
+ #battle .as-fighter[data-slot="0"]{left:52%;top:49%;width:23%;height:40%}
+ #battle .as-fighter[data-slot="1"]{left:75%;top:40%;width:17%;height:37%}
+ #battle .as-fighter[data-slot="2"]{left:51%;top:18%;width:20%;height:39%}
+ #battle .as-fighter[data-slot="3"]{left:75%;top:16%;width:17%;height:36%}
+ #battle .as-fighter .as-name{font-size:8px;max-width:110%;padding:2px 3px}
+ #battle .as-rank{font-size:7px}
+ #battle .as-target-name{font-size:7px}
+ #battle .battle-roster{gap:4px}
+ #battle .party-console{padding:9px 7px}
+ #battle .party-console p.small{display:none}
+ #battle .battle-member{min-height:83px;padding:4px 3px;gap:3px}
+ #battle .roster-top{flex-direction:column;gap:0}
+ #battle .roster-top img{height:32px;width:35px}
+ #battle .roster-copy{align-items:center}
+ #battle .roster-copy strong{font-size:10px;text-align:center}
+ #battle .roster-copy small{display:none}
+ #battle .roster-ex{gap:2px;width:100%}
+ #battle .roster-ex-label{font-size:8px}
+ #battle .roster-ex small{min-width:27px;font-size:8px}
+ #battle .roster-meter{height:5px}
+ #battle .roster-select{font-size:8px;white-space:nowrap}
+ #battle .battle-aside{display:flex;flex-direction:column}
+ #battle .support-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ #battle .combat-console{
+  position:sticky;bottom:max(5px,env(safe-area-inset-bottom));z-index:32;
+  padding:10px 9px;border-radius:11px;border-color:#9cacc589;
+  box-shadow:0 8px 32px #000a;background:linear-gradient(155deg,#223451f7,#101a30fb);
+ }
+ #battle .command-topline{margin-bottom:5px}
+ #battle .command-topline .small{display:none}
+ #battle .combat-command-grid{gap:6px}
+ #battle .combat-command{min-height:100px;padding:7px 5px 13px;border-width:1px}
+ #battle .combat-command-icon{font-size:22px;margin-bottom:2px}
+ #battle .combat-command strong{font-size:12px}
+ #battle .combat-command small{font-size:8px;line-height:1.25}
+ #battle .command-type{font-size:7px;letter-spacing:.12em}
+ #battle .command-seal{font-size:10px;top:3px;left:6px}
+ #battle .combat-command em{font-size:8px;bottom:3px;right:4px}
+ #battle .battle-notice{padding:4px 7px;font-size:10px;min-height:23px}
+ #battle .element-picker{padding-top:6px;margin-top:6px}
+ #battle .element-picker summary{font-size:10px}
+ #battle .as-cinematic-copy strong{font-size:22px}
+}
+@media(max-width:390px){
+ #battle .as-stage{height:307px}
+ #battle .as-target{left:7%;width:25%}
+ #battle .as-fighter[data-slot="0"]{width:24%;left:51%}
+ #battle .as-fighter[data-slot="2"]{left:50%;width:21%}
+ #battle .as-fighter[data-slot="1"],#battle .as-fighter[data-slot="3"]{left:75%;width:19%}
+ #battle .combat-command{min-height:95px}
+ #battle .battle-member{min-height:79px}
+}
+@media(prefers-reduced-motion:reduce){
+ #battle .as-fighter .as-sprite{animation:none!important;transform:scaleX(-1)}
+ #battle .combat-command{transition:none}
+}
