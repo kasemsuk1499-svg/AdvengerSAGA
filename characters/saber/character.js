@@ -1,6 +1,6 @@
 /* Individual character: Saber. All future skill-code updates belong in this folder. */
 AdvengerCharacters.register({
- id:'saber',name:'Saber',nameTh:'นักดาบ',role:'Saber',icon:'⚔️',
+ id:'saber',maxHP:1000,name:'Saber',nameTh:'นักดาบ',role:'Saber',icon:'⚔️',
  accent:'#79d8ff',art:'characters/saber/art.svg',fallback:'characters/saber/art.svg',
  // When a transparent PNG is ready, put it in this folder and change art to:
  // art:'characters/saber/sprite.png'
