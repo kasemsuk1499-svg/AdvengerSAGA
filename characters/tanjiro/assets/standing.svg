@@ -1,0 +1,32 @@
+<svg viewBox="0 0 180 260" xmlns="http://www.w3.org/2000/svg" aria-label="นักดาบชายสวมเสื้อคลุมสีน้ำเงินเข้มถือดาบ">
+      <defs><linearGradient id="coat" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#4792bb"/><stop offset=".34" stop-color="#254c80"/><stop offset="1" stop-color="#111e41"/></linearGradient><linearGradient id="blade" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#4e859b"/><stop offset=".4" stop-color="#f3fcff"/><stop offset=".6" stop-color="#94e4fe"/><stop offset="1" stop-color="#305b88"/></linearGradient><linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#cbeaf5"/><stop offset=".5" stop-color="#8fabc9"/><stop offset="1" stop-color="#314978"/></linearGradient></defs>
+      <!-- cloak, cape and legs -->
+      <path d="M71 107Q42 118 19 182Q49 174 62 188L51 227Q89 205 103 219L112 124Z" fill="#12244c" stroke="#4f7a9b" stroke-width="2"/>
+      <path d="M62 160L49 244L77 245L89 178ZM96 165L103 243L132 242L122 166Z" fill="#1b2846" stroke="#4e5475" stroke-width="3"/>
+      <path d="M43 236Q55 233 79 239L79 253L46 254Z M100 235Q113 231 135 237L140 252L101 252Z" fill="#101827" stroke="#586983" stroke-width="2"/>
+      <path d="M62 105Q91 97 119 113L131 186Q103 208 68 196L52 146Z" fill="url(#coat)" stroke="#719fc0" stroke-width="3"/>
+      <path d="M76 113L85 179L110 189L113 121" fill="#132640"/>
+      <path d="M91 113L98 177" stroke="#78c4db" stroke-width="5"/><path d="M74 147L117 140M68 175L119 168" stroke="#7db1be" stroke-opacity=".35" stroke-width="3"/>
+      <!-- left arm -->
+      <path d="M65 124L42 152L59 169L83 145" fill="#29456b" stroke="#8295b4" stroke-width="3"/>
+      <path d="M41 150L53 155L62 167L53 177L39 163Z" fill="#39495e" stroke="#9babbc" stroke-width="2"/>
+      <!-- neck, head -->
+      <path d="M83 103L88 118L108 118L112 105" fill="#d7b6a6"/>
+      <path d="M75 63Q82 49 105 50Q127 59 127 86Q121 110 102 117Q81 109 76 92Z" fill="#ecc9b4" stroke="#947d91" stroke-width="2"/>
+      <path d="M106 80L127 77L120 104L109 113" fill="#c49b93" opacity=".45"/>
+      <!-- anime eye and brows -->
+      <path d="M100 83L120 81" stroke="#273c59" stroke-width="3" stroke-linecap="round"/><path d="M112 85L113 92" stroke="#164b74" stroke-width="3"/><path d="M103 100L113 100" stroke="#a96f74" stroke-width="1.6"/>
+      <!-- hair spikes -->
+      <path d="M74 79L55 71L69 58L58 42L84 47L89 27L106 39L119 26L131 50L147 57L129 72L133 89L119 75L104 64L84 89Z" fill="url(#hair)" stroke="#243c61" stroke-width="3"/>
+      <path d="M75 69L100 53L91 84L110 59L103 81" stroke="#eef6ff" stroke-opacity=".8" stroke-width="4" stroke-linecap="round"/>
+      <!-- scarf -->
+      <path d="M73 109L87 103L111 112L116 130L88 132L77 120Z" fill="#18496f" stroke="#9dc7d7" stroke-width="2"/>
+      <path d="M82 119L54 131L41 164L76 151L95 134" fill="#3d9fc0" stroke="#194a75" stroke-width="2"/>
+      <!-- sword bearing arm and grip -->
+      <path d="M119 125L142 139L135 152L110 143" fill="#345b86" stroke="#a4b5cc" stroke-width="3"/>
+      <path d="M133 142L148 125L155 131L144 155L131 154Z" fill="#dfbda5" stroke="#877b82" stroke-width="2"/>
+      <!-- sword, compact toward opponent -->
+      <g transform="rotate(-4 146 122)"><path d="M149 126L174 28L180 2L165 22L138 118Z" fill="url(#blade)" stroke="#a0dcff" stroke-width="2"/><path d="M147 112L172 30" stroke="#e8ffff" stroke-width="2"/><path d="M131 120L161 135" stroke="#244764" stroke-width="7" stroke-linecap="round"/><path d="M141 126L130 151" stroke="#1b263b" stroke-width="7" stroke-linecap="round"/><path d="M139 141L130 151" stroke="#7ca9b1" stroke-width="2"/></g>
+      <!-- insignia -->
+      <path d="M90 148L98 141L105 148L98 157Z" fill="#90e0e3"/>
+     </svg>
