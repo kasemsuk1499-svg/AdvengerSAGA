@@ -9,7 +9,7 @@ https://kasemsuk1499-svg.github.io/AdvengerSAGA/
 
 The repo is plain static HTML/CSS/JavaScript. No Node/build dependencies.
 
-**Enable Pages once:** Repository **Settings → Pages → Build and deployment → Source: GitHub Actions**. The workflow `.github/workflows/pages.yml` will deploy automatically after subsequent pushes to `main`. You can also re-run the workflow manually in the GitHub Actions tab.
+**Enable Pages once:** Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch**, then select **Branch: main**, **Folder: /(root)** and click **Save**. The game is a static HTML/JavaScript site with `index.html` at repository root; no custom build workflow is needed. A failing custom workflow was removed after the first deployment attempt. GitHub will publish new commits from the selected branch automatically.
 
 ## Classes (approved optimized animation builds)
 
