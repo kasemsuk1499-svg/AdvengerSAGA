@@ -576,6 +576,7 @@ attack=async function(kind){
  if(window.parent===window)return __advNativeAttack(kind);
  if(busy||hp<=0||(kind==='ultimate'&&energy<100))return;
  const fromHp=hp,fromEnergy=energy;
+ window.parent.postMessage({app:'AdvengerSAGA',type:'START',unit:'tank',kind},window.location.origin==='null'?'*':window.location.origin);
  await __advNativeAttack(kind);
  window.parent.postMessage({
   app:'AdvengerSAGA',type:'ACTION',unit:'tank',kind,
