@@ -155,12 +155,13 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 
 </style>
 <link rel="stylesheet" href="css/team-arena.css">
+<link rel="stylesheet" href="css/fate-inspired.css">
 </head>
 <body>
 <div class="shell">
 <header>
  <div class="logo"><div class="mark">✦</div><div><div class="eyebrow">4 + 2 Party System</div><div class="brand">AdvengerSAGA</div><div class="sub">Anime Combat · Optimized Battle Labs</div></div></div>
- <span class="tag">4 HERO ARENA · v0.3</span>
+ <span class="tag">FGO-STYLE REF · v0.4</span>
 </header>
 <nav aria-label="การนำทาง">
  <button class="nav-btn active" data-screen="formation">🧩 จัดทีม</button>
@@ -186,8 +187,8 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 </section>
 <section id="battle" class="screen" aria-label="สนามต่อสู้ AdvengerSAGA">
  <div class="battle-heading">
-   <div><div class="eyebrow">ADVENTURE SAGA · TRAINING ARENA 01</div>
-   <h1 class="battle-title">⚔️ สนามฝึกต่อสู้</h1><p class="small">สลับสมาชิกหลักทั้ง 4 คนโจมตีเป้าหมายเดียวกันได้ · ผู้ช่วย 2 คนมีผลต่อการต่อสู้</p></div>
+   <div><div class="eyebrow">ADVENGERSAGA · BATTLE COMMAND</div>
+   <h1 class="battle-title">⚔️ ADVENGER BATTLE</h1><p class="small">มุมกล้อง RPG สไตล์อนิเมะ · ทีม 4 คนพร้อมกัน · ศัตรูฝั่งตรงข้าม · ผู้ช่วย 2 คน</p></div>
    <div class="battle-heading-actions">
     <button type="button" id="battleReset" class="button ghost">↻ เริ่มไฟต์ใหม่</button>
     <button type="button" class="button ghost" data-screen="formation">🧩 จัดทีม</button>
@@ -197,37 +198,34 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
   <div class="battle-main-column">
    <section class="arena-wrap" aria-label="สนามทดสอบการโจมตี">
     <div class="arena-hud">
-     <div><span class="hud-tag">🎯 TRAINING SENTINEL</span><strong id="enemyHealth">100%</strong></div>
+     <div class="hud-enemy-top"><span class="hud-tag"><span class="hud-enemy-icon">◆</span> ENEMY · TRAINING SENTINEL</span><strong id="enemyHealth">100%</strong></div>
      <div class="hud-meter" role="progressbar" id="targetHpTrack" aria-label="พลังชีวิตเป้าหมาย" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="targetHpBar"></i></div>
     </div>
     <div id="teamArena" class="as-stage" aria-label="สนามต่อสู้: สมาชิกหลัก 4 คนยืนอยู่พร้อมกัน และหุ่นฝึก 1 ตัว"></div>
-    <div class="arena-foot"><span><b id="activeName">Saber</b> <span id="activeSubtitle">นักดาบ</span></span><span>EX <b id="activeEnergy">100/100</b></span></div>
+    <div class="arena-foot"><span class="arena-active-info"><span class="foot-active-icon">✦</span> <b id="activeName">Saber</b><span id="activeSubtitle">นักดาบ</span></span><span>ENERGY <b id="activeEnergy">100/100</b></span></div>
+   </section>
+   <section class="panel party-console" aria-label="เลือกสมาชิกลงสนาม">
+     <div class="panel-head"><h2>✧ PARTY STATUS</h2><span class="chip">MAIN · 4/4</span></div>
+     <p class="small" style="margin:0 0 10px">แตะการ์ดสถานะเพื่อเลือกตัวที่ออกท่าต่อไป · ทั้ง 4 คนยังยืนอยู่ในสนาม</p>
+     <div id="battleRoster" class="battle-roster"></div>
    </section>
    <section class="combat-console panel" aria-label="คำสั่งโจมตี">
     <div class="command-topline">
-      <div><h2>คำสั่งต่อสู้</h2><span class="small">เลือกท่าแล้วดูแอนิเมชันได้ตรงสนามด้านบน</span></div>
+      <div><h2>✦ COMMAND CARDS</h2><span class="small">เลือกตัวละครด้านบนก่อนใช้การ์ดคำสั่ง</span></div>
       <span class="command-indicator" id="commandIndicator">READY</span>
     </div>
     <div id="combatStatus" class="battle-notice" role="status" aria-live="polite">กำลังเตรียมสนาม...</div>
     <div class="combat-command-grid">
-      <button type="button" class="combat-command basic" data-command="basic"><span class="combat-command-icon">⚔️</span><strong>Basic Attack</strong><small id="basicLabel">โจมตีปกติ</small><em>J</em></button>
-      <button type="button" class="combat-command skill" data-command="skill"><span class="combat-command-icon">✨</span><strong>Skill</strong><small id="skillLabel">สกิลประจำอาชีพ</small><em>K</em></button>
-      <button type="button" class="combat-command ultimate" data-command="ultimate"><span class="combat-command-icon">🌟</span><strong>Ultimate</strong><small id="ultimateLabel">ใช้ EX 100</small><em>L</em></button>
+      <button type="button" class="combat-command basic" data-command="basic"><span class="command-seal">I</span><span class="combat-command-icon">⚔️</span><span class="command-type">STANDARD</span><strong>BASIC</strong><small id="basicLabel">โจมตีปกติ</small><em>J</em></button>
+      <button type="button" class="combat-command skill" data-command="skill"><span class="command-seal">II</span><span class="combat-command-icon">✦</span><span class="command-type">SPECIAL</span><strong>SKILL</strong><small id="skillLabel">สกิลประจำอาชีพ</small><em>K</em></button>
+      <button type="button" class="combat-command ultimate" data-command="ultimate"><span class="command-seal">III</span><span class="combat-command-icon">✶</span><span class="command-type">LIMIT BREAK</span><strong>ULTIMATE</strong><small id="ultimateLabel">ใช้ EX 100</small><em>L</em></button>
     </div>
-    <div class="element-picker">
-      <div class="element-title"><b>🎨 สีธาตุของเอฟเฟกต์</b><span class="small">เปลี่ยนเฉพาะภาพ ไม่เปลี่ยนดาเมจ</span></div>
-      <div id="elementChoices" class="element-choices" role="group" aria-label="เลือกธาตุ"></div>
-    </div>
+    <details class="element-picker" id="elementPanel"><summary>✧ ปรับธาตุของเอฟเฟกต์ <span class="small">แตะเพื่อเลือกสี</span></summary><div id="elementChoices" class="element-choices" role="group" aria-label="เลือกธาตุ"></div></details>
    </section>
   </div>
   <aside class="battle-aside">
-   <section class="panel party-console" aria-label="เลือกสมาชิกลงสนาม">
-     <div class="panel-head"><h2>🧑‍🤝‍🧑 ทีมหลัก 4 คนในสนาม</h2><span class="chip">4 SLOTS</span></div>
-     <p class="small" style="margin:0 0 10px">ตัวละครทั้ง 4 คนยืนพร้อมกัน · แตะเลือกคนที่ออกท่าโจมตี · HP ศัตรูใช้ร่วมกัน</p>
-     <div id="battleRoster" class="battle-roster"></div>
-   </section>
    <section class="panel support-console" aria-label="ใช้ผู้ช่วย">
-     <div class="panel-head"><h2>✦ ผู้ช่วย</h2><span class="chip">2 SUPPORTS</span></div>
+     <div class="panel-head"><h2>✦ SUPPORT COMMAND</h2><span class="chip">2 SUPPORTS</span></div>
      <div id="assistActions" class="support-actions"></div>
      <p class="small" style="margin:8px 0 0">แต่ละช่องใช้ได้หนึ่งครั้งต่อไฟต์ · กดเริ่มไฟต์ใหม่เพื่อเติมสิทธิ์</p>
    </section>
