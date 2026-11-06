@@ -84,12 +84,17 @@ function renderFormation(){
 }
 function renderBattle(){
  const active=state.active,u=UNIT[active],inAction=actionBusy;
+ const battlePanel=$('battle');
+ if(battlePanel)battlePanel.style.setProperty('--active-char-color',u.accent);
  const canAct=frameReady&&!inAction&&state.enemyPct>0;
  $('battleRoster').innerHTML=state.party.map((id,i)=>{
-  const u=UNIT[id],selected=active===id;
-  return '<button type="button" class="battle-member'+(selected?' active':'')+'" data-deploy="'+id+'" aria-pressed="'+selected+'" '+(inAction?'disabled':'')+'>'+
-   '<b>'+u.emoji+' '+u.name+'</b><span>MAIN 0'+(i+1)+' · EX '+Math.round(state.energy[id])+'/100</span>'+
-   '<span>'+(selected?'● กำลังลงสนาม':'แตะเพื่อสลับตัว')+'</span></button>';
+  const u=UNIT[id],c=AdvengerCharacters.get(id),selected=active===id;
+  const ex=Math.max(0,Math.min(100,Math.round(state.energy[id])));
+  return '<button type="button" class="battle-member'+(selected?' active':'')+'" data-deploy="'+id+'" aria-pressed="'+selected+'" aria-label="เลือก '+esc(u.name)+' เป็นผู้โจมตี" style="--char-color:'+u.accent+'" '+(inAction?'disabled':'')+'>'+
+   '<span class="roster-top"><img src="'+esc(c.art)+'" alt="" loading="lazy" decoding="async">'+
+   '<span class="roster-copy"><strong>'+esc(u.name)+'</strong><small>MAIN 0'+(i+1)+' · '+esc(c.role)+'</small></span></span>'+
+   '<span class="roster-ex"><span class="roster-ex-label">EX</span><span class="roster-meter"><i style="width:'+ex+'%"></i></span><small>'+ex+'%</small></span>'+
+   '<span class="roster-select">'+(selected?'✦ SELECTED':'แตะเพื่อเลือก')+'</span></button>';
  }).join('');
  $('activeName').textContent=u.emoji+' '+u.name;
  $('activeSubtitle').textContent=u.th;
