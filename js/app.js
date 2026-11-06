@@ -15,11 +15,23 @@ const SUPPORT={
  battery:{name:'Energy Charge',label:'เติมพลัง',icon:'⚡',desc:'เติม EX ให้ตัวลงสนาม 30 หน่วย'}
 };
 const UNITS=Object.keys(UNIT),SUPPORTS=Object.keys(SUPPORT);
+const MOVES={
+ saber:{basic:'Quick Slash',skill:'Elemental Triple',ultimate:'Astral Rend'},
+ mage:{basic:'Arcane Bolt',skill:'Rune Cascade',ultimate:'Astral Collapse'},
+ tank:{basic:'Shield Bash',skill:'Bulwark Reversal',ultimate:'Aegis Fall'},
+ gunner:{basic:'Precision Shot',skill:'Rapid Crossfire',ultimate:'Zero Horizon'}
+};
+const ELEMENTS={
+ saber:[['water','น้ำ','#68caff'],['fire','ไฟ','#ff9a6b'],['wind','ลม','#79e9be'],['lightning','สายฟ้า','#f9e58b'],['void','มืด','#c39bff']],
+ mage:[['arcane','เวท','#bba6ff'],['fire','ไฟ','#ff9867'],['frost','น้ำแข็ง','#90dfff'],['storm','พายุ','#f4dc85'],['nature','ธรรมชาติ','#80e3b6']],
+ tank:[['earth','ดิน','#d7b38c'],['metal','โลหะ','#c9d8f6'],['wind','ลม','#75dabf'],['lightning','สายฟ้า','#fbe78f'],['void','มืด','#bb98ff']],
+ gunner:[['kinetic','พลังงาน','#77e4ff'],['fire','ไฟ','#ff9b69'],['lightning','สายฟ้า','#ffe58a'],['ice','น้ำแข็ง','#a6eaff'],['void','มืด','#cc9aff']]
+};
 const $=id=>document.getElementById(id);
 const fresh=()=>({
  party:['saber','mage','tank','gunner'],assist:['focus','battery'],
  active:'saber',enemyPct:1,energy:{saber:100,mage:100,tank:100,gunner:100},
- used:[false,false],boost:false,logs:['AdvengerSAGA — พร้อมเริ่มทดสอบทีม 4+2'],
+ used:[false,false],boost:false,elements:{saber:'water',mage:'arcane',tank:'earth',gunner:'kinetic'},logs:['AdvengerSAGA — พร้อมเริ่มทดสอบทีม 4+2'],
  screen:'formation'
 });
 function read(){
@@ -34,6 +46,9 @@ function read(){
   for(const id of UNITS)x.energy[id]=Number.isFinite(d.energy?.[id])?Math.min(100,Math.max(0,d.energy[id])):100;
   x.used=[!!d.used?.[0],!!d.used?.[1]];
   x.boost=!!d.boost;
+  for(const id of UNITS){
+   if(ELEMENTS[id].some(([v])=>v===d.elements?.[id]))x.elements[id]=d.elements[id];
+  }
   x.logs=Array.isArray(d.logs)?d.logs.filter(x=>typeof x==='string').slice(-16):[];
   return x;
  }catch(e){return fresh()}
@@ -82,26 +97,54 @@ function renderFormation(){
  renderPicker();
 }
 function renderBattle(){
+ const active=state.active,u=UNIT[active],inAction=actionBusy;
+ const canAct=frameReady&&!inAction&&state.enemyPct>0;
  $('battleRoster').innerHTML=state.party.map((id,i)=>{
-  const u=UNIT[id];
-  return '<button class="battle-member'+(state.active===id?' active':'')+'" data-deploy="'+id+'">'+
+  const u=UNIT[id],selected=active===id;
+  return '<button type="button" class="battle-member'+(selected?' active':'')+'" data-deploy="'+id+'" aria-pressed="'+selected+'" '+(inAction?'disabled':'')+'>'+
    '<b>'+u.emoji+' '+u.name+'</b><span>MAIN 0'+(i+1)+' · EX '+Math.round(state.energy[id])+'/100</span>'+
-   '<span>'+(state.active===id?'● กำลังลงสนาม':'แตะเพื่อสลับตัว')+'</span></button>';
+   '<span>'+(selected?'● กำลังลงสนาม':'แตะเพื่อสลับตัว')+'</span></button>';
  }).join('');
- $('activeName').textContent=UNIT[state.active].name;
- $('activeEnergy').textContent=Math.round(state.energy[state.active])+'/100';
- $('enemyHealth').textContent=Math.round(state.enemyPct*100)+'%';
+ $('activeName').textContent=u.emoji+' '+u.name;
+ $('activeSubtitle').textContent=u.th;
+ $('activeEnergy').textContent=Math.round(state.energy[active])+'/100';
+ const hp=Math.round(state.enemyPct*100);
+ $('enemyHealth').textContent=hp+'%';
+ $('targetHpBar').style.width=state.enemyPct*100+'%';
+ $('targetHpTrack').setAttribute('aria-valuenow',String(hp));
  $('assistActions').innerHTML=state.assist.map((id,i)=>{
   const v=SUPPORT[id],used=state.used[i];
-  return '<button class="support-button'+(used?' used':'')+'" data-assist="'+i+'" '+(used?'disabled':'')+'>'+
-   v.icon+' '+v.name+'<small>'+(used?'ใช้แล้วในการต่อสู้ครั้งนี้':v.desc)+'</small></button>';
+  return '<button type="button" class="support-button'+(used?' used':'')+'" data-assist="'+i+'" '+(used||inAction||!frameReady||state.enemyPct<=0?'disabled':'')+'>'+
+   v.icon+' '+v.name+'<small>'+(used?'ใช้แล้วในไฟต์นี้':v.desc)+'</small></button>';
  }).join('');
- $('combatStatus').textContent=state.enemyPct<=0?'🏆 เป้าหมายหมด HP — รีเซ็ตสนามเพื่อเริ่มใหม่':(state.boost?'✨ โบนัสโจมตี +25% พร้อมใช้ในการโจมตีครั้งถัดไป':'พร้อมโจมตี · เลือกสมาชิกแล้วกดปุ่มท่าภายในสนาม');
- $('battleLog').innerHTML=state.logs.slice().reverse().map(s=>'<div class="logline">'+esc(s)+'</div>').join('');
- $('fullDemo').href='labs/'+state.active+'.html';
+ const hint=!frameReady?'⌛ กำลังโหลดสนามต่อสู้...':
+   inAction?'⚡ กำลังใช้ท่าโจมตี — รอแอนิเมชันจบ':
+   state.enemyPct<=0?'🏆 เป้าหมายถูกโค่นแล้ว! กด «เริ่มไฟต์ใหม่» เพื่อเล่นต่อ':
+   state.boost?'✦ โบนัสพลังโจมตี 25% พร้อมใช้ในท่าถัดไป':
+   'พร้อมโจมตี! เลือก Basic / Skill / Ultimate หรือเปลี่ยนตัวละครได้เลย';
+ $('combatStatus').textContent=hint;
+ const indicator=$('commandIndicator');
+ indicator.textContent=!frameReady?'LOADING':inAction?'IN ACTION':state.enemyPct<=0?'VICTORY':'READY';
+ indicator.classList.toggle('busy',!canAct);
+ for(const cmd of document.querySelectorAll('[data-command]')){
+  const kind=cmd.dataset.command;
+  cmd.disabled=!canAct||(kind==='ultimate'&&state.energy[active]<100);
+  cmd.title=kind==='ultimate'&&state.energy[active]<100?'ต้องมี EX 100 ก่อนใช้ท่าไม้ตาย':'';
+ }
+ $('basicLabel').textContent=MOVES[active].basic;
+ $('skillLabel').textContent=MOVES[active].skill;
+ $('ultimateLabel').textContent=state.energy[active]<100?'EX '+Math.round(state.energy[active])+'/100':MOVES[active].ultimate;
+ $('elementChoices').innerHTML=ELEMENTS[active].map(([key,label,color])=>{
+  const selected=state.elements[active]===key;
+  return '<button type="button" class="element-choice'+(selected?' active':'')+'" data-element-choice="'+key+'" aria-pressed="'+selected+'" style="--swatch:'+color+'" '+(inAction||!frameReady?'disabled':'')+'>'+
+   '<i aria-hidden="true"></i>'+label+'</button>';
+ }).join('');
+ $('battleLog').innerHTML=state.logs.slice().reverse().map(line=>'<div class="logline">'+esc(line)+'</div>').join('');
+ $('fullDemo').href='labs/'+active+'.html';
 }
 function render(){renderFormation();renderBattle();store()}
 function show(tab){
+ if(actionBusy&&tab!=='battle'){notice('รอให้แอนิเมชันจบก่อนออกจากสนาม');return}
  view=tab;
  document.querySelectorAll('.screen').forEach(el=>el.classList.toggle('active',el.id===tab));
  document.querySelectorAll('[data-screen]').forEach(b=>b.classList.toggle('active',b.dataset.screen===tab));
@@ -130,14 +173,31 @@ function ensureFrame(force){
  if(loadedUnit===target&&!force)return;
  actionBusy=false;
  loadedUnit=target;frameReady=false;
- frame.src='labs/'+target+'.html?v=1';
+ frame.src='labs/'+target+'.html?embed=1&v=2';
  $('fullDemo').href=frame.src;
 }
 function sendSync(){
  if(!frameReady||!frame.contentWindow)return;
  const packet={app:'AdvengerSAGA',type:'SYNC',unit:state.active,
-   enemyPercent:state.enemyPct,energy:state.energy[state.active]};
+   enemyPercent:state.enemyPct,energy:state.energy[state.active],element:state.elements[state.active]};
  frame.contentWindow.postMessage(packet,location.origin==='null'?'*':location.origin);
+}
+function sendCommand(kind){
+ if(view!=='battle'||!['basic','skill','ultimate'].includes(kind))return;
+ if(!frameReady)return notice('กำลังโหลดสนามต่อสู้');
+ if(actionBusy)return;
+ if(state.enemyPct<=0)return notice('เป้าหมายหมด HP แล้ว กดเริ่มไฟต์ใหม่');
+ if(kind==='ultimate'&&state.energy[state.active]<100)return notice('EX ไม่ถึง 100 ยังใช้อัลติเมทไม่ได้');
+ actionBusy=true;renderBattle();
+ try{frame.contentWindow.postMessage({app:'AdvengerSAGA',type:'COMMAND',unit:state.active,kind},location.origin==='null'?'*':location.origin)}
+ catch(e){actionBusy=false;renderBattle();notice('ส่งคำสั่งไปยังสนามไม่สำเร็จ')}
+}
+function setElement(element){
+ if(actionBusy||!frameReady)return;
+ if(!ELEMENTS[state.active].some(([v])=>v===element))return;
+ state.elements[state.active]=element;
+ frame.contentWindow?.postMessage({app:'AdvengerSAGA',type:'ELEMENT',unit:state.active,element},location.origin==='null'?'*':location.origin);
+ renderBattle();store();
 }
 function deploy(id){
  if(actionBusy)return notice('กรุณาให้ท่าปัจจุบันจบก่อนสลับตัว');
@@ -178,7 +238,10 @@ window.addEventListener('message',e=>{
  const d=e.data;
  if(!d||d.app!=='AdvengerSAGA'||d.unit!==state.active)return;
  if(d.type==='READY'){
-  frameReady=true;actionBusy=false;sendSync();return;
+  frameReady=true;actionBusy=false;sendSync();renderBattle();return;
+ }
+ if(d.type==='REJECT'){
+  actionBusy=false;renderBattle();notice('ยังโจมตีไม่ได้ ลองอีกครั้งหรือรีเซ็ตสนาม');return;
  }
  if(d.type==='START'){
   actionBusy=true;renderBattle();return;
@@ -205,7 +268,17 @@ document.addEventListener('click',e=>{
  if(btn.dataset.supportSlot!==undefined){picker={type:'support',index:Number(btn.dataset.supportSlot)};renderPicker();return}
  if(btn.dataset.pick&&picker){choose(picker.type,picker.index,btn.dataset.pick);return}
  if(btn.dataset.deploy){deploy(btn.dataset.deploy);return}
+ if(btn.dataset.command){sendCommand(btn.dataset.command);return}
+ if(btn.dataset.elementChoice){setElement(btn.dataset.elementChoice);return}
  if(btn.dataset.assist!==undefined){useSupport(Number(btn.dataset.assist));return}
+});
+document.addEventListener('keydown',e=>{
+ if(view!=='battle'||e.repeat||e.altKey||e.ctrlKey||e.metaKey)return;
+ if(e.target.closest('input,textarea,select,[contenteditable]'))return;
+ const key=e.key.toLowerCase();
+ if(key==='j'||key==='k'||key==='l'){
+  e.preventDefault();sendCommand({j:'basic',k:'skill',l:'ultimate'}[key]);
+ }else if(key==='r'){e.preventDefault();resetEncounter()}
 });
 $('cancelPicker').addEventListener('click',()=>{picker=null;renderPicker()});
 $('startBattle').addEventListener('click',()=>show('battle'));
