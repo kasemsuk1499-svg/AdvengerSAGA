@@ -1,0 +1,13 @@
+<svg viewBox="0 0 180 260" xmlns="http://www.w3.org/2000/svg" aria-label="หุ่นทดสอบเหล็กที่มีแกนพลังสีม่วง">
+      <defs><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8e9fb8"/><stop offset=".45" stop-color="#414f72"/><stop offset="1" stop-color="#1e2d51"/></linearGradient><radialGradient id="core"><stop stop-color="#ecedff"/><stop offset=".3" stop-color="#b9a5ff"/><stop offset="1" stop-color="#5740a9"/></radialGradient></defs>
+      <path d="M58 187L56 236L80 239L86 182 M99 183L103 239L129 237L119 187" fill="#303b58" stroke="#7990af" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M49 223L79 225L84 250L43 250Z M103 224L135 223L143 250L99 251Z" fill="url(#metal)" stroke="#a8bad1" stroke-width="3"/>
+      <path d="M48 99L18 125L22 164L45 159L64 130 M129 99L157 124L151 166L127 162L113 130" fill="none" stroke="#526586" stroke-width="23" stroke-linecap="round"/>
+      <path d="M41 94L94 77L137 99L129 187L88 207L51 184Z" fill="url(#metal)" stroke="#a2b1c2" stroke-width="5"/>
+      <path d="M72 88L113 87L134 117L117 180L89 193L64 177L49 121Z" fill="#243353" stroke="#697eaa" stroke-width="3"/>
+      <path d="M58 56L85 34L114 38L131 64L119 98L90 104L58 88Z" fill="url(#metal)" stroke="#9cb2c7" stroke-width="4"/>
+      <path d="M68 65L87 55L111 64L113 78L91 89L68 81Z" fill="#222d51"/><path d="M78 69L99 68L106 73L96 80L77 77Z" fill="#b7a2ff"/>
+      <circle cx="91" cy="137" r="38" fill="#4b498c" stroke="#a69dea" stroke-width="5"/><circle cx="91" cy="137" r="26" fill="url(#core)"/><path d="M91 118L110 137L91 155L72 137Z" fill="#e8e1ff" opacity=".6"/>
+      <path d="M61 176L89 190L118 174" fill="none" stroke="#9dc5d2" stroke-width="6"/>
+      <path d="M46 115L29 135M139 115L152 135" stroke="#c0c5d1" stroke-width="5"/>
+     </svg>
