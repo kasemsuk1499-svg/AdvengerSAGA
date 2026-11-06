@@ -20,6 +20,19 @@ The repo is plain static HTML/CSS/JavaScript. No Node/build dependencies.
 
 The core optimized Canvas effects and animation timing are retained in each standalone lab. The only new code inside the labs is a small `postMessage` bridge for sharing enemy HP percentage / EX with the party shell.
 
+## Playable battle interface (v0.2 — mobile and desktop)
+
+The **⚔️ สนามทดสอบ** screen now has an action-first layout:
+
+1. A compact battle-only arena at the top instead of embedding an entire 900px-high character lab.
+2. **Basic / Skill / Ultimate** buttons directly below the arena, with action locking and an EX requirement for Ultimate.
+3. In-page color selection for the approved element palette of the current hero.
+4. Switch among the four class cards; the target HP is shared and each hero's EX persists independently.
+5. Use two helper actions, view the combat log, and reset HP/EX/assist uses with **เริ่มไฟต์ใหม่**.
+6. Keyboard J/K/L for Basic/Skill/Ultimate and R to reset while on the battle screen.
+7. The approved optimized animations are unchanged; the four labs load in `?embed=1` mode to hide duplicate menus, and accept `COMMAND`, `ELEMENT`, and `SYNC` messages from the parent game.
+
+**Scope:** This is still one attacking hero versus a shared training dummy, with all 4 party slots selectable, not yet a 4v4 simultaneous tactical battle with enemy AI.
 ## Team management (v0.1)
 
 - Main slots: **4/4** (Saber, Mage, Tank, Gunner). Click a main slot and select another hero to swap positions without duplicate IDs.
@@ -36,17 +49,17 @@ This is a **formation / battle-preview foundation**, not yet a simultaneous four
 ### File structure
 
 ```
-index.html                Formation screen + embedded battle preview
+index.html                Formation + action-first battle interface
 js/app.js                 4+2 slots, saved state, switching, support logic
 labs/saber.html           Approved Optimized Saber
 labs/mage.html            Approved Optimized Mage
 labs/tank.html            Approved Optimized Tank
 labs/gunner.html          Approved Optimized Gunner
-.github/workflows/pages.yml  GitHub Pages static deployment
+(no workflow required)     GitHub Pages via main branch /(root)
 ```
 
 ### Integration contract
 
-Each lab sends `{app:'AdvengerSAGA',type:'READY'|'START'|'ACTION'|'RESET',unit:...}` to the same-origin shell. Shell replies with `{app:'AdvengerSAGA',type:'SYNC',unit:...,enemyPercent:0..1,energy:0..100}`.
+Each lab sends `{app:'AdvengerSAGA',type:'READY'|'START'|'ACTION'|'REJECT'|'RESET',unit:...}` to the shell. The shell sends `COMMAND` with `basic|skill|ultimate`, `ELEMENT` with a valid class color, and `SYNC` with `enemyPercent`, `energy`, and `element`. Standalone labs retain their native buttons.
 
 Future updates may add new class labs and more support definitions to the central registry without rewriting the approved animations. Maintain the existing lab implementations as immutable baselines unless the user explicitly requests edits.
