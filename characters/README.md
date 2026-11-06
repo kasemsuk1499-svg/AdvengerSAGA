@@ -1,25 +1,23 @@
-# One directory per real playable character
+# One folder per playable individual — shared class attacks, optional overrides
 
-**Classes are not characters.** `classes/catalog.js` defines reusable Saber, Mage, Tank and Gunner jobs. Any number of individual playable characters may share a job, but each keeps independent art, stats and attack logic.
-
-## Standard character package
+Characters and professions are distinct. A Saber and another Saber may look completely different and have individual skills, while reusing the **same optimized Saber attack choreography** wherever no custom override is defined.
 
 ```text
 characters/<id>/
   character.js
   skills/
-    basic.js
-    skill.js
-    ultimate.js
+    basic.js             # optional per-character override
+    skill.js             # optional per-character override
+    ultimate.js          # optional per-character override
   assets/
-    standing.svg           temporary art, included in the template
-    standing.png           optional transparent PNG to upload
-    portrait.png           optional card portrait PNG
-    cutin.png              optional Ultimate cut-in PNG
+    standing.svg         # temporary art
+    standing.png         # optional transparent PNG
+    portrait.png         # optional party status-card portrait
+    cutin.png            # optional Ultimate cut-in
 ```
 
-To add a new real character, copy `characters/_template/` to `characters/<id>/`, replace every `new-hero` identifier across the JS files, fill out the identity and profession (`classId`) in `character.js`, and replace their skill code and art as desired.
+`character.js` declares `classId`, name, stats, skill titles, palette and paths to that character's art. New character modules inherit each class move by default. To replace only one move, assign a function to `AdvengerCharacterSkills[characterId].basic`, `.skill` or `.ultimate` in the corresponding character-owned skill script. **Only the move with an override changes.** No copy/pasting of class logic is needed.
 
-Add **one manifest entry** to `characters/manifest.js` listing that folder's Basic, Skill, Ultimate and character.js in order. The loader and team selection register the unit automatically. When editing an existing character, update only its own folder and increase the manifest entry's `version`. No manual `<script>` lines in `index.html`.
+To add a character, copy `characters/_template/`, replace all `new-hero` placeholders, fill out the individual's information and PNG paths, and add the folder to `characters/manifest.js`. List any skill files before `character.js`. The manifest is the only central character list to edit; increment that entry's `version` on later updates.
 
-The current playable Saber/Mage/Tank/Gunner demo folders are temporarily retained to preserve the approved prototype animations, saved party IDs and existing battlefield. They are not new canon characters; the first real person's identity is still to be decided.
+Shared class animation files are in `classes/<classId>/animations.js` and the general attack runtime remains in `js/shared-arena.js`. The approved demo units `characters/saber/`, `mage/`, `tank/`, and `gunner/` now inherit their respective class attacks directly. They keep their original saved IDs and are not names for future real characters.
