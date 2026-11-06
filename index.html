@@ -154,12 +154,13 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 }
 
 </style>
+<link rel="stylesheet" href="css/team-arena.css">
 </head>
 <body>
 <div class="shell">
 <header>
  <div class="logo"><div class="mark">✦</div><div><div class="eyebrow">4 + 2 Party System</div><div class="brand">AdvengerSAGA</div><div class="sub">Anime Combat · Optimized Battle Labs</div></div></div>
- <span class="tag">BATTLE UI · v0.2</span>
+ <span class="tag">4 HERO ARENA · v0.3</span>
 </header>
 <nav aria-label="การนำทาง">
  <button class="nav-btn active" data-screen="formation">🧩 จัดทีม</button>
@@ -199,7 +200,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
      <div><span class="hud-tag">🎯 TRAINING SENTINEL</span><strong id="enemyHealth">100%</strong></div>
      <div class="hud-meter" role="progressbar" id="targetHpTrack" aria-label="พลังชีวิตเป้าหมาย" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="targetHpBar"></i></div>
     </div>
-    <iframe id="battleFrame" class="arena-frame" title="สนามแอนิเมชันต่อสู้ของตัวละครที่เลือก" loading="eager"></iframe>
+    <div id="teamArena" class="as-stage" aria-label="สนามต่อสู้: สมาชิกหลัก 4 คนยืนอยู่พร้อมกัน และหุ่นฝึก 1 ตัว"></div>
     <div class="arena-foot"><span><b id="activeName">Saber</b> <span id="activeSubtitle">นักดาบ</span></span><span>EX <b id="activeEnergy">100/100</b></span></div>
    </section>
    <section class="combat-console panel" aria-label="คำสั่งโจมตี">
@@ -221,8 +222,8 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
   </div>
   <aside class="battle-aside">
    <section class="panel party-console" aria-label="เลือกสมาชิกลงสนาม">
-     <div class="panel-head"><h2>🧑‍🤝‍🧑 ตัวละครหลัก</h2><span class="chip">4 SLOTS</span></div>
-     <p class="small" style="margin:0 0 10px">กดเลือกตัวละครเพื่อเปลี่ยนผู้โจมตี · เป้าหมายใช้ HP ร่วมกัน</p>
+     <div class="panel-head"><h2>🧑‍🤝‍🧑 ทีมหลัก 4 คนในสนาม</h2><span class="chip">4 SLOTS</span></div>
+     <p class="small" style="margin:0 0 10px">ตัวละครทั้ง 4 คนยืนพร้อมกัน · แตะเลือกคนที่ออกท่าโจมตี · HP ศัตรูใช้ร่วมกัน</p>
      <div id="battleRoster" class="battle-roster"></div>
    </section>
    <section class="panel support-console" aria-label="ใช้ผู้ช่วย">
@@ -234,17 +235,24 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
      <summary>📜 บันทึกการต่อสู้ <span class="small">แตะเพื่อเปิด / ปิด</span></summary>
      <div id="battleLog" class="logbox" aria-live="polite"></div>
    </details>
-   <div class="lab-fallback"><span class="small">ต้องการเปิดเฉพาะสนามต้นแบบ?</span><a id="fullDemo" href="labs/saber.html" target="_blank" rel="noopener">เปิดอาชีพนี้เต็มหน้าจอ</a></div>
+   <div class="lab-fallback"><span class="small">ดูแอนิเมชันต้นฉบับรายอาชีพ</span><a id="fullDemo" href="labs/saber.html" target="_blank" rel="noopener">เปิดอาชีพนี้เต็มหน้าจอ</a></div>
   </aside>
  </div>
 </section>
 <section id="about" class="screen">
- <div class="hero-banner"><div class="eyebrow">DEVELOPMENT ROADMAP</div><h1>AdvengerSAGA</h1><p>โครงสร้างเริ่มต้น 4 ตัวละครหลัก และ 2 ผู้ช่วย เน้นรักษาคุณภาพเอฟเฟกต์และความลื่นของต้นแบบก่อนขยายเป็นระบบต่อสู้แบบทีมเต็มรูปแบบ</p></div>
+ <div class="hero-banner"><div class="eyebrow">DEVELOPMENT ROADMAP</div><h1>AdvengerSAGA</h1><p>ระบบต่อสู้แสดงสมาชิกหลักทั้ง 4 คนในสนามเดียวกัน และผู้ช่วยอีก 2 ช่อง แยกข้อมูลและชุดท่าโจมตีเป็นโฟลเดอร์ของแต่ละตัวละคร พร้อมเปลี่ยนภาพเป็น PNG ในอนาคต</p></div>
  <div class="panel"><h2>สิ่งที่ใช้ได้ในรุ่นนี้</h2><p>จัดตำแหน่งสมาชิกหลัก 4 ช่อง สลับผู้ช่วย 2 ช่อง บันทึกทีมอัตโนมัติ สลับตัวละครที่ควบคุมในสนามทดลอง และใช้การช่วยเหลือแบบจำกัดจำนวนครั้ง พร้อมแชร์ค่า HP เป้าหมายและ EX ระหว่างหน้าต่างทดลองตัวละคร</p>
- <p class="help">รุ่นนี้เป็น <b>Team Formation + Combat Preview</b> สมาชิกทั้งสี่ยังไม่ได้ยืนสู้พร้อมกันในสนามเดียว ผู้ช่วยใช้ตัวต้นแบบระบบ (ยังไม่มีภาพและเรื่องราวประจำตัว) และยังไม่มี AI ศัตรู / ระบบแพ้ชนะ / เซิร์ฟเวอร์เซฟ</p>
+ <p class="help">รุ่นนี้เป็น <b>4-Character Training Arena</b> สมาชิกหลักทั้งสี่คนยืนในสนามพร้อมกัน แต่ผู้เล่นสั่งโจมตีทีละคน ส่วนผู้ช่วยยังเป็นตัวต้นแบบ และยังไม่มี AI ศัตรู / ระบบแพ้ชนะหลายฝ่าย / เซิร์ฟเวอร์เซฟ</p>
  <div class="chips" id="labLinks"></div></div>
 </section>
 <footer class="footer">AdvengerSAGA · Fan-made prototype · Local save (this browser) · No external dependencies</footer>
 </div>
+<script src="js/character-registry.js"></script>
+<script src="characters/saber/character.js"></script>
+<script src="characters/mage/character.js"></script>
+<script src="characters/tank/character.js"></script>
+<script src="characters/gunner/character.js"></script>
+<script src="js/team-effects.js"></script>
+<script src="js/shared-arena.js"></script>
 <script src="js/app.js"></script>
 </body></html>
