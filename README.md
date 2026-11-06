@@ -1,4 +1,4 @@
-# AdvengerSAGA — Four-Hero Battle Arena (v0.4)
+# AdvengerSAGA — Four-Hero Turn-Based Battle Arena (v0.5)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield and two support slots.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -19,6 +19,20 @@ Repository **Settings → Pages → Build and deployment → Source: Deploy from
 - Responsive CSS file: `css/fate-inspired.css`. Original character files, transparent-PNG sprite future path, shared battle engine and saves are unchanged.
 
 **Verification:** Script syntax checked; a simulated battle confirmed all four party portraits, Saber basic damage, Mage ultimate damage, character switching, element selection, reset and persistent save. The dash path was validated in both directions. Real mobile device visual/performance checks are still required.
+## v0.5 — Single-row lineup and true turn-based combat
+
+- **Formation:** all four main characters stand on the **same horizontal line** on the right side of the battlefield, facing the practice enemy on the left. The lineup is responsive on mobile; characters no longer occupy a 2×2 block.
+- **Player phase:** each surviving party member gets **one action per round** (Basic, Skill, Ultimate or Guard). Choose an unused hero via the stage or their status card; after a move, the game automatically selects the next available hero. Used heroes are marked **DONE** and cannot act again until the next round.
+- **Guard:** takes the hero's action, gains +15 EX and halves incoming damage to that character during the subsequent enemy phase. Guard expires after the enemy attacks.
+- **Enemy phase:** after all surviving heroes act, Training Sentinel attacks **one surviving hero**, with an animation, damage number and HP loss. Enemy targets rotate reproducibly each round. The system then resets each surviving hero's action and advances to the next round.
+- **HP per hero:** max HP is defined individually in each `characters/<id>/character.js` file (Saber 1000, Mage 800, Tank 1500, Gunner 900). Characters at zero HP display **KO**, remain visible, and cannot act.
+- **Win/loss:** defeat the training enemy for **VICTORY** or lose all four heroes for **DEFEAT**. The reset button starts a complete new encounter. One enemy is present in this build.
+- **HUD:** a five-token turn timeline (four allies + one enemy), round counter, hero HP/EX meters, guard command, action locking, and combat log.
+- **Save migration:** existing local saves retain team order, support choice and element colors, but start a fresh turn-based encounter on first v0.5 load. New v0.5 saves retain round, HP, EX, actions, guards and support usage. Encounter state is stored locally in the browser.
+- **Files:** `js/turn-rules.js` for deterministic turn logic; `css/turn-battle.css` for the single-row formation and status display. No character attack FX have been redesigned.
+
+**Testing:** JS syntax checks, mocked battle tests for one complete round, enemy retaliation, guard, EX, damage, victory, defeat, reset and saved state passed. The shared field remains a static GitHub Pages site. On-device visual smoothness needs checking on the user's own phone.
+
 ## What works
 
 - **Main team: four active slots**. Saber, Mage, Tank and Gunner are rendered together in the same arena. Tap a character in the field or its roster card to choose the next attacker; the other three remain visible.
@@ -41,6 +55,8 @@ js/app.js                           Team management, save, enemy HP, action sele
 js/character-registry.js            Register character modules
 js/shared-arena.js                  Shared battle field and movement primitives
 js/team-effects.js                  Optimized cached field effects (idle pause)
+js/turn-rules.js                    Turn order, HP caps, guard and enemy attack rules
+css/turn-battle.css                 One-line 4-character formation and turn HUD
 assets/training-sentinel.svg        Practice enemy artwork
 characters/
   saber/
@@ -86,4 +102,4 @@ Previous standalone optimized labs are preserved unchanged in `characters/<id>/l
 
 ## Limitations and next steps
 
-There is no enemy AI/turn initiative, party HP, inventory, progression, multiplayer or cloud save yet. The latest work specifically fixes four-character shared presentation and modular per-character updateability, so those other mechanics should be evaluated separately.
+There is now a basic deterministic single-enemy retaliation phase, per-hero HP and turn initiative. There is still no multi-enemy AI, inventory, progression, multiplayer or cloud save. The latest work specifically fixes four-character shared presentation and modular per-character updateability, so those other mechanics should be evaluated separately.
