@@ -59,6 +59,7 @@
    if(this.events.length||this.marks.length)this.request();
   }
   clear(){this.events=[];this.marks=[];if(this.frame)cancelAnimationFrame(this.frame);this.frame=0;this.drawFrame(performance.now())}
+  destroy(){this.clear();this.observer?.disconnect();if(!this.observer)removeEventListener('resize',this.resize)}
   drawFrame(now){
    if(!this.ctx)return;
    const c=this.ctx;c.clearRect(0,0,this.w,this.h);
