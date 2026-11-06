@@ -24,7 +24,9 @@
      '" data-field-unit="'+esc(id)+'" data-slot="'+i+'" aria-label="เลือก '+esc(char.name)+'" aria-pressed="'+(id===selected)+'">'+
      '<span class="as-rank">'+(i===0||i===2?'FRONT':'REAR')+'</span>'+
      '<img class="as-sprite" draggable="false" src="'+esc(char.art)+'" alt="'+esc(char.name)+'">'+
+     '<span class="as-marker" aria-hidden="true"></span>'+
      '<span class="as-name">'+char.icon+' '+esc(char.name)+'</span>'+
+     '<span class="as-hp"><i></i></span>'+
      '<span class="as-ex"><i></i></span></button>';
    }).join('');
    this.stage.innerHTML='<div class="as-backdrop" aria-hidden="true">'+
@@ -60,6 +62,44 @@
    for(const id of this.party){
     const n=this.actor(id);if(n){const bar=n.querySelector('.as-ex i');bar.style.width=Math.max(0,Math.min(100,energyValues?.[id]||0))+'%'}
    }
+  }
+  status(hp,maxHp,acted,guarded,phase,activeId){
+   for(const id of this.party){
+    const n=this.actor(id);if(!n)continue;
+    const amount=Math.max(0,hp?.[id]||0),max=Math.max(1,maxHp?.[id]||1);
+    const fallen=amount<=0,done=!!acted?.[id];
+    n.classList.toggle('fallen',fallen);
+    n.classList.toggle('acted',done&&!fallen);
+    n.classList.toggle('guarding',!!guarded?.[id]&&!fallen);
+    const bar=n.querySelector('.as-hp i');
+    if(bar)bar.style.width=Math.round(amount/max*100)+'%';
+    const token=n.querySelector('.as-marker');
+    if(token)token.textContent=fallen?'KO':phase==='enemy'?'WAIT':
+      done?'DONE':id===activeId&&phase==='player'?'NEXT':'';
+    n.disabled=fallen||done||phase!=='player';
+    n.setAttribute('aria-label',AdvengerCharacters.get(id).name+' HP '+amount+'/'+max+
+      (fallen?' ถูกน็อก':done?' ใช้เทิร์นแล้ว':' พร้อมใช้เทิร์น'));
+   }
+  }
+  async enemyAttack(id,damage,guarded=false){
+   const target=this.actor(id);
+   if(!target||!this.target)return;
+   this.announce('ENEMY TURN','Training Sentinel → '+AdvengerCharacters.get(id).name);
+   const from=this.field.point(this.target),to=this.field.point(target);
+   const color=guarded?'#7dcfff':'#ff9c97';
+   this.field.emit('projectile',from,to,color,this.reduced?130:480,{role:'bullet'});
+   await wait(this.reduced?130:480);
+   this.field.impact(this.field.point(target),color,guarded?0.7:1.25,'heavy');
+   if(!this.reduced&&target.animate){
+    target.animate([
+     {transform:'translate3d(0,0,0)',filter:'brightness(1)'},
+     {offset:.18,transform:'translate3d(13px,-5px,0) rotate(4deg)',filter:'brightness(1.5)'},
+     {offset:.65,transform:'translate3d(-5px,1px,0) rotate(-2deg)',filter:'brightness(1)'},
+     {transform:'translate3d(0,0,0)',filter:'brightness(1)'}
+    ],{duration:380,easing:'ease-out'});
+   }
+   if(damage>0)this.hitNumber(damage,color,target);
+   await wait(this.reduced?130:400);
   }
   announce(label,detail){
    const n=this.stage.querySelector('#asAction');
@@ -133,8 +173,8 @@
     {transform:'translate3d(0,0,0)',filter:'brightness(1)'}],
     {duration:340,easing:'ease-out'});
   }
-  hitNumber(n,color){
-   const tgt=this.field.point(this.target),el=document.createElement('span');
+  hitNumber(n,color,node=this.target){
+   const tgt=this.field.point(node),el=document.createElement('span');
    el.className='as-number';el.textContent='−'+n;el.style.cssText='left:'+tgt.x+'px;top:'+(tgt.y-30)+'px;color:'+color;
    this.stage.append(el);
    if(el.animate&&!this.reduced){
