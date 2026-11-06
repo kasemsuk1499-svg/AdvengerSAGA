@@ -29,7 +29,7 @@
    }).join('');
    this.stage.innerHTML='<div class="as-backdrop" aria-hidden="true">'+
     '<div class="as-moon"></div><div class="as-ruins"></div><div class="as-ground"></div></div>'+
-    '<div class="as-stage-note">4-PERSON PARTY · TRAINING FIELD</div>'+
+    '<div class="as-stage-note">BATTLE 01 / 01 · FIELD 01</div>'+
     '<div class="as-party-ground" aria-hidden="true"></div>'+actors+
     '<div class="as-target" id="asTarget" aria-label="หุ่นฝึกเซนทิเนล">'+
     '<span class="as-lock" aria-hidden="true">TARGET</span>'+
@@ -84,12 +84,19 @@
    const el=this.actor(this.active),enemy=this.target;
    if(!el||!enemy)return wait(duration);
    const a=el.getBoundingClientRect(),b=enemy.getBoundingClientRect();
-   const deltaX=Math.max(18,b.left-(a.left+a.width)+a.width*.22);
+   // Direction-aware rush: attacker now starts on the RIGHT and strikes the
+   // LEFT-side target. Supports either side if the formation changes later.
+   const actorX=a.left+a.width*.5,enemyX=b.left+b.width*.5;
+   const direction=Math.sign(enemyX-actorX)||-1;
+   const standOff=Math.max(20,(a.width+b.width)*.38);
+   const travel=Math.max(0,Math.abs(enemyX-actorX)-standOff);
+   const deltaX=direction*Math.min(travel,this.stage.getBoundingClientRect().width*.81);
    const deltaY=(b.top+b.height*.52)-(a.top+a.height*.52);
-   const tilt=type==='heavy'?-3:-8;
-   const f=(offset,x,y,s,rot)=>({offset,transform:'translate3d('+x+'px,'+y+'px,0) scale('+s+') rotate('+rot+'deg)'});
+   const tilt=(type==='heavy'?3:8)*direction;
+   const f=(offset,x,y,scale,rot)=>({offset,
+    transform:'translate3d('+x.toFixed(1)+'px,'+y.toFixed(1)+'px,0) scale('+scale+') rotate('+rot+'deg)'});
    el.classList.add('performing');
-   const frames=[f(0,0,0,1,0),f(.13,-12,4,.96,-tilt*.5),
+   const frames=[f(0,0,0,1,0),f(.13,-direction*12,4,.96,-tilt*.5),
     f(.31,deltaX*.29,deltaY*.25,1.04,tilt*.2),
     f(.55,deltaX,deltaY,1.14,tilt),
     f(.69,deltaX,deltaY,1.08,tilt*.65),
