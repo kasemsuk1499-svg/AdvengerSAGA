@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090b1c">
+<title>AdvengerSAGA | GUNNER Battle</title>
+<style>
+:root{color-scheme:dark;--bg:#090b1c;--panel:#141b36;--text:#f4f6ff;--muted:#9daecc;--line:#33436d;--accent:#6ed7ff;--element:#6bc6ff}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;min-height:100vh;color:var(--text);font-family:system-ui,"Noto Sans Thai","Tahoma",sans-serif;background:radial-gradient(ellipse 75% 45% at 18% -8%,#253f74 0,transparent 75%),radial-gradient(ellipse 80% 55% at 100% 120%,#172448 0,transparent 70%),#090b1c}
+button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #b4eaff;outline-offset:4px}button:disabled{opacity:.45;cursor:not-allowed}
+.shell{max-width:1090px;padding:21px 20px 44px;margin:auto}.topline{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px}.eyebrow{font-size:10px;font-weight:800;color:#7ca9e7;letter-spacing:.23em}.heading{font-size:clamp(23px,3vw,35px);font-weight:900;letter-spacing:.035em;line-height:1.24;margin:4px 0}.subline{font-size:12px;color:var(--muted)}.chip{font-size:11px;font-weight:800;letter-spacing:.09em;white-space:nowrap;color:#a3ffc7;border:1px solid #448d7699;background:#183a3d70;padding:9px 13px;border-radius:100px}
+.stage-wrapper{position:relative;overflow:hidden;border:1px solid #5a729b;border-radius:21px;background:#0d1b3c;box-shadow:0 21px 55px #0008, inset 0 0 34px #90b2ff0b}
+.arena{position:relative;height:clamp(335px,46vw,475px);min-height:335px;isolation:isolate;overflow:hidden;--ground:76%}
+.arena:before{content:'';position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 72% 53% at 56% 30%,#4864a975,transparent 80%),linear-gradient(180deg,#0e1835 0%,#1e3058 50%,#172342 70%,#0b132a 100%)}
+.backdrop{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.9;pointer-events:none}
+.haze{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#06132b30,transparent 35% 70%,#07122566),radial-gradient(ellipse at 51% 84%,#8ac6f026,transparent 57%)}
+.ground-glow{position:absolute;z-index:1;left:1%;right:1%;bottom:4%;height:35%;pointer-events:none;background:radial-gradient(ellipse at center,#5098cb25,transparent 65%)}
+.stagehead{position:absolute;z-index:15;top:16px;left:17px;right:17px;display:flex;justify-content:space-between;align-items:start;gap:12px;pointer-events:none}.stage-label{display:inline-flex;gap:7px;align-items:center;padding:7px 10px;border:1px solid #9ab4ee4f;background:#08142bab;border-radius:8px;font-size:10px;font-weight:850;letter-spacing:.13em;color:#e1edff;backdrop-filter:blur(7px)}.stage-pill{padding:7px 11px;border:1px solid #9ab4ee4f;background:#08142bab;border-radius:8px;font-size:10px;font-weight:700;color:#a8c9e7;white-space:nowrap}
+.unit{position:absolute;z-index:5;bottom:14.5%;width:clamp(90px,16.3%,166px);height:clamp(155px,32vw,260px);will-change:transform;transform-origin:50% 84%;pointer-events:none}
+#hero{left:16.8%;z-index:8}#target{left:72.5%;z-index:6;width:clamp(90px,15.5%,151px)}.unit .body-art{width:100%;height:100%;display:block;transform-origin:50% 85%;animation:breath 3.1s ease-in-out infinite;filter:drop-shadow(0 12px 6px #03091dc0)}#target .body-art{animation-duration:3.85s}.unit .character-shadow{position:absolute;bottom:-3%;left:8%;width:85%;height:10px;border-radius:50%;background:#01081fd0;filter:blur(6px)}.unit-label{position:absolute;bottom:-19%;width:145%;left:-22.5%;text-align:center;color:#e0e7fa;font-size:11px;text-shadow:0 2px 7px black;font-weight:800}.unit-label small{display:block;color:#91b9d4;font-size:9px;font-weight:600;margin-top:1px}
+#target.hit .body-art{filter:drop-shadow(0 0 16px #ffffff8c)}.reticle{position:absolute;top:38%;left:50%;width:85px;height:85px;border:1px solid #76d2f766;border-radius:50%;transform:translate(-50%,-50%);opacity:.55;pointer-events:none;z-index:-1}.reticle:before,.reticle:after{content:'';position:absolute;inset:14px;border:1px dashed #92d9f766;border-radius:50%}.reticle:after{inset:-18px;border-style:solid;border-color:#8ae0ff30}
+#fx{position:absolute;inset:0;z-index:12;width:100%;height:100%;pointer-events:none}
+#status-bubble{position:absolute;z-index:20;top:56px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;letter-spacing:.1em;white-space:nowrap;color:#cde8ff;border:1px solid #597ca76b;border-radius:30px;background:#0b193bbf;padding:7px 13px;transition:color .2s,box-shadow .2s;pointer-events:none}#status-bubble.active{color:#fff;box-shadow:0 0 20px var(--element)}
+.arena-bottom{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;gap:13px;background:#0c1730e3;border-top:1px solid #627da751}.arena-bottom .legend{font-size:11px;color:#a7bbd8;white-space:nowrap}.arena-bottom .meter{height:7px;width:min(46vw,270px);background:#26334d;border-radius:50px;overflow:hidden;flex:1}.arena-bottom .meter i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#e68784,#f6d69b);transition:width .32s}.arena-bottom b{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dashboard{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:15px;margin-top:15px}.panel{border:1px solid #384d77;background:linear-gradient(155deg,#172341e9,#0f1732);border-radius:17px;padding:18px 19px 19px;box-shadow:0 12px 25px #0003}.panel h2{font-size:16px;margin:0 0 12px}.minor{font-size:11px;letter-spacing:.12em;color:#a7bfdc;font-weight:800}.name{display:flex;gap:10px;align-items:center;font-size:19px;font-weight:900}.name .diamond{display:grid;place-items:center;color:#89d4ff;background:#174665;border:1px solid #4995ce8c;border-radius:11px;width:43px;height:43px;font-size:21px}.small{font-size:11px;color:var(--muted)}.char-detail{display:flex;justify-content:space-between;align-items:center;gap:10px}.stat{margin-top:14px}.stat-head{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#adbdd7;font-size:11px;font-weight:700}.stat-head b{color:#e9efff;font-size:12px;font-variant-numeric:tabular-nums}.track{height:8px;border-radius:50px;background:#071127;margin-top:6px;overflow:hidden}.track i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#377cbc,#77d8ff);border-radius:50px;transition:width .35s}.track.energy i{background:linear-gradient(90deg,#b57be2,#f7c17d)}.element-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}.color-dot{width:10px;height:10px;border-radius:50%;background:var(--element);box-shadow:0 0 12px var(--element)}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.move{position:relative;min-height:96px;border:1px solid #5875a6;border-radius:12px;text-align:left;padding:13px 11px 10px;color:#f3f7ff;background:linear-gradient(160deg,#233c67,#192846);transition:transform .15s,filter .15s;overflow:hidden}.move:hover:not(:disabled){filter:brightness(1.15)}.move:active:not(:disabled){transform:scale(.97)}.move:before{content:'';position:absolute;width:90px;height:90px;right:-45px;top:-28px;border:1px solid #abd9ff33;transform:rotate(42deg);border-radius:14px}.move.skill{background:linear-gradient(160deg,#284b6c,#1d334e);border-color:#4c9bb7}.move.ultimate{background:linear-gradient(160deg,#65446c,#352855);border-color:#b88bd3}.move .move-icon{display:block;font-size:23px;margin-bottom:5px}.move strong{font-size:12px;display:block}.move small{display:block;color:#b4c8e2;font-size:10px;margin-top:2px}.move .key{position:absolute;right:9px;bottom:8px;color:#a9c5e5;font-size:10px;border:1px solid #6e8bad69;padding:2px 6px;border-radius:5px}
+.elements{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.element-button{display:inline-flex;align-items:center;gap:6px;flex:1 1 64px;justify-content:center;color:#bccce7;background:#101b37;border:1px solid #384a72;border-radius:10px;padding:8px 10px;font-size:11px;font-weight:750}.element-button i{display:block;width:10px;height:10px;border-radius:50%;background:var(--swatch);box-shadow:0 0 12px var(--swatch)}.element-button.selected{background:#1d3454;color:#fff;border-color:var(--swatch);box-shadow:inset 0 0 0 1px #ffffff0c,0 0 15px #0004}.bottom-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:13px}.reset{border:1px solid #526a99;background:#152342;color:#e0eaff;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:750}.hint{color:#aabdda;font-size:10px;line-height:1.6}.footnote{margin:18px 5px 0;color:#738bad;font-size:11px;line-height:1.8;text-align:center}
+@keyframes breath{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-5px) rotate(.5deg)}}
+@media(max-width:720px){.shell{padding:13px 10px 30px}.topline{margin-bottom:12px}.chip{font-size:9px;padding:7px 10px}.stage-wrapper{border-radius:14px}.dashboard{grid-template-columns:1fr;gap:10px;margin-top:10px}.panel{padding:15px}.unit{bottom:19%;height:clamp(147px,29vw,210px);width:clamp(88px,18%,130px)}#hero{left:12%}#target{left:72%;width:clamp(85px,17%,135px)}.unit-label{font-size:10px}.arena{height:390px}.stagehead{top:11px;left:11px;right:11px}.stage-pill{font-size:9px}.stage-label{font-size:9px}.arena-bottom{padding:10px 12px}.arena-bottom .legend{font-size:10px}}
+@media(max-width:720px){
+ .dashboard{display:flex;flex-direction:column}
+ .dashboard .panel:nth-child(2){order:-1}
+ .topline{align-items:flex-start}
+ .heading{font-size:clamp(20px,6vw,27px);letter-spacing:0}
+ .arena{height:325px;min-height:325px}
+ .unit{bottom:19%;height:clamp(143px,31vw,193px)}
+ .panel h2{margin-bottom:7px}
+ .controls{margin-top:7px}
+ .move{min-height:84px;padding:8px 10px 8px}
+ .move .move-icon{font-size:19px;margin-bottom:2px}
+ .elements{margin-top:7px}
+ .element-button{padding:7px 8px}
+ .bottom-actions{margin-top:9px}
+}
+@media(max-width:390px){.arena{height:310px;min-height:310px}.controls .move{padding:9px 8px;min-height:88px}.move strong{font-size:11px}.move .key{display:none}.stage-pill{max-width:150px;overflow:hidden;text-overflow:ellipsis}#status-bubble{top:55px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){.body-art{animation:none!important}*{scroll-behavior:auto!important}}
+/* v0.2 — three distinct action signatures */
+.arena.in-action .unit-label{opacity:0!important;transition:opacity .12s}
+.arena.cutin-active #status-bubble{opacity:0}
+.arena.in-action .stagehead{opacity:.6;transition:opacity .12s}
+
+.move.basic{border-color:#70bbf4;background:linear-gradient(145deg,#244877,#162a4d)}
+.move.skill{border-color:#62d8c8;background:linear-gradient(145deg,#215863,#153644)}
+.move.ultimate{border-color:#e5b57a;background:linear-gradient(145deg,#764d5e,#34234e);box-shadow:inset 0 0 17px #e2ac6a0e}
+.move .move-icon{font-size:25px}
+.move.basic:after,.move.skill:after,.move.ultimate:after{content:'BASIC';position:absolute;right:8px;top:8px;color:#a5d8ff;font-size:8px;font-weight:900;letter-spacing:.12em}
+.move.skill:after{content:'3 HIT';color:#8af6dc}
+.move.ultimate:after{content:'FINISHER';color:#ffe19f}
+.arena.skill-active:before{filter:saturate(1.14);transition:filter .25s}
+.arena.ultimate-active:before{filter:saturate(1.35) brightness(.8);transition:filter .3s}
+#hero.charging .body-art{animation:chargePose .33s ease-in-out infinite alternate;filter:drop-shadow(0 0 17px var(--element))}
+@keyframes chargePose{from{transform:translateY(4px) scale(.96) rotate(-3deg)}to{transform:translateY(-5px) scale(1.04) rotate(1deg)}}
+.attack-tag{position:absolute;left:15px;bottom:17px;z-index:18;max-width:60%;min-width:150px;padding:9px 13px;border-radius:10px;border:1px solid #b2e1ff72;background:linear-gradient(100deg,#06182bf0,#1c3158dd);box-shadow:0 7px 20px #0108178a;pointer-events:none;opacity:0;transform:translateY(18px);transition:opacity .15s,transform .18s}
+.attack-tag.show{opacity:1;transform:translateY(0)}
+.attack-tag span{font-size:9px;font-weight:900;color:#81c9ff;letter-spacing:.18em;display:block}
+.attack-tag strong{display:block;font-size:clamp(16px,2.4vw,23px);line-height:1.2;margin-top:2px;letter-spacing:.055em}
+.attack-tag small{font-size:10px;color:#c4d8ef;display:block;margin-top:3px}
+.attack-tag.skill{border-color:#6bf0d08a;background:linear-gradient(100deg,#082c34ef,#16425be0)}
+.attack-tag.skill span{color:#95f9d7}
+.attack-tag.ultimate{border-color:#ffc87fba;background:linear-gradient(100deg,#39233de9,#382444dc)}
+.attack-tag.ultimate span{color:#ffe2a4}
+.cinema{position:absolute;inset:0;z-index:17;overflow:hidden;pointer-events:none;visibility:hidden;opacity:0;transition:opacity .17s}
+.cinema.show{visibility:visible;opacity:1}
+.cinema-shade{position:absolute;inset:0;background:linear-gradient(100deg,#070b1ee8 10%,#0b1336e8 65%,#070c25e0 100%);border-top:17px solid #020616;border-bottom:17px solid #020616}
+.cinema-panel{position:absolute;left:-4%;top:0;width:60%;height:100%;clip-path:polygon(0 0,92% 0,70% 100%,0 100%);border-right:3px solid #ffe4aa;background:radial-gradient(ellipse at 47% 42%,#607ca785,transparent 70%),linear-gradient(115deg,#1d375e,#0d1227);transform:translateX(-120%)}
+.cinema.show .cinema-panel{animation:cutinEnter .64s cubic-bezier(.13,.72,.25,1) forwards}
+.cutin-portrait{position:absolute;left:6%;bottom:-27%;width:89%;height:115%;display:flex;align-items:center;justify-content:center;transform:scale(1.5) rotate(-7deg);filter:drop-shadow(0 0 18px var(--element))}
+.cutin-portrait svg{height:100%;width:100%}
+.cinema-copy{position:absolute;right:6%;top:28%;width:42%;display:flex;flex-direction:column;align-items:flex-start;text-shadow:0 3px 12px #000;transform:translateX(65px);opacity:0}
+.cinema.show .cinema-copy{animation:cutinText .62s .12s cubic-bezier(.13,.72,.25,1) both}
+.cinema-copy small{font-size:clamp(9px,1.8vw,13px);font-weight:900;color:#ffe4ad;letter-spacing:.12em}
+.cinema-copy strong{font-size:clamp(32px,8vw,76px);font-weight:1000;color:#fff;line-height:.94;letter-spacing:-.04em;margin:12px 0;text-transform:uppercase}
+.cinema-copy span{font-size:clamp(9px,2vw,14px);color:#c1dfff;letter-spacing:.12em;font-weight:800}
+.cinema-beam{position:absolute;top:72%;left:-5%;height:2px;width:110%;background:linear-gradient(90deg,transparent,var(--element),#fff,var(--element),transparent);transform:rotate(-11deg);box-shadow:0 0 16px var(--element);opacity:0}
+.cinema.show .cinema-beam{animation:cutinBeam .7s .1s ease-out both}
+@keyframes cutinEnter{from{transform:translateX(-120%)}to{transform:translateX(0)}}
+@keyframes cutinText{from{transform:translateX(65px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes cutinBeam{0%{opacity:0;transform:rotate(-11deg) scaleX(.2)}35%{opacity:1}100%{opacity:.28;transform:rotate(-11deg) scaleX(1)}}
+@media(max-width:720px){.attack-tag{left:9px;bottom:12px;max-width:58%;padding:7px 10px;min-width:135px}.attack-tag strong{font-size:14px}.attack-tag small{font-size:9px}.cinema-shade{border-top-width:13px;border-bottom-width:13px}.cinema-copy strong{font-size:clamp(28px,8vw,50px)}.cinema-copy small,.cinema-copy span{font-size:9px}}
+@media(prefers-reduced-motion:reduce){#hero.charging .body-art{animation:none}.cinema.show .cinema-panel,.cinema.show .cinema-copy,.cinema.show .cinema-beam{animation:none;transform:none;opacity:1}}
+
+/* GUNNER signature — precision cyan, orange charge muzzle, deep navy */
+:root{--bg:#070d1c;--panel:#102440;--accent:#7de8ff;--element:#7de8ff}
+body{background:radial-gradient(ellipse 80% 62% at 4% -5%,#123d59 0,transparent 75%),radial-gradient(ellipse 80% 50% at 95% 120%,#423023 0,transparent 75%),#080e1d}
+.stage-wrapper{border-color:#5686a4;box-shadow:0 20px 55px #0009,0 0 24px #49dfff12}
+.arena:before{background:radial-gradient(ellipse 68% 44% at 49% 32%,#326e9c85,transparent 80%),linear-gradient(180deg,#0c1934,#163650 54%,#132843 76%,#091526)}
+.eyebrow{color:#83e4ff}.chip{color:#a6f8ff;border-color:#3dbdd993;background:#163b4c80}
+.name .diamond{color:#9ff4ff;background:#153e54;border-color:#49c4d8}
+.stage-label,.stage-pill{border-color:#55b7e175;color:#d0f4ff}
+#hero{left:11.8%;width:clamp(105px,19%,185px)}#target{left:73.3%}
+#hero .body-art{filter:drop-shadow(0 12px 7px #010c20) drop-shadow(0 0 8px #7fe8ff27)}
+#hero.aiming .body-art{animation:aimBreath .22s ease-in-out infinite alternate!important}
+#hero.charging .body-art{animation:chargePose .34s ease-in-out infinite alternate!important;filter:drop-shadow(0 0 18px var(--element))}
+@keyframes aimBreath{from{transform:translateY(1px) rotate(-1deg)}to{transform:translateY(-1px) rotate(.5deg)}}
+.move.basic{border-color:#60aede;background:linear-gradient(145deg,#174f77,#112f51)}
+.move.skill{border-color:#63ddce;background:linear-gradient(145deg,#17565b,#133646)}
+.move.ultimate{border-color:#f6b66d;background:linear-gradient(145deg,#835239,#342846)}
+.move.basic:after{content:'SINGLE';color:#9be9ff}
+.move.skill:after{content:'6 SHOTS';color:#a7ffe7}
+.move.ultimate:after{content:'BARRAGE';color:#ffe9a0}
+.cinema-panel{background:radial-gradient(ellipse at 47% 35%,#3c9cbea0,transparent 69%),linear-gradient(115deg,#194967,#0b1f37)}
+.cinema-shade{background:linear-gradient(100deg,#050d21ed,#0a2949e9 65%,#171021e9)}
+.cinema-copy strong{color:#e6fbff}.cinema-copy small{color:#9cecff}
+.attack-tag.skill{background:linear-gradient(100deg,#07333ee9,#104e57eb)}
+.attack-tag.ultimate{background:linear-gradient(100deg,#533523e9,#29364fe8)}
+#target .reticle{border-color:#6be4ff88;transition:transform .15s,opacity .15s}
+.arena.lock-active #target .reticle{opacity:1;transform:translate(-50%,-50%) scale(1.12);animation:targetLock .52s linear infinite}
+.arena.lock-active #target .reticle:after{border-color:#ffe49d88}
+@keyframes targetLock{50%{box-shadow:0 0 22px #82dfff8c;transform:translate(-50%,-50%) scale(.94)}}
+.arena.cutin-active #target .reticle{opacity:0}
+.ballistic-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:13}
+.bullet-projectile{position:absolute;width:13px;height:5px;border-radius:5px;background:#f6ffff;
+  border:1px solid var(--shot);box-shadow:0 0 7px var(--shot),0 0 15px var(--shot);
+  transform-origin:center;will-change:transform,opacity}
+.bullet-projectile:after{content:'';position:absolute;right:9px;top:1px;width:55px;height:2px;
+ background:linear-gradient(90deg,var(--shot),transparent);box-shadow:0 0 7px var(--shot);opacity:.8}
+.shot-track{position:absolute;height:2px;transform-origin:left center;opacity:0;
+ background:linear-gradient(90deg,transparent,var(--shot) 53%,#faffff 84%,transparent);
+ box-shadow:0 0 9px var(--shot);pointer-events:none;will-change:opacity}
+.muzzle-flash{position:absolute;width:38px;height:38px;transform:translate(-50%,-50%);
+ border-radius:50%;background:radial-gradient(circle,#fff 0 9%,var(--shot) 17%,transparent 60%);
+ filter:drop-shadow(0 0 5px var(--shot));pointer-events:none;animation:muzzlePulse .18s ease-out forwards}
+.muzzle-flash:after{content:'';position:absolute;top:46%;left:4px;width:42px;height:4px;
+ background:linear-gradient(90deg,#fff,var(--shot),transparent);transform:rotate(-5deg)}
+@keyframes muzzlePulse{0%{opacity:0;scale:.35}18%{opacity:1;scale:1.2}100%{opacity:0;scale:1.65}}
+.rail-beam{position:absolute;z-index:14;pointer-events:none;left:0;top:0;height:18px;width:0;
+ transform-origin:left center;border-radius:99px;
+ background:linear-gradient(180deg,transparent 0,var(--shot) 25%,#fff 46%,#fff 56%,var(--shot) 78%,transparent 100%);
+ box-shadow:0 0 12px var(--shot),0 0 35px var(--shot),0 0 65px var(--shot);
+ animation:railStrike .65s cubic-bezier(.11,.74,.26,1) forwards}
+.rail-beam:before{content:'';position:absolute;inset:-9px -4px;border:1px solid var(--shot);
+ border-radius:99px;opacity:.6}
+@keyframes railStrike{0%{opacity:0;scale:.12 1}20%,62%{opacity:1;scale:1 1}100%{opacity:0;scale:1.1 .35}}
+.damage-number{position:absolute;z-index:19;pointer-events:none;font:900 clamp(20px,3vw,35px) Kanit,system-ui;
+ color:#f8fdff;text-shadow:0 2px 2px #021628,0 0 12px var(--shot);white-space:nowrap;
+ animation:damageFly .88s cubic-bezier(.14,.77,.23,1) forwards}
+.damage-number.critical{font-size:clamp(25px,4.5vw,46px);color:#ffed9b}
+@keyframes damageFly{0%{opacity:0;transform:translate(-50%,-20%) scale(.45)}18%{opacity:1;transform:translate(-50%,-65%) scale(1.17)}65%{opacity:1}100%{opacity:0;transform:translate(-50%,-185%)}}
+#hero .gun-front{filter:drop-shadow(0 0 4px #8fdfff22)}
+@media(max-width:720px){#hero{left:7%;width:clamp(99px,23%,146px)}#target{left:73.5%}}
+@media(max-width:390px){#hero{left:5%;width:clamp(95px,24%,137px)}#target{left:73%}}
+@media(prefers-reduced-motion:reduce){.muzzle-flash,.rail-beam,.damage-number,.bullet-projectile,.shot-track{animation:none!important}}
+
+/* AdvengerSAGA shell mode. The approved effect and character animations are untouched. */
+body.embedded{overflow:hidden!important;min-height:0!important;background:transparent!important}
+body.embedded .shell{padding:0!important;margin:0!important;max-width:none!important;width:100%!important}
+body.embedded .topline,body.embedded .dashboard,body.embedded .footnote{display:none!important}
+body.embedded .stage-wrapper{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;background:transparent!important}
+body.embedded .arena{height:420px!important;min-height:0!important;border:0!important;border-radius:0!important}
+body.embedded .arena-bottom{height:45px;min-height:45px;margin:0;padding:8px 13px}
+body.embedded .stagehead{top:12px}
+body.embedded #status-bubble{top:54px}
+@media(max-width:580px){
+ body.embedded .arena{height:300px!important;min-height:0!important}
+ body.embedded .stagehead{top:9px;left:9px;right:9px}
+ body.embedded .stage-label,body.embedded .stage-pill{font-size:8px!important;padding:5px 6px!important}
+ body.embedded .arena-bottom{padding:7px 10px}
+ body.embedded .unit-label{font-size:9px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+ <header class="topline">
+  <div><div class="eyebrow">CHRONICLE · COMBAT PROTOTYPE</div><h1 class="heading">ONE GUNNER <span style="color:#83e4ff">BATTLE LAB</span></h1><div class="subline">ต้นแบบระบบต่อสู้ · 1 ตัวละคร · 1 หุ่นฝึก · ไม่มีระบบอื่น</div></div>
+  <span class="chip">● GUNNER 0.1 · OPTIMIZED</span>
+ </header>
+ <main>
+  <section class="stage-wrapper" aria-label="สนามทดสอบต่อสู้">
+   <div id="arena" class="arena">
+    <svg class="backdrop" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+     <defs><linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#35537d"/><stop offset="1" stop-color="#0c1731"/></linearGradient><linearGradient id="spire" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#111f3e"/><stop offset=".7" stop-color="#243c65"/><stop offset="1" stop-color="#111b38"/></linearGradient></defs>
+     <circle cx="690" cy="84" r="61" fill="#c1deff" opacity=".15"/><circle cx="690" cy="84" r="78" fill="none" stroke="#84b9f6" opacity=".12"/>
+     <path d="M0 325 L80 240 L125 286 L207 181 L265 310 L355 226 L440 315 L500 237 L604 307 L710 207 L785 311 L897 221 L1000 304 L1000 500 L0 500Z" fill="#111e3c" opacity=".77"/>
+     <path d="M0 356 L100 320 L230 357 L320 286 L420 340 L530 294 L640 362 L745 299 L900 346 L1000 310 L1000 500 L0 500Z" fill="#1c3053" opacity=".7"/>
+     <g opacity=".7" fill="url(#spire)"><path d="M60 92h29l10 240H45z"/><path d="M83 56h30l7 290H72z"/><path d="M146 139h33l9 229h-55z"/><path d="M869 119h30l9 245h-53z"/><path d="M927 71h28l13 266h-50z"/><path d="M813 177h20l9 210h-39z"/></g>
+     <path d="M0 372 Q210 345 500 365 T1000 372L1000 500H0Z" fill="url(#ground)"/>
+     <g fill="none" stroke="#7caad2" stroke-opacity=".17" stroke-width="2"><path d="M0 396H1000M0 426H1000M0 467H1000"/><path d="M50 375L-70 500M205 367L150 500M354 365L340 500M500 366L500 500M670 369L695 500M834 371L940 500M945 368L1050 475"/></g>
+     <g fill="#d3e8ff" opacity=".28"><circle cx="167" cy="126" r="1.7"/><circle cx="375" cy="76" r="1.4"/><circle cx="822" cy="151" r="1.7"/><circle cx="507" cy="138" r="1.4"/><circle cx="940" cy="50" r="2"/><circle cx="231" cy="231" r="1.1"/></g>
+    </svg>
+    <div class="haze"></div><div class="ground-glow"></div>
+    <div class="stagehead"><span class="stage-label">✦ TRAINING FIELD · STAGE 001</span><span class="stage-pill">TARGET: TRAINING SENTINEL</span></div>
+    <div id="status-bubble">READY TO ENGAGE</div>
+    <div id="attack-tag" class="attack-tag" aria-live="polite"><span id="attack-type"></span><strong id="attack-title"></strong><small id="attack-detail"></small></div>
+    <div id="cinema" class="cinema" aria-hidden="true"><div class="cinema-shade"></div><div class="cinema-panel"><div id="cutin-portrait" class="cutin-portrait"></div></div><div class="cinema-copy"><small>BALLISTIC OVERDRIVE · ULTIMATE</small><strong>ZERO<br>HORIZON</strong><span>TOTAL TARGET ELIMINATION</span></div><i class="cinema-beam"></i></div>
+    <div class="unit" id="hero">
+     <div class="character-shadow"></div>
+     <svg class="body-art" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="มือปืนหญิงอนิเมะ ผมสีเงินฟ้า สวมเสื้อคลุมยุทธวิธีและถือปืนพลังงานสองกระบอก">
+      <defs>
+       <linearGradient id="guncoat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5b9bb2"/><stop offset=".37" stop-color="#244965"/><stop offset="1" stop-color="#101d39"/></linearGradient>
+       <linearGradient id="gunhair" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ecffff"/><stop offset=".4" stop-color="#a4eaff"/><stop offset="1" stop-color="#4a8da8"/></linearGradient>
+       <linearGradient id="gunmetal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e3f7ff"/><stop offset=".4" stop-color="#789aaf"/><stop offset="1" stop-color="#182943"/></linearGradient>
+       <radialGradient id="gunem"><stop stop-color="#ffffff"/><stop offset=".33" stop-color="#95efff"/><stop offset="1" stop-color="#23619a"/></radialGradient>
+      </defs>
+      <!-- scarf and split tactical coat silhouette -->
+      <path d="M64 104 Q33 121 22 197 L41 244 L77 204 L88 131 Z" fill="#152d47" stroke="#68b6c7" stroke-width="3"/>
+      <path d="M94 126 Q112 130 123 177 L118 234 L141 213 L138 124Z" fill="#14324f" stroke="#4ea5b5" stroke-width="3"/>
+      <!-- legs, holster straps, boots -->
+      <path d="M64 164L56 233L79 243L93 176 M103 174L112 237L139 234L130 170" fill="#263b57" stroke="#8bc0d6" stroke-width="3"/>
+      <path d="M65 179L84 182M113 190L135 188" stroke="#e8b26a" stroke-width="6"/>
+      <path d="M52 229L83 232L84 252L47 255Z M111 232L139 229L150 251L107 255Z" fill="#172941" stroke="#b0deec" stroke-width="4"/>
+      <path d="M57 243L84 246M115 243L145 242" stroke="#f3c77b" stroke-width="3"/>
+      <!-- body and futuristic jacket -->
+      <path d="M65 111L88 103L118 113L138 150L123 191L70 187L49 144Z" fill="url(#guncoat)" stroke="#8ac8d4" stroke-width="4"/>
+      <path d="M72 122L94 113L120 128L115 172L77 176Z" fill="#183552" stroke="#d0dce7" stroke-width="3"/>
+      <path d="M88 121L103 121L112 141L98 160L85 140Z" fill="#224e61" stroke="#64e8f0" stroke-width="3"/>
+      <path d="M77 119L91 124L97 143M116 126L102 133" stroke="#f8c47e" stroke-width="3"/>
+      <circle cx="100" cy="146" r="7" fill="url(#gunem)" stroke="#b5fdff" stroke-width="2"/>
+      <!-- hair backing, anime head -->
+      <path d="M70 65Q65 30 93 23Q124 22 133 61L132 114L117 110L111 99L75 107L60 121L62 78Z" fill="url(#gunhair)" stroke="#34677e" stroke-width="3"/>
+      <path d="M80 85L82 108L105 117L118 94" fill="#e9b99f" stroke="#856b6e" stroke-width="2"/>
+      <path d="M74 55Q84 40 108 48L123 65L118 97L100 112L81 104L70 86Z" fill="#f6c9ae" stroke="#aa7d79" stroke-width="2.7"/>
+      <path d="M96 76Q108 71 117 75" stroke="#1a526e" stroke-width="3.4" stroke-linecap="round"/>
+      <path d="M108 78L111 84" stroke="#23b5de" stroke-width="3"/>
+      <path d="M112 96L104 97" stroke="#a7636a" stroke-width="2"/>
+      <path d="M67 55Q78 28 101 33L123 49L118 64L101 57L88 72L73 71L66 88Z" fill="url(#gunhair)" stroke="#4a7892" stroke-width="3"/>
+      <path d="M80 43Q90 14 117 29L138 51L130 71L122 58L105 49Z" fill="#d5f8ff" stroke="#9cddea" stroke-width="2"/>
+      <path d="M74 71L57 99L70 113L84 88" fill="#9bd6e7"/>
+      <!-- visor headset -->
+      <path d="M76 58Q97 47 121 63" fill="none" stroke="#243e59" stroke-width="7" stroke-linecap="round"/>
+      <path d="M113 65L128 69L128 90L119 95" fill="#274462" stroke="#9ce8ff" stroke-width="3"/>
+      <circle cx="125" cy="80" r="5" fill="url(#gunem)"/>
+      <!-- left arm + secondary pistol toward lower right -->
+      <path d="M59 123Q45 124 47 151L61 173L80 162L75 141Z" fill="url(#guncoat)" stroke="#8ac0d0" stroke-width="4"/>
+      <path d="M61 167L82 179L92 173L69 158Z" fill="#e7b69f" stroke="#a57572" stroke-width="2"/>
+      <g transform="translate(76 166) rotate(22)">
+       <path d="M0 0L48 -5L54 7L30 13L24 38L9 36L13 11L0 8Z" fill="url(#gunmetal)" stroke="#a7c7d5" stroke-width="3"/>
+       <path d="M30 -9L62 -7L66 7L28 9Z" fill="#142c45" stroke="#79efff" stroke-width="3"/>
+       <path d="M45 -6L63 -6L63 3L45 4Z" fill="#9bf7ff"/>
+      </g>
+      <!-- right arm extended, pointing a precision hand-cannon at the target -->
+      <path d="M116 124L145 137L160 148L153 165L125 156L105 143Z" fill="url(#guncoat)" stroke="#a2dae1" stroke-width="4"/>
+      <path d="M150 145L173 150L176 161L151 164Z" fill="#e9b79f" stroke="#ad7e76" stroke-width="2.8"/>
+      <g class="gun-front">
+       <path d="M161 139L191 135L196 144L190 155L170 158L171 180L155 180L154 153Z" fill="#21334d" stroke="#b9dae4" stroke-width="3"/>
+       <path d="M179 135L199 133L200 148L186 149Z" fill="#b0d9e6" stroke="#4ac8eb" stroke-width="2.5"/>
+       <rect x="186" y="138" width="13" height="5" rx="2" fill="#b0ffff"/>
+       <path d="M159 149L190 146M169 157L175 157" stroke="#70e4ff" stroke-width="3"/>
+       <path d="M166 162L161 179" stroke="#d7ac6e" stroke-width="5"/>
+      </g>
+      <!-- signature jacket flaps -->
+      <path d="M68 179L59 212L75 203M122 184L126 219L142 210" fill="none" stroke="#7de1ea" stroke-width="4"/>
+     </svg>
+     <div class="unit-label">นักแม่นปืนอาร์คช็อต<small>GUNNER · ARC SHOT</small></div>
+    </div>
+    <div class="unit" id="target">
+     <div class="character-shadow"></div><div class="reticle"></div>
+     <svg class="body-art" viewBox="0 0 180 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="หุ่นทดสอบเหล็กที่มีแกนพลังสีม่วง">
+      <defs><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8e9fb8"/><stop offset=".45" stop-color="#414f72"/><stop offset="1" stop-color="#1e2d51"/></linearGradient><radialGradient id="core"><stop stop-color="#ecedff"/><stop offset=".3" stop-color="#b9a5ff"/><stop offset="1" stop-color="#5740a9"/></radialGradient></defs>
+      <path d="M58 187L56 236L80 239L86 182 M99 183L103 239L129 237L119 187" fill="#303b58" stroke="#7990af" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M49 223L79 225L84 250L43 250Z M103 224L135 223L143 250L99 251Z" fill="url(#metal)" stroke="#a8bad1" stroke-width="3"/>
+      <path d="M48 99L18 125L22 164L45 159L64 130 M129 99L157 124L151 166L127 162L113 130" fill="none" stroke="#526586" stroke-width="23" stroke-linecap="round"/>
+      <path d="M41 94L94 77L137 99L129 187L88 207L51 184Z" fill="url(#metal)" stroke="#a2b1c2" stroke-width="5"/>
+      <path d="M72 88L113 87L134 117L117 180L89 193L64 177L49 121Z" fill="#243353" stroke="#697eaa" stroke-width="3"/>
+      <path d="M58 56L85 34L114 38L131 64L119 98L90 104L58 88Z" fill="url(#metal)" stroke="#9cb2c7" stroke-width="4"/>
+      <path d="M68 65L87 55L111 64L113 78L91 89L68 81Z" fill="#222d51"/><path d="M78 69L99 68L106 73L96 80L77 77Z" fill="#b7a2ff"/>
+      <circle cx="91" cy="137" r="38" fill="#4b498c" stroke="#a69dea" stroke-width="5"/><circle cx="91" cy="137" r="26" fill="url(#core)"/><path d="M91 118L110 137L91 155L72 137Z" fill="#e8e1ff" opacity=".6"/>
+      <path d="M61 176L89 190L118 174" fill="none" stroke="#9dc5d2" stroke-width="6"/>
+      <path d="M46 115L29 135M139 115L152 135" stroke="#c0c5d1" stroke-width="5"/>
+     </svg>
+     <div class="unit-label">หุ่นฝึกเซนทิเนล<small>NON-PLAYABLE TARGET</small></div>
+    </div>
+    <canvas id="fx" aria-hidden="true"></canvas><div id="ballistic" class="ballistic-layer" aria-hidden="true"></div>
+   </div>
+   <div class="arena-bottom"><span class="legend">TARGET HP</span><div class="meter"><i id="enemyBar"></i></div><b id="enemyHP">1,800 / 1,800</b></div>
+  </section>
+  <div class="dashboard">
+   <section class="panel">
+    <div class="char-detail"><div><div class="minor">ACTIVE CHARACTER · 01 / 01</div><div class="name"><span class="diamond">🔫</span> นักแม่นปืนอาร์คช็อต</div></div><div class="small">LV. 01 · GUNNER / DUAL PISTOLS</div></div>
+    <div class="stat"><div class="stat-head"><span>ULTIMATE ENERGY</span><b id="energyValue">100 / 100</b></div><div class="track energy"><i id="energyBar"></i></div></div>
+    <div class="stat"><div class="stat-head"><span>SHOT CHAIN</span><b id="comboText">0 HITS</b></div><div class="track"><i id="comboBar" style="width:0%"></i></div></div>
+    <div class="element-line"><span class="color-dot"></span><span class="small">ธาตุที่ใช้อยู่:</span><b id="elementLabel" style="font-size:12px">พลังงาน · KINETIC</b></div>
+    <p class="hint" style="margin:14px 0 0">Basic: ยิงแม่นยำ 1 นัด • Skill: เคลื่อนที่ยิงรัว 6 นัด • Ultimate: คัตอิน + ระดมยิงก่อน Rail Shot • รอยกระสุนบนพื้น 2.7 วินาที</p>
+   </section>
+   <section class="panel">
+    <div class="minor">ACTION COMMAND · 1 HERO ONLY</div>
+    <div class="controls">
+     <button class="move" id="basic" aria-label="โจมตีปกติ"><span class="move-icon">🎯</span><strong>Precision Shot</strong><small>ยิงแม่นยำ 1 นัด · 105 DMG</small><span class="key">J</span></button>
+     <button class="move skill" id="skill" aria-label="สกิลต่อสู้"><span class="move-icon">⚡</span><strong>Rapid Crossfire</strong><small>เคลื่อนที่ยิง 6 นัด · 330 DMG</small><span class="key">K</span></button>
+     <button class="move ultimate" id="ultimate" aria-label="ท่าไม้ตาย"><span class="move-icon">🌟</span><strong>ZERO HORIZON</strong><small>คัตอิน + ระดมยิง 7 ฮิต · 720 DMG</small><span class="key">L</span></button>
+    </div>
+    <div class="minor" style="margin-top:15px">GUNNER AMMO · ELEMENT PALETTE</div>
+    <div class="elements" id="elements">
+     <button class="element-button selected" data-element="kinetic" style="--swatch:#77e4ff"><i></i>พลังงาน</button>
+     <button class="element-button" data-element="fire" style="--swatch:#ff9b69"><i></i>ไฟ</button>
+     <button class="element-button" data-element="lightning" style="--swatch:#ffe58a"><i></i>สายฟ้า</button>
+     <button class="element-button" data-element="ice" style="--swatch:#a6eaff"><i></i>น้ำแข็ง</button>
+     <button class="element-button" data-element="void" style="--swatch:#cc9aff"><i></i>มืด</button>
+    </div>
+    <div class="bottom-actions"><span class="hint" id="performance">ความลื่น: กำลังวัดเฟรม...</span><button class="reset" id="reset">↻ รีเซ็ตหุ่นฝึก</button></div>
+   </section>
+  </div>
+  <p class="footnote">GUNNER / ONE HERO ONLY • แยกสายยิงระยะไกลจาก Saber / Mage / Tank • วิถีกระสุนและรอยกระแทกแคชไว้<br>Optimized: Canvas เรนเดอร์เมื่อจำเป็น จำกัด 30 FPS บนมือถือ • ปุ่มลัด J / K / L / R</p>
+ </main>
+</div>
+<script>
+(()=>{'use strict';
+const $=s=>document.querySelector(s),arena=$('#arena'),hero=$('#hero'),dummy=$('#target'),
+ canvas=$('#fx'),ctx=canvas.getContext('2d',{alpha:true}),ballistic=$('#ballistic');
+const palette={
+ kinetic:{name:'พลังงาน · KINETIC',color:'#77e4ff',core:'#e8ffff',shadow:'#126b95'},
+ fire:{name:'เพลิง · FIRE',color:'#ff9b69',core:'#fff0c9',shadow:'#aa392e'},
+ lightning:{name:'สายฟ้า · LIGHTNING',color:'#ffe58a',core:'#fffbe4',shadow:'#a88e26'},
+ ice:{name:'น้ำแข็ง · ICE',color:'#a6eaff',core:'#ffffff',shadow:'#3775ab'},
+ void:{name:'รัตติกาล · VOID',color:'#cc9aff',core:'#f5e5ff',shadow:'#7043ba'}
+};
+let chosen='kinetic',hp=1800,maxHP=1800,energy=100,hits=0,busy=false;
+const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const mobile=window.matchMedia?.('(max-width:720px)').matches;
+const targetFPS=mobile?30:50,frameGap=1000/targetFPS;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const rgba=(hex,a)=>{let n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${clamp(a,0,1)})`};
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const rnd=(a,b)=>a+(b-a)*Math.random();
+const size={w:0,h:0,dpr:1};
+let particles=[],marks=[],rings=[],fxFrame=0,lastPaint=0,lastNow=0,frames=0,seconds=0;
+const glowCache=new Map(),scarCache=new Map();
+function surf(w,h){const c=typeof OffscreenCanvas==='function'?new OffscreenCanvas(w,h):document.createElement('canvas');c.width=w;c.height=h;return c}
+function glowTexture(color){if(glowCache.has(color))return glowCache.get(color);
+ const c=surf(80,80),g=c.getContext('2d'),grad=g.createRadialGradient(40,40,1,40,40,39);
+ grad.addColorStop(0,rgba('#ffffff',.96));grad.addColorStop(.2,rgba(color,.8));grad.addColorStop(.54,rgba(color,.22));grad.addColorStop(1,rgba(color,0));
+ g.fillStyle=grad;g.fillRect(0,0,80,80);glowCache.set(color,c);return c}
+function bulletMarkTexture(elm,kind){const key=elm+':'+kind;if(scarCache.has(key))return scarCache.get(key);
+ const c=surf(196,128),g=c.getContext('2d'),p=palette[elm],cx=98,cy=64,r=kind==='ultimate'?66:kind==='skill'?48:30;
+ const glow=g.createRadialGradient(cx,cy,0,cx,cy,r);
+ glow.addColorStop(0,rgba(p.shadow,.45));glow.addColorStop(.65,rgba(p.shadow,.18));glow.addColorStop(1,rgba(p.shadow,0));
+ g.fillStyle=glow;g.beginPath();g.ellipse(cx,cy,r,r*.55,0,0,Math.PI*2);g.fill();
+ g.strokeStyle=rgba(p.color,.84);g.lineWidth=2.4;g.beginPath();g.ellipse(cx,cy,r*.64,r*.3,0,0,Math.PI*2);g.stroke();
+ for(let j=0;j<(kind==='ultimate'?12:kind==='skill'?8:5);j++){
+  const a=j*Math.PI*2/(kind==='ultimate'?12:kind==='skill'?8:5),x=Math.cos(a),y=Math.sin(a)*.6;
+  g.beginPath();g.moveTo(cx+x*r*.3,cy+y*r*.3);g.lineTo(cx+x*r*.9,cy+y*r*.9);g.strokeStyle=rgba(j%2?p.core:p.color,.72);g.lineWidth=1.4;g.stroke();
+ }
+ scarCache.set(key,c);return c}
+function resize(){const r=arena.getBoundingClientRect();size.w=r.width;size.h=r.height;size.dpr=Math.min(window.devicePixelRatio||1,mobile?1.25:1.5);
+ canvas.width=Math.round(r.width*size.dpr);canvas.height=Math.round(r.height*size.dpr);
+ ctx.setTransform(size.dpr,0,0,size.dpr,0,0);queueDraw()}
+function pos(el){const b=el.getBoundingClientRect(),ar=arena.getBoundingClientRect();return{x:b.left-ar.left+b.width*.5,y:b.top-ar.top+b.height*.48,bottom:b.bottom-ar.top,width:b.width,height:b.height}}
+function muzzle(){const p=pos(hero);return{x:p.x+p.width*.56,y:p.y-p.height*.12}}
+function hitPoint(){const p=pos(dummy);return{x:p.x-p.width*.18,y:p.y+4}}
+function status(s,active=false){const e=$('#status-bubble');e.textContent=s;e.classList.toggle('active',active)}
+function paint(){const pct=clamp(hp/maxHP*100,0,100);$('#enemyHP').textContent=hp.toLocaleString()+' / '+maxHP.toLocaleString();$('#enemyBar').style.width=pct+'%';
+ $('#energyValue').textContent=energy+' / 100';$('#energyBar').style.width=energy+'%';$('#comboText').textContent=hits+' HITS';$('#comboBar').style.width=Math.min(100,hits/20*100)+'%';
+ for(const id of ['basic','skill','ultimate'])$('#'+id).disabled=busy||(id==='ultimate'&&energy<100)}
+function changeElement(k){if(!palette[k]||busy)return;chosen=k;document.documentElement.style.setProperty('--element',palette[k].color);
+ $('#elementLabel').textContent=palette[k].name;document.querySelectorAll('[data-element]').forEach(el=>el.classList.toggle('selected',el.dataset.element===k))}
+function queueDraw(){if(fxFrame||reduced)return;fxFrame=requestAnimationFrame(tick)}
+function stamp(x,y,r,color,alpha){ctx.save();ctx.globalAlpha=clamp(alpha,0,1);ctx.drawImage(glowTexture(color),x-r,y-r,r*2,r*2);ctx.restore()}
+function spark(x,y,n,element=chosen,kind='basic'){
+ const p=palette[element],cap=kind==='ultimate'?52:kind==='skill'?20:12;
+ for(let i=0;i<Math.min(n,cap)&&particles.length<115;i++){
+  const a=rnd(0,Math.PI*2),v=rnd(65,kind==='ultimate'?300:190),life=rnd(.20,.65);
+  particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-55,t:0,life,
+   r:rnd(.9,kind==='ultimate'?3.4:2.1),color:Math.random()<.24?p.core:p.color})
+ }
+ rings.push({x,y,t:0,life:kind==='ultimate'?.65:.34,color:p.color,size:kind==='ultimate'?93:kind==='skill'?52:28});
+ queueDraw();}
+function scar(kind,element=chosen){const t=pos(dummy),x=t.x-t.width*.1,y=t.bottom-3;
+ marks.push({x,y,t:0,life:2.7,element,kind});if(marks.length>10)marks.shift();queueDraw()}
+function numberAt(x,y,damage,element=chosen,crit=false){const el=document.createElement('div');el.className='damage-number'+(crit?' critical':'');el.textContent='−'+damage;
+ el.style.cssText=`left:${x}px;top:${y-10}px;--shot:${palette[element].color}`;
+ ballistic.append(el);setTimeout(()=>el.remove(),940)}
+function bodyReaction(kind){if(reduced)return;
+ const kick=kind==='ultimate'?24:kind==='skill'?13:8;
+ dummy.animate([
+  {transform:'translate3d(0,0,0) rotate(0deg)',filter:'brightness(1)'},
+  {offset:.27,transform:`translate3d(${kick}px,-5px,0) rotate(5deg) scale(.96)`,filter:'brightness(1.9)'},
+  {offset:.58,transform:'translate3d(-5px,2px,0) rotate(-2deg)',filter:'brightness(1.2)'},
+  {transform:'translate3d(0,0,0)'}],{duration:kind==='ultimate'?460:280,easing:'cubic-bezier(.17,.68,.26,1)'});
+ arena.animate([{transform:'translate3d(0,0,0)'},{offset:.3,transform:`translate3d(${kind==='ultimate'?7:2}px,-2px,0)`},{transform:'translate3d(0,0,0)'}],
+ {duration:kind==='ultimate'?300:175,easing:'ease-out'});
+}
+function damage(n,kind,elm=chosen,finisher=false){const p=hitPoint();hp=Math.max(0,hp-n);hits++;
+ spark(p.x,p.y,finisher?48:kind==='skill'?15:10,elm,kind);numberAt(p.x,p.y,n,elm,finisher);
+ bodyReaction(finisher?'ultimate':kind);if(finisher)scar(kind,elm);paint();}
+function flash(x,y,elm){const el=document.createElement('div');el.className='muzzle-flash';el.style.cssText=`left:${x}px;top:${y}px;--shot:${palette[elm].color}`;
+ ballistic.append(el);setTimeout(()=>el.remove(),250)}
+function trace(a,b,elm,duration){const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy),angle=Math.atan2(dy,dx);
+ const el=document.createElement('div');el.className='shot-track';el.style.cssText=`left:${a.x}px;top:${a.y}px;width:${L}px;transform:rotate(${angle}rad);--shot:${palette[elm].color}`;
+ ballistic.append(el);el.animate([{opacity:0},{offset:.18,opacity:.9},{offset:.72,opacity:.58},{opacity:0}],{duration:duration+145,fill:'forwards'});
+ setTimeout(()=>el.remove(),duration+170);
+ const bEl=document.createElement('div');bEl.className='bullet-projectile';bEl.style.cssText=`left:${a.x}px;top:${a.y}px;--shot:${palette[elm].color};transform:rotate(${angle}rad)`;
+ ballistic.append(bEl);
+ bEl.animate([{offset:0,transform:`translate3d(0,0,0) rotate(${angle}rad) scale(.65)`,opacity:0},
+ {offset:.1,opacity:1},{offset:.83,opacity:1},
+ {offset:1,transform:`translate3d(${dx}px,${dy}px,0) rotate(${angle}rad) scale(1.05)`,opacity:0}],
+ {duration,easing:'cubic-bezier(.18,.61,.24,1)',fill:'forwards'});
+ setTimeout(()=>bEl.remove(),duration+35);
+}
+function recoil(which='right',strong=false){if(reduced)return;
+ const amt=strong?16:which==='left'?7:10;
+ hero.animate([{transform:'translate3d(0,0,0) rotate(0deg)'},
+ {offset:.3,transform:`translate3d(${-amt}px,2px,0) rotate(-${strong?6:3}deg)`},
+ {offset:.72,transform:'translate3d(2px,-2px,0) rotate(1deg)'},
+ {transform:'translate3d(0,0,0)'}],{duration:strong?390:200,easing:'ease-out'});
+}
+async function fire(n,kind,elm,options={}){
+ const a=muzzle(),b=hitPoint(),duration=reduced?60:kind==='ultimate'?200:kind==='skill'?160:230;
+ flash(a.x,a.y,elm);recoil(options.gun||'right',options.finisher);
+ if(!reduced)trace(a,b,elm,duration);
+ await wait(duration);
+ damage(n,kind,elm,!!options.finisher);
+}
+function railLine(elm){const a=muzzle(),b=hitPoint(),dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy),angle=Math.atan2(dy,dx);
+ const el=document.createElement('div');el.className='rail-beam';el.style.cssText=`left:${a.x}px;top:${a.y-8}px;width:${L}px;transform:rotate(${angle}rad);--shot:${palette[elm].color}`;
+ ballistic.append(el);setTimeout(()=>el.remove(),690);
+ spark(b.x,b.y,52,elm,'ultimate');}
+function tag(kind,name,detail){const el=$('#attack-tag');el.className='attack-tag '+kind;
+ $('#attack-type').textContent=kind==='basic'?'01 / PRECISION FIRE':kind==='skill'?'02 / CROSS-FIRE PROTOCOL':'03 / OVERRIDE SHOT';
+ $('#attack-title').textContent=name;$('#attack-detail').textContent=detail;
+ void el.offsetWidth;el.classList.add('show');}
+function setBusy(flag){busy=flag;arena.classList.toggle('in-action',flag);paint();}
+function cleanup(){arena.classList.remove('skill-active','ultimate-active','lock-active','cutin-active');hero.classList.remove('charging','aiming');
+ $('#cinema').classList.remove('show');$('#attack-tag').classList.remove('show');ballistic.replaceChildren();setBusy(false);}
+async function basic(elm){
+ tag('basic','PRECISION SHOT','ยกปืนเล็ง → ยิงแม่นยำหนึ่งนัด → แรงสะท้อนถอย');
+ status('BASIC · TARGET ACQUIRED',true);hero.classList.add('aiming');
+ await wait(reduced?65:200);await fire(105,'basic',elm,{finisher:true});
+ energy=Math.min(100,energy+25);paint();await wait(reduced?60:200);
+}
+async function skill(elm){
+ arena.classList.add('skill-active','lock-active');hero.classList.add('aiming');
+ tag('skill','RAPID CROSSFIRE','หลบข้าง → ปืนคู่ยิงสลับ 6 นัด → ทิ้งรอยกระสุน');
+ status('SKILL · DUAL TARGET LOCK',true);
+ if(!reduced){hero.animate([
+  {transform:'translate3d(0,0,0)'},{offset:.38,transform:'translate3d(-24px,-9px,0) rotate(-5deg)'},
+  {offset:.7,transform:'translate3d(19px,2px,0) rotate(3deg)'},{transform:'translate3d(0,0,0)'}],
+  {duration:1450,easing:'ease-in-out'})}
+ await wait(reduced?40:270);
+ for(let i=0;i<6;i++){
+  status('CROSSFIRE · '+(i+1)+'/6',true);
+  await fire(55,'skill',elm,{gun:i%2===0?'left':'right',finisher:i===5});
+  await wait(reduced?28:64);
+ }
+ energy=Math.min(100,energy+40);paint();await wait(reduced?45:140);
+}
+async function ultimate(elm){
+ arena.classList.add('cutin-active','ultimate-active','lock-active');hero.classList.add('charging');
+ const portrait=$('#cutin-portrait');if(!portrait.firstElementChild){const art=hero.querySelector('.body-art').cloneNode(true);art.removeAttribute('aria-label');portrait.appendChild(art)}
+ $('#cinema').classList.add('show');tag('ultimate','ZERO HORIZON','ระดมยิง 6 นัด → พลังงานรวมศูนย์ → RAIL FINISHER');
+ status('ULTIMATE · ZERO HORIZON',true);energy=0;paint();
+ await wait(reduced?120:1080);$('#cinema').classList.remove('show');hero.classList.remove('charging');arena.classList.remove('cutin-active');
+ status('BARRAGE LOCKED · 6 TARGET HITS',true);
+ for(let i=0;i<6;i++){await fire(75,'ultimate',elm,{gun:i%2?'left':'right'});await wait(reduced?25:57)}
+ status('ZERO HORIZON · RAIL FINISHER',true);
+ hero.classList.add('charging');await wait(reduced?110:380);
+ hero.classList.remove('charging');const a=muzzle();flash(a.x,a.y,elm);recoil('right',true);
+ if(!reduced)railLine(elm);await wait(reduced?70:260);
+ damage(270,'ultimate',elm,true);await wait(reduced?75:350);
+}
+async function attack(kind){
+ if(busy)return;if(hp<=0){status('กดรีเซ็ตหุ่นฝึกก่อนนะ');return}
+ if(kind==='ultimate'&&energy<100)return;
+ const element=chosen;setBusy(true);queueDraw();
+ try{if(kind==='basic')await basic(element);else if(kind==='skill')await skill(element);else if(kind==='ultimate')await ultimate(element);
+ status('ACTION COMPLETE · '+hits+' HITS',false)}catch(err){console.error(err);status('พบปัญหาการแสดงผล: '+(err.message||''))}
+ finally{cleanup()}
+}
+function reset(){if(busy)return;hp=maxHP;energy=100;hits=0;particles=[];marks=[];rings=[];ballistic.replaceChildren();
+ status('READY TO ENGAGE');paint();ctx.clearRect(0,0,size.w,size.h);}
+function tick(now){fxFrame=0;
+ if(now-lastPaint<frameGap-1){queueDraw();return}
+ const dt=Math.min(.07,(now-(lastNow||now))/1000);lastNow=now;lastPaint=now;
+ frames++;seconds+=dt;if(seconds>.7){$('#performance').textContent='Canvas '+Math.round(frames/seconds)+' FPS (เพดาน '+targetFPS+') · รอยกระสุน 2.7 วิ';seconds=0;frames=0}
+ ctx.clearRect(0,0,size.w,size.h);
+ // All gradients and ground scar textures come from caches, not per-frame drawing.
+ ctx.globalCompositeOperation='source-over';
+ marks=marks.filter(m=>m.t<m.life);
+ for(const mark of marks){mark.t+=dt;const a=clamp(1-mark.t/mark.life,0,1);
+  const tex=bulletMarkTexture(mark.element,mark.kind),scale=mark.kind==='ultimate'?1.12:mark.kind==='skill'?.85:.65;
+  ctx.globalAlpha=.75*a;ctx.drawImage(tex,mark.x-98*scale,mark.y-48*scale,196*scale,128*scale);ctx.globalAlpha=1}
+ ctx.globalCompositeOperation='lighter';
+ rings=rings.filter(r=>r.t<r.life);
+ for(const ring of rings){ring.t+=dt;let f=clamp(ring.t/ring.life,0,1);
+  ctx.strokeStyle=rgba(ring.color,.6*(1-f));ctx.lineWidth=2.6*(1-f)+.4;
+  ctx.beginPath();ctx.ellipse(ring.x,ring.y,8+ring.size*f,6+ring.size*f*.65,0,0,Math.PI*2);ctx.stroke()}
+ particles=particles.filter(p=>p.t<p.life);
+ for(const p of particles){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=260*dt;p.vx*=.955;
+  stamp(p.x,p.y,p.r*5,p.color,(1-p.t/p.life)*.78)}
+ ctx.globalCompositeOperation='source-over';
+ if(particles.length||marks.length||rings.length){queueDraw()}else{$('#performance').textContent='Canvas idle · เรนเดอร์เมื่อจำเป็น · สูงสุด '+targetFPS+' FPS';lastNow=0}
+}
+$('#basic').addEventListener('click',()=>attack('basic'));
+$('#skill').addEventListener('click',()=>attack('skill'));
+$('#ultimate').addEventListener('click',()=>attack('ultimate'));
+$('#reset').addEventListener('click',reset);
+document.querySelectorAll('[data-element]').forEach(el=>el.addEventListener('click',()=>changeElement(el.dataset.element)));
+document.addEventListener('keydown',e=>{if(e.repeat||e.target.matches('input,textarea'))return;
+ const k=e.key.toLowerCase();if(k==='j')attack('basic');else if(k==='k')attack('skill');else if(k==='l')attack('ultimate');else if(k==='r')reset()});
+window.addEventListener('resize',resize,{passive:true});
+resize();changeElement(chosen);paint();status('READY TO ENGAGE');
+
+/* AdvengerSAGA party integration (does not replace approved animations). */
+if(new URLSearchParams(location.search).get('embed')==='1'){
+ document.body.classList.add('embedded');
+ requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+}
+
+const __advNativeAttack=attack, __advNativeReset=reset;
+attack=async function(kind){
+ if(window.parent===window)return __advNativeAttack(kind);
+ if(busy||hp<=0||(kind==='ultimate'&&energy<100))return;
+ const fromHp=hp,fromEnergy=energy;
+ window.parent.postMessage({app:'AdvengerSAGA',type:'START',unit:'gunner',kind},window.location.origin==='null'?'*':window.location.origin);
+ await __advNativeAttack(kind);
+ window.parent.postMessage({
+  app:'AdvengerSAGA',type:'ACTION',unit:'gunner',kind,
+  before:fromHp,after:hp,max:maxHP,energy,spent:fromEnergy-energy
+ },window.location.origin==='null'?'*':window.location.origin);
+};
+reset=function(){
+ if(busy)return;
+ __advNativeReset();
+ if(window.parent!==window)window.parent.postMessage({
+  app:'AdvengerSAGA',type:'RESET',unit:'gunner'
+ },window.location.origin==='null'?'*':window.location.origin);
+};
+window.addEventListener('message',event=>{
+ if(window.location.origin!=='null'&&event.origin!==window.location.origin)return;
+ const d=event.data;
+ if(!d||d.app!=='AdvengerSAGA'||d.unit!=='gunner')return;
+ if(d.type==='COMMAND'){
+  if(busy||hp<=0||(d.kind==='ultimate'&&energy<100)||!['basic','skill','ultimate'].includes(d.kind)){
+   window.parent.postMessage({app:'AdvengerSAGA',type:'REJECT',unit:'gunner'},window.location.origin==='null'?'*':window.location.origin);
+   return;
+  }
+  attack(d.kind);return;
+ }
+ if(d.type==='ELEMENT'){
+  if(!busy&&document.querySelector('[data-element="'+String(d.element).replace(/[^a-z]/g,'')+'"]'))changeElement(d.element);
+  return;
+ }
+ if(d.type!=='SYNC'||busy)return;
+ if(d.element&&document.querySelector('[data-element="'+String(d.element).replace(/[^a-z]/g,'')+'"]'))changeElement(d.element);
+ if(Number.isFinite(d.enemyPercent))hp=Math.max(0,Math.round(maxHP*Math.max(0,Math.min(1,d.enemyPercent))));
+ if(Number.isFinite(d.energy))energy=Math.max(0,Math.min(100,Math.round(d.energy)));
+ paint();
+ requestAnimationFrame(()=>{if(typeof requestDraw==='function')requestDraw();if(typeof queueDraw==='function')queueDraw()});
+});
+if(window.parent!==window)window.parent.postMessage({
+ app:'AdvengerSAGA',type:'READY',unit:'gunner',max:maxHP,energy
+},window.location.origin==='null'?'*':window.location.origin);
+
+})();
+</script>
+</body>
+</html>
