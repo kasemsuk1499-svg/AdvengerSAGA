@@ -1,0 +1,98 @@
+/* AdvengerSAGA v0.5 — one-line four-hero formation and true turn-cycle HUD.
+   Visual reference: cinematic mobile command RPG, all styles original. */
+#battle .as-stage{height:clamp(380px,38vw,478px)}
+#battle .as-party-ground{left:35%;width:62%;top:80%}
+#battle .as-fighter{
+ top:auto!important;bottom:14%!important;
+ height:55%!important;width:14.5%!important;
+ min-width:0;z-index:8!important;
+}
+#battle .as-fighter[data-slot="0"]{left:36%!important}
+#battle .as-fighter[data-slot="1"]{left:51%!important}
+#battle .as-fighter[data-slot="2"]{left:66%!important}
+#battle .as-fighter[data-slot="3"]{left:81%!important}
+#battle .as-fighter .as-sprite{width:100%;max-width:100%;min-height:0}
+#battle .as-fighter .as-name{max-width:105%;font-size:9px}
+#battle .as-fighter .as-rank{top:2%;font-size:8px}
+#battle .as-fighter.acted .as-sprite{filter:grayscale(.35) brightness(.7)}
+#battle .as-fighter.acted .as-name{color:#a2b4cc;border-color:#52617b}
+#battle .as-fighter.fallen .as-sprite{filter:grayscale(1) brightness(.4);opacity:.55}
+#battle .as-fighter.fallen{cursor:not-allowed}
+#battle .as-fighter.fallen .as-name{color:#e59c9c}
+#battle .as-fighter.guarding:before{box-shadow:0 0 16px #94d4ff9c}
+#battle .as-fighter .as-hp{display:block;position:relative;z-index:3;width:78%;height:4px;
+ background:#151823;border-radius:4px;overflow:hidden;margin:2px 0 1px}
+#battle .as-fighter .as-hp i{display:block;height:100%;background:linear-gradient(90deg,#30b4a0,#8ce5c8);transition:width .22s}
+#battle .as-fighter .as-ex{margin-top:2px;height:3px}
+#battle .as-fighter .as-marker{position:absolute;z-index:10;top:14%;left:12%;right:12%;font-size:9px;
+ text-align:center;font-weight:900;pointer-events:none;color:#fff0bf;
+ text-shadow:0 1px 3px #050a1e,0 0 4px #000}
+#battle .as-fighter.acted .as-marker{color:#aab8ce}
+#battle .as-fighter.fallen .as-marker{color:#ffc3ca}
+#battle .as-target{top:auto;bottom:14%;height:59%;left:8%;width:22%}
+#battle .arena-foot{padding:7px 12px}
+#battle .turn-board{border:1px solid #7b90b179;border-radius:9px;
+ background:linear-gradient(140deg,#1c2b49,#111a31);padding:9px 11px}
+#battle .turn-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#battle .turn-heading{font-size:12px;font-weight:950;color:#ffe2a5;letter-spacing:.075em}
+#battle .turn-phase{font-size:10px;font-weight:900;border:1px solid #689d8f;
+ padding:3px 8px;border-radius:7px;color:#b7ffe2;background:#174b4080}
+#battle .turn-phase.enemy{color:#ffb8b8;background:#582b3980;border-color:#bc7f89}
+#battle .turn-phase.victory{color:#fff1af;background:#5f4b2580;border-color:#d1b76b}
+#battle .turn-order{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:7px}
+#battle .turn-token{position:relative;min-width:0;min-height:52px;border:1px solid #6881a778;
+ border-radius:7px;background:#12203a;display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:1px;padding:3px 2px;font-size:9px;color:#cbdbf1}
+#battle .turn-token strong{font-size:10px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;max-width:100%}
+#battle .turn-token span{font-size:9px}
+#battle .turn-token.current{border-color:#f9dc98;box-shadow:0 0 0 1px #ebd39266,0 0 12px #ffdf9142;background:#293550;color:#ffefd1}
+#battle .turn-token.done{opacity:.54}
+#battle .turn-token.ko{background:#342436;border-color:#a46673;color:#f3b2bc}
+#battle .turn-token.enemy{border-color:#ba7f85;background:#32223b}
+#battle .turn-token.enemy.current{background:#642735;border-color:#ff9da2;box-shadow:0 0 12px #ff8d9475}
+#battle .turn-info{margin-top:5px;font-size:10px;color:#a9c9e5}
+#battle .battle-member.acted{opacity:.65;filter:saturate(.7)}
+#battle .battle-member.fallen{opacity:.48;filter:grayscale(.75)}
+#battle .battle-member.acted .roster-select{color:#a7b0c0}
+#battle .roster-hp{display:flex;align-items:center;gap:4px;margin-top:1px}
+#battle .roster-hp-label{font-size:9px;font-weight:800;color:#89e0cb}
+#battle .roster-hp .roster-meter i{background:linear-gradient(90deg,#2c9b8d,#75d9aa)}
+#battle .roster-hp small{font-size:9px;white-space:nowrap;font-variant-numeric:tabular-nums}
+#battle .turn-utility{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+#battle .guard-command{border:1px solid #709ab6;background:linear-gradient(140deg,#274a61,#1e324e);
+ border-radius:7px;color:#dbefff;font-size:11px;font-weight:850;padding:8px 13px;
+ min-height:38px}
+#battle .guard-command:hover:not(:disabled){filter:brightness(1.15)}
+#battle .guard-command:disabled{opacity:.4}
+#battle .turn-utility small{font-size:10px;color:#b2c5de}
+#battle .command-indicator.enemy{background:#592f3d;border-color:#b86e7c;color:#ffd5d5}
+#battle .combat-console .battle-notice{min-height:31px}
+@media(max-width:580px){
+ #battle .as-stage{height:335px}
+ #battle .as-fighter{bottom:18%!important;height:48%!important;width:16%!important}
+ #battle .as-fighter[data-slot="0"]{left:32%!important}
+ #battle .as-fighter[data-slot="1"]{left:48.5%!important}
+ #battle .as-fighter[data-slot="2"]{left:65%!important}
+ #battle .as-fighter[data-slot="3"]{left:81.5%!important}
+ #battle .as-fighter .as-name{font-size:7.7px;padding:1px 2px}
+ #battle .as-fighter .as-rank{font-size:7px}
+ #battle .as-fighter .as-marker{font-size:7px;top:12%}
+ #battle .as-target{bottom:18%;left:5%;width:25%;height:56%}
+ #battle .as-party-ground{left:28%;width:73%;top:79%}
+ #battle .turn-board{padding:7px}
+ #battle .turn-order{gap:3px}
+ #battle .turn-token{min-height:47px}
+ #battle .turn-token strong{font-size:9px}
+ #battle .turn-token span{font-size:8px}
+ #battle .roster-hp small{font-size:8px}
+ #battle .guard-command{padding:7px 10px}
+}
+@media(max-width:390px){
+ #battle .as-stage{height:310px}
+ #battle .as-fighter{height:46%!important;width:16%!important}
+ #battle .as-fighter[data-slot="0"]{left:31%!important}
+ #battle .as-fighter[data-slot="1"]{left:47.5%!important}
+ #battle .as-fighter[data-slot="2"]{left:64%!important}
+ #battle .as-fighter[data-slot="3"]{left:80.5%!important}
+ #battle .turn-token strong{font-size:8px}
+}
