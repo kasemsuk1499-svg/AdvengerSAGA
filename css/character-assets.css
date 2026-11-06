@@ -1,0 +1,17 @@
+/* Optional PNG character portraits in formation and character selection.
+   Supports fully transparent artwork without a second canvas/render pass. */
+.unit-icon{overflow:hidden;flex-shrink:0}
+.unit-icon .unit-portrait{
+ display:block;width:100%;height:100%;object-fit:contain;
+ object-position:center bottom;filter:drop-shadow(0 3px 5px #060b1f9a);
+}
+.picker-opt .picker-portrait{
+ width:40px;height:54px;min-width:40px;border-radius:7px;
+ object-fit:contain;object-position:center bottom;
+ border:1px solid #7788b160;
+ background:linear-gradient(155deg,#283b64,#151f39);
+ filter:drop-shadow(0 2px 2px #0005);
+}
+@media(max-width:580px){
+ .picker-opt .picker-portrait{width:34px;height:46px;min-width:34px}
+}
