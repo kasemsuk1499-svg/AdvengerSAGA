@@ -89,6 +89,23 @@ button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #b4eaf
 @keyframes cutinBeam{0%{opacity:0;transform:rotate(-11deg) scaleX(.2)}35%{opacity:1}100%{opacity:.28;transform:rotate(-11deg) scaleX(1)}}
 @media(max-width:720px){.attack-tag{left:9px;bottom:12px;max-width:58%;padding:7px 10px;min-width:135px}.attack-tag strong{font-size:14px}.attack-tag small{font-size:9px}.cinema-shade{border-top-width:13px;border-bottom-width:13px}.cinema-copy strong{font-size:clamp(28px,8vw,50px)}.cinema-copy small,.cinema-copy span{font-size:9px}}
 @media(prefers-reduced-motion:reduce){#hero.charging .body-art{animation:none}.cinema.show .cinema-panel,.cinema.show .cinema-copy,.cinema.show .cinema-beam{animation:none;transform:none;opacity:1}}
+
+/* AdvengerSAGA shell mode. The approved effect and character animations are untouched. */
+body.embedded{overflow:hidden!important;min-height:0!important;background:transparent!important}
+body.embedded .shell{padding:0!important;margin:0!important;max-width:none!important;width:100%!important}
+body.embedded .topline,body.embedded .dashboard,body.embedded .footnote{display:none!important}
+body.embedded .stage-wrapper{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;background:transparent!important}
+body.embedded .arena{height:420px!important;min-height:0!important;border:0!important;border-radius:0!important}
+body.embedded .arena-bottom{height:45px;min-height:45px;margin:0;padding:8px 13px}
+body.embedded .stagehead{top:12px}
+body.embedded #status-bubble{top:54px}
+@media(max-width:580px){
+ body.embedded .arena{height:300px!important;min-height:0!important}
+ body.embedded .stagehead{top:9px;left:9px;right:9px}
+ body.embedded .stage-label,body.embedded .stage-pill{font-size:8px!important;padding:5px 6px!important}
+ body.embedded .arena-bottom{padding:7px 10px}
+ body.embedded .unit-label{font-size:9px}
+}
 </style>
 </head>
 <body>
@@ -491,6 +508,11 @@ window.addEventListener('keydown',e=>{if(e.repeat||e.altKey||e.ctrlKey||e.metaKe
 changeElement('water');paintUI();requestDraw();
 
 /* AdvengerSAGA party integration (does not replace approved animations). */
+if(new URLSearchParams(location.search).get('embed')==='1'){
+ document.body.classList.add('embedded');
+ requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+}
+
 const __advNativeAttack=attack, __advNativeReset=reset;
 attack=async function(kind){
  if(window.parent===window)return __advNativeAttack(kind);
@@ -513,7 +535,20 @@ reset=function(){
 window.addEventListener('message',event=>{
  if(window.location.origin!=='null'&&event.origin!==window.location.origin)return;
  const d=event.data;
- if(!d||d.app!=='AdvengerSAGA'||d.unit!=='saber'||d.type!=='SYNC'||busy)return;
+ if(!d||d.app!=='AdvengerSAGA'||d.unit!=='saber')return;
+ if(d.type==='COMMAND'){
+  if(busy||hp<=0||(d.kind==='ultimate'&&energy<100)||!['basic','skill','ultimate'].includes(d.kind)){
+   window.parent.postMessage({app:'AdvengerSAGA',type:'REJECT',unit:'saber'},window.location.origin==='null'?'*':window.location.origin);
+   return;
+  }
+  attack(d.kind);return;
+ }
+ if(d.type==='ELEMENT'){
+  if(!busy&&document.querySelector('[data-element="'+String(d.element).replace(/[^a-z]/g,'')+'"]'))changeElement(d.element);
+  return;
+ }
+ if(d.type!=='SYNC'||busy)return;
+ if(d.element&&document.querySelector('[data-element="'+String(d.element).replace(/[^a-z]/g,'')+'"]'))changeElement(d.element);
  if(Number.isFinite(d.enemyPercent))hp=Math.max(0,Math.round(maxHP*Math.max(0,Math.min(1,d.enemyPercent))));
  if(Number.isFinite(d.energy))energy=Math.max(0,Math.min(100,Math.round(d.energy)));
  paintUI();
