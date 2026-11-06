@@ -1,65 +1,77 @@
-# AdvengerSAGA
+# AdvengerSAGA — Four-Hero Battle Arena (v0.3)
 
-A lightweight browser RPG prototype with **4 main party slots + 2 support slots**, built around four approved and independently optimized combat animation labs.
+**A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield and two support slots.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
-## Quick start
+## Open and publish
 
-Open `index.html` using a local static HTTP server, or enable **GitHub Pages** and open:
-https://kasemsuk1499-svg.github.io/AdvengerSAGA/
+Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/AdvengerSAGA/
 
-The repo is plain static HTML/CSS/JavaScript. No Node/build dependencies.
+Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
-**Enable Pages once:** Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch**, then select **Branch: main**, **Folder: /(root)** and click **Save**. The game is a static HTML/JavaScript site with `index.html` at repository root; no custom build workflow is needed. A failing custom workflow was removed after the first deployment attempt. GitHub will publish new commits from the selected branch automatically.
+## What works
 
-## Classes (approved optimized animation builds)
+- **Main team: four active slots**. Saber, Mage, Tank and Gunner are rendered together in the same arena. Tap a character in the field or its roster card to choose the next attacker; the other three remain visible.
+- **Two support slots**. Attack Booster adds +25% damage to the next attack action; Energy Charge adds +30 EX to the selected character. One use per support per encounter.
+- **Basic / Skill / Ultimate**. Each hero runs its own choreography and damage sequence from its own module (the number and damage of hits match the approved labs). Ultimate requires 100 EX; the selected actor consumes its EX.
+- **Shared enemy HP** and independently tracked EX per hero; HP, EX, party order, selected colors and support usage are stored in browser localStorage.
+- **Element palette** changes effect colors but not damage.
+- **Responsive four-character battlefield** with on-demand cached Canvas effects, a maximum 30 effect frames per second, and fading ground marks.
+- **Reset encounter**, action locking, formation editor, combat log and keyboard shortcuts J/K/L (attacks) and R (reset).
 
-- **Saber** — basic quick slash; multihit combo; finishing Ultimate: `labs/saber.html`
-- **Mage** — Arcane Bolt; Rune Cascade; Astral Collapse: `labs/mage.html`
-- **Tank** — Shield Bash; Bulwark Reversal; Aegis Fall: `labs/tank.html`
-- **Gunner** — Precision Shot; Rapid Crossfire; Zero Horizon: `labs/gunner.html`
+**Scope:** Training dummy with one attacking character at a time, not yet a full turn-based 4v4 battle or enemy AI. The four party characters remain visible at the same time. Support characters are abstract action slots for now and do not have field sprites.
 
-The core optimized Canvas effects and animation timing are retained in each standalone lab. The only new code inside the labs is a small `postMessage` bridge for sharing enemy HP percentage / EX with the party shell.
+## File structure
 
-## Playable battle interface (v0.2 — mobile and desktop)
-
-The **⚔️ สนามทดสอบ** screen now has an action-first layout:
-
-1. A compact battle-only arena at the top instead of embedding an entire 900px-high character lab.
-2. **Basic / Skill / Ultimate** buttons directly below the arena, with action locking and an EX requirement for Ultimate.
-3. In-page color selection for the approved element palette of the current hero.
-4. Switch among the four class cards; the target HP is shared and each hero's EX persists independently.
-5. Use two helper actions, view the combat log, and reset HP/EX/assist uses with **เริ่มไฟต์ใหม่**.
-6. Keyboard J/K/L for Basic/Skill/Ultimate and R to reset while on the battle screen.
-7. The approved optimized animations are unchanged; the four labs load in `?embed=1` mode to hide duplicate menus, and accept `COMMAND`, `ELEMENT`, and `SYNC` messages from the parent game.
-
-**Scope:** This is still one attacking hero versus a shared training dummy, with all 4 party slots selectable, not yet a 4v4 simultaneous tactical battle with enemy AI.
-## Team management (v0.1)
-
-- Main slots: **4/4** (Saber, Mage, Tank, Gunner). Click a main slot and select another hero to swap positions without duplicate IDs.
-- Helper slots: **2/2**. Current **placeholder prototypes** are Attack Booster (+25% damage for next hit) and Energy Charge (+30 EX), each once per training encounter; click a helper slot to swap them.
-- Saves the team, current demo character, shared training-target HP percentage and per-character EX to `localStorage`.
-- Switch which hero's approved lab is active; the other three stay in the main party. Supports do **not** consume a main party slot.
-- The embedded lab can still be opened directly in a separate tab and used as a standalone demo.
-- A bridge prevents switching helpers/hero mid-attack and maintains the dummy's relative HP when switching classes.
-
-### Current scope and limitations
-
-This is a **formation / battle-preview foundation**, not yet a simultaneous four-character arena: the main party has four equipped members, and one is displayed in the training arena at a time. Support identities are placeholders until character/support designs are approved. There is no full enemy AI, equipment, progression, multiplayer, cloud save, or completed-team encounter yet.
-
-### File structure
-
-```
-index.html                Formation + action-first battle interface
-js/app.js                 4+2 slots, saved state, switching, support logic
-labs/saber.html           Approved Optimized Saber
-labs/mage.html            Approved Optimized Mage
-labs/tank.html            Approved Optimized Tank
-labs/gunner.html          Approved Optimized Gunner
-(no workflow required)     GitHub Pages via main branch /(root)
+```text
+index.html                          Main interface and script loading
+css/team-arena.css                  Unified battlefield layout
+js/app.js                           Team management, save, enemy HP, action selection
+js/character-registry.js            Register character modules
+js/shared-arena.js                  Shared battle field and movement primitives
+js/team-effects.js                  Optimized cached field effects (idle pause)
+assets/training-sentinel.svg        Practice enemy artwork
+characters/
+  saber/
+    character.js                    Saber metadata, element colors, Basic/Skill/Ult code
+    art.svg                         Current placeholder sprite
+    lab.html                        Approved optimized standalone Saber demo
+  mage/
+    character.js                    Independent Mage logic
+    art.svg
+    lab.html
+  tank/
+    character.js                    Independent Tank logic
+    art.svg
+    lab.html
+  gunner/
+    character.js                    Independent Gunner logic
+    art.svg
+    lab.html
+labs/
+  saber.html, mage.html, ...        Backward-compatible redirects only
 ```
 
-### Integration contract
+## Replacing a character sprite with a transparent PNG
 
-Each lab sends `{app:'AdvengerSAGA',type:'READY'|'START'|'ACTION'|'REJECT'|'RESET',unit:...}` to the shell. The shell sends `COMMAND` with `basic|skill|ultimate`, `ELEMENT` with a valid class color, and `SYNC` with `enemyPercent`, `energy`, and `element`. Standalone labs retain their native buttons.
+1. Upload a PNG into that **character's own directory**, e.g. `characters/saber/sprite.png` (a cropped transparent portrait/standing character works best).
+2. Open `characters/saber/character.js` and change only the `art` path to `characters/saber/sprite.png`.
+3. Keep `fallback:'characters/saber/art.svg'` for a safe fallback. When adding a new character, give it its own directory with a `character.js` and sprite file.
+4. Commit. GitHub Pages will publish the change with the same static site; no changes to shared battle logic are required to replace an existing character sprite.
 
-Future updates may add new class labs and more support definitions to the central registry without rewriting the approved animations. Maintain the existing lab implementations as immutable baselines unless the user explicitly requests edits.
+A PNG around 512×768 pixels with transparency (and reasonable compression) is a good starting point for mobile. The stage uses `object-fit:contain` so the character remains visible without cropping.
+
+## Adding a new character or skill set
+
+Each character module registers with `AdvengerCharacters.register({...})`, including `id`, `art`, `fallback`, `name`, `skills`, `colors`, `defaultElement` and an asynchronous `perform(api,kind)` method.
+
+The `perform` API provides `rush`, `strafe`, `charge`, `projectile`, `rune`, `meteor`, `shield`, `lock`, `beam`, `cinematic`, `hit` and `wait`. Calling `hit(n)` notifies the central battle engine and produces damage feedback. Each class can have completely different animations without modifying the engine.
+
+New character modules require **one script registration line** in `index.html` to load their `character.js`. Existing characters' code/art can otherwise be modified independently. The team selector automatically lists registered modules; the team still has four main slots.
+
+## Approved animation baselines
+
+Previous standalone optimized labs are preserved unchanged in `characters/<id>/lab.html` and work independently. They are for visual reference and detailed animation testing. The **new shared field has its own lightweight multi-character effect implementation**; its effect visuals are not a frame-for-frame clone of the standalone labs. This avoids four concurrent Canvas renderers running in one mobile view.
+
+## Limitations and next steps
+
+There is no enemy AI/turn initiative, party HP, inventory, progression, multiplayer or cloud save yet. The latest work specifically fixes four-character shared presentation and modular per-character updateability, so those other mechanics should be evaluated separately.
