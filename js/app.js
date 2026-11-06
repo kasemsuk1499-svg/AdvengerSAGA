@@ -38,7 +38,7 @@ function read(){
   return x;
  }catch(e){return fresh()}
 }
-let state=read(),picker=null,loadedUnit=null,frameReady=false,view='formation';
+let state=read(),picker=null,loadedUnit=null,frameReady=false,actionBusy=false,view='formation';
 const frame=$('battleFrame');
 function store(){
  try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){/* private browsing quota */}
@@ -128,6 +128,7 @@ function ensureFrame(force){
  if(view!=='battle')return;
  const target=state.active;
  if(loadedUnit===target&&!force)return;
+ actionBusy=false;
  loadedUnit=target;frameReady=false;
  frame.src='labs/'+target+'.html?v=1';
  $('fullDemo').href=frame.src;
@@ -139,6 +140,7 @@ function sendSync(){
  frame.contentWindow.postMessage(packet,location.origin==='null'?'*':location.origin);
 }
 function deploy(id){
+ if(actionBusy)return notice('กรุณาให้ท่าปัจจุบันจบก่อนสลับตัว');
  if(state.active===id)return;
  if(!state.party.includes(id))return;
  state.active=id;ensureFrame(true);
@@ -146,6 +148,7 @@ function deploy(id){
  render();
 }
 function useSupport(index){
+ if(actionBusy)return notice('ใช้ผู้ช่วยหลังจบแอนิเมชันโจมตีนะจ๊ะ');
  if(state.used[index])return;
  if(state.enemyPct<=0)return notice('รีเซ็ตสนามก่อนใช้งานอีกครั้ง');
  const id=state.assist[index],v=SUPPORT[id];
@@ -162,6 +165,7 @@ function useSupport(index){
  state.used[index]=true;render();
 }
 function resetEncounter(){
+ if(actionBusy)return notice('รอจบแอนิเมชันก่อนรีเซ็ต');
  state.enemyPct=1;
  state.used=[false,false];state.boost=false;
  state.energy={saber:100,mage:100,tank:100,gunner:100};
@@ -174,10 +178,14 @@ window.addEventListener('message',e=>{
  const d=e.data;
  if(!d||d.app!=='AdvengerSAGA'||d.unit!==state.active)return;
  if(d.type==='READY'){
-  frameReady=true;sendSync();return;
+  frameReady=true;actionBusy=false;sendSync();return;
+ }
+ if(d.type==='START'){
+  actionBusy=true;renderBattle();return;
  }
  if(d.type==='RESET'){resetEncounter();return}
  if(d.type==='ACTION'){
+  actionBusy=false;
   if(!Number.isFinite(d.max)||d.max<=0||!Number.isFinite(d.before)||!Number.isFinite(d.after))return;
   const plain=Math.max(0,(d.before-d.after)/d.max);
   const bonus=state.boost&&plain>0?1.25:1;
