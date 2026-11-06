@@ -1,4 +1,4 @@
-# AdvengerSAGA — Four-Hero Battle Arena (v0.3)
+# AdvengerSAGA — Four-Hero Battle Arena (v0.4)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield and two support slots.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,17 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v0.4 — Original Fate/Grand Order-inspired battlefield layout
+
+- Uses the **information hierarchy and camera staging** of a classic anime command RPG as a reference, not Fate's actual assets or proprietary command-card art.
+- **Training enemy is now on the left** and **all four party characters remain visible on the right** in near/far staggered positions. Saber/Tank reverse-direction rush attacks correctly move toward the left-side target.
+- Replaces the roster list with **four compact illustrated EX-status cards** directly beneath the battlefield. Press a card to select who acts next; the other three remain present.
+- Command selection is a high-contrast **Basic / Skill / Ultimate** original card trio immediately below the party; color palette picker is expandable. On small screens, the command panel uses a sticky lower-edge treatment.
+- Keeps the game's established **4 main + 2 support** formation and per-character module folder design. No 5-card Fate deck, Noble Phantasm terminology, or Fate IP artwork is incorporated.
+- Responsive CSS file: `css/fate-inspired.css`. Original character files, transparent-PNG sprite future path, shared battle engine and saves are unchanged.
+
+**Verification:** Script syntax checked; a simulated battle confirmed all four party portraits, Saber basic damage, Mage ultimate damage, character switching, element selection, reset and persistent save. The dash path was validated in both directions. Real mobile device visual/performance checks are still required.
 ## What works
 
 - **Main team: four active slots**. Saber, Mage, Tank and Gunner are rendered together in the same arena. Tap a character in the field or its roster card to choose the next attacker; the other three remain visible.
@@ -25,6 +36,7 @@ Repository **Settings → Pages → Build and deployment → Source: Deploy from
 ```text
 index.html                          Main interface and script loading
 css/team-arena.css                  Unified battlefield layout
+css/fate-inspired.css               Original cinematic command-card / RPG battle styling
 js/app.js                           Team management, save, enemy HP, action selection
 js/character-registry.js            Register character modules
 js/shared-arena.js                  Shared battle field and movement primitives
