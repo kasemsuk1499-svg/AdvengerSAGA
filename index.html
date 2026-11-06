@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#090d20">
-<title>AdvengerSAGA | Team Formation</title>
+<title>AdvengerSAGA | สนามต่อสู้ 4+2</title>
 <style>
 :root{color-scheme:dark;--bg:#080c1a;--panel:#111930;--panel2:#17213c;--line:#303f64;--ink:#f0f4ff;--muted:#a1b0ce;--gold:#f5d28a;--aqua:#88d5ff}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse 85% 50% at 10% -10%,#203660 0,transparent 70%),radial-gradient(ellipse 75% 50% at 95% 100%,#231c43 0,transparent 70%),var(--bg);color:var(--ink);font:14px/1.6 system-ui,"Noto Sans Thai",sans-serif;min-height:100vh}
@@ -69,13 +69,97 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
  .frame-link{flex-direction:column;align-items:flex-start}
  .nav-btn{flex:1;padding:9px}
 }
+
+/* v0.2 — Action-first battle layout (embedded approved animation stays intact). */
+#battle{--hud:#111b35}
+#battle .battle-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+#battle .battle-heading .battle-title{font-size:clamp(24px,3vw,34px);line-height:1.2;margin:2px 0 3px}
+#battle .battle-heading .small{margin:0}
+#battle .battle-heading-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#battle .battle-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(265px,.9fr);gap:14px;align-items:start}
+#battle .battle-main-column,#battle .battle-aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+#battle .arena-wrap{border-radius:17px;box-shadow:0 18px 36px #0004}
+#battle .arena-hud{padding:12px 15px;background:linear-gradient(130deg,#121f3d,#192744);border-bottom:1px solid #455779}
+#battle .arena-hud>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:9px}
+#battle .arena-hud strong{font-size:16px;color:#ffe1b1;font-variant-numeric:tabular-nums}
+#battle .hud-tag{font-size:11px;font-weight:850;color:#d8e2f5;letter-spacing:.06em}
+#battle .hud-meter{height:9px;background:#071122;overflow:hidden;border-radius:99px;margin-top:9px}
+#battle .hud-meter i{height:100%;display:block;width:100%;border-radius:inherit;background:linear-gradient(90deg,#df6a6e,#f4c58b);transition:width .28s ease}
+#battle .arena-frame{height:479px;width:100%;display:block;border:0;background:#0e1934}
+#battle .arena-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid #364663;background:#101b34;font-size:12px}
+#battle .arena-foot b{color:#e4ecff}
+#battle .arena-foot #activeSubtitle{color:#9fb2d9}
+#battle .combat-console{padding:15px}
+#battle .command-topline{display:flex;justify-content:space-between;align-items:start;gap:10px;margin-bottom:10px}
+#battle .command-topline h2{font-size:17px;margin:0}
+#battle .command-indicator{font-size:10px;font-weight:850;letter-spacing:.12em;border:1px solid #508b7a;border-radius:7px;padding:5px 8px;background:#1742388a;color:#bdf5dd;white-space:nowrap}
+#battle .command-indicator.busy{border-color:#b68e67;background:#4d3623aa;color:#ffe5b0}
+#battle .battle-notice{font-size:12px;color:#c8d8ef;background:#0b152c;border:1px solid #354663;border-radius:9px;padding:8px 10px;margin-bottom:10px;min-height:38px}
+#battle .combat-command-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#battle .combat-command{position:relative;min-width:0;min-height:102px;border:1px solid #6c83b9;border-radius:13px;text-align:left;background:linear-gradient(150deg,#28466d,#16253c);color:#f3f7ff;padding:11px 11px 17px;transition:filter .13s,transform .13s}
+#battle .combat-command:hover:not(:disabled){filter:brightness(1.17)}
+#battle .combat-command:active:not(:disabled){transform:scale(.97)}
+#battle .combat-command.skill{border-color:#76a9c1;background:linear-gradient(145deg,#20535c,#203356)}
+#battle .combat-command.ultimate{border-color:#c8a2ec;background:linear-gradient(145deg,#593d78,#2d254e)}
+#battle .combat-command:disabled{opacity:.42}
+#battle .combat-command-icon{font-size:24px;display:block;line-height:1.15;margin-bottom:8px}
+#battle .combat-command strong{display:block;font-size:13px}
+#battle .combat-command small{display:block;color:#c3d4ee;font-size:11px;line-height:1.4;margin-top:2px}
+#battle .combat-command em{position:absolute;bottom:6px;right:9px;font-style:normal;font-size:9px;color:#d4d9f6;border:1px solid #7a96bd8c;border-radius:4px;padding:0px 5px}
+#battle .element-picker{border-top:1px solid #37466b;margin-top:11px;padding-top:11px}
+#battle .element-title{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;font-size:12px}
+#battle .element-choices{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+#battle .element-choice{border:1px solid #506384;background:#1a2643;color:#ebf0ff;border-radius:8px;padding:7px 10px;font-size:11px;display:flex;align-items:center;gap:6px}
+#battle .element-choice i{height:10px;width:10px;border-radius:50%;background:var(--swatch);box-shadow:0 0 10px var(--swatch)}
+#battle .element-choice.active{border-color:#ffda9b;background:#3d3a4d;color:#ffebb9}
+#battle .element-choice:disabled{opacity:.43}
+#battle .party-console,#battle .support-console{padding:15px}
+#battle .battle-roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#battle .battle-member{min-height:94px;display:flex;flex-direction:column;gap:4px;justify-content:space-between;padding:10px}
+#battle .battle-member.active{background:linear-gradient(150deg,#344e73,#2d3458);border-color:#f3d596}
+#battle .battle-member b{font-size:13px}
+#battle .battle-member span{font-size:10px;line-height:1.35}
+#battle .battle-member:disabled{opacity:.58}
+#battle .support-actions{margin:0;grid-template-columns:1fr}
+#battle .support-button{padding:11px;min-height:66px}
+#battle .support-button:disabled{opacity:.5}
+#battle .battle-log-panel{padding:13px 15px}
+#battle .battle-log-panel summary{cursor:pointer;font-weight:800;display:flex;align-items:center;justify-content:space-between;gap:10px}
+#battle .battle-log-panel[open] summary{margin-bottom:8px}
+#battle .lab-fallback{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:0 5px;font-size:12px}
+#battle .logbox{max-height:165px}
+@media(max-width:950px){#battle .battle-layout{grid-template-columns:1fr}#battle .battle-aside{display:grid;grid-template-columns:1fr 1fr;gap:10px}#battle .battle-log-panel,#battle .lab-fallback{grid-column:1/-1}}
+@media(max-width:580px){
+ #battle .battle-heading{gap:10px;margin-bottom:10px}
+ #battle .battle-heading .battle-title{font-size:23px}
+ #battle .battle-heading .small{font-size:11px}
+ #battle .battle-heading-actions .button{padding:8px 11px;font-size:12px}
+ #battle .battle-layout{gap:10px}
+ #battle .battle-aside{display:flex;gap:10px}
+ #battle .arena-hud{padding:9px 11px}
+ #battle .arena-frame{height:350px}
+ #battle .arena-foot{font-size:11px}
+ #battle .combat-console{padding:10px}
+ #battle .combat-command-grid{gap:6px}
+ #battle .combat-command{min-height:89px;padding:9px 7px 15px}
+ #battle .combat-command strong{font-size:11px}
+ #battle .combat-command small{font-size:9px}
+ #battle .combat-command-icon{font-size:22px;margin-bottom:5px}
+ #battle .element-choice{padding:7px 8px}
+ #battle .party-console,#battle .support-console{padding:12px}
+ #battle .support-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #battle .support-button{font-size:11px}
+ #battle .lab-fallback{flex-wrap:wrap}
+ #battle .command-topline .small{font-size:10px}
+}
+
 </style>
 </head>
 <body>
 <div class="shell">
 <header>
  <div class="logo"><div class="mark">✦</div><div><div class="eyebrow">4 + 2 Party System</div><div class="brand">AdvengerSAGA</div><div class="sub">Anime Combat · Optimized Battle Labs</div></div></div>
- <span class="tag">FOUNDATION BUILD · v0.1</span>
+ <span class="tag">BATTLE UI · v0.2</span>
 </header>
 <nav aria-label="การนำทาง">
  <button class="nav-btn active" data-screen="formation">🧩 จัดทีม</button>
@@ -99,24 +183,60 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
   </div>
  </div>
 </section>
-<section id="battle" class="screen">
- <div class="panel" style="margin-bottom:13px">
-  <div class="battle-head"><div><div class="eyebrow">TEAM BATTLE PREVIEW</div><h2>เลือกสมาชิกที่ลงโจมตี</h2><div class="small">สมาชิกทีม 4 คนอยู่ในรายชื่อพร้อมใช้งาน · ตัวที่เลือกจะแสดงแอนิเมชันเดิมในสนามทดลอง</div></div><button id="battleReset" class="button ghost">↻ รีเซ็ตสนาม</button></div>
-  <div id="battleRoster" class="battle-roster"></div>
-  <div class="party-stats">
-   <div class="statbox">HP เป้าหมาย <strong id="enemyHealth">100%</strong></div>
-   <div class="statbox">ตัวลงสนาม <strong id="activeName">Saber</strong></div>
-   <div class="statbox">EX <strong id="activeEnergy">100/100</strong></div>
+<section id="battle" class="screen" aria-label="สนามต่อสู้ AdvengerSAGA">
+ <div class="battle-heading">
+   <div><div class="eyebrow">ADVENTURE SAGA · TRAINING ARENA 01</div>
+   <h1 class="battle-title">⚔️ สนามฝึกต่อสู้</h1><p class="small">สลับสมาชิกหลักทั้ง 4 คนโจมตีเป้าหมายเดียวกันได้ · ผู้ช่วย 2 คนมีผลต่อการต่อสู้</p></div>
+   <div class="battle-heading-actions">
+    <button type="button" id="battleReset" class="button ghost">↻ เริ่มไฟต์ใหม่</button>
+    <button type="button" class="button ghost" data-screen="formation">🧩 จัดทีม</button>
+   </div>
+ </div>
+ <div class="battle-layout">
+  <div class="battle-main-column">
+   <section class="arena-wrap" aria-label="สนามทดสอบการโจมตี">
+    <div class="arena-hud">
+     <div><span class="hud-tag">🎯 TRAINING SENTINEL</span><strong id="enemyHealth">100%</strong></div>
+     <div class="hud-meter" role="progressbar" id="targetHpTrack" aria-label="พลังชีวิตเป้าหมาย" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="targetHpBar"></i></div>
+    </div>
+    <iframe id="battleFrame" class="arena-frame" title="สนามแอนิเมชันต่อสู้ของตัวละครที่เลือก" loading="eager"></iframe>
+    <div class="arena-foot"><span><b id="activeName">Saber</b> <span id="activeSubtitle">นักดาบ</span></span><span>EX <b id="activeEnergy">100/100</b></span></div>
+   </section>
+   <section class="combat-console panel" aria-label="คำสั่งโจมตี">
+    <div class="command-topline">
+      <div><h2>คำสั่งต่อสู้</h2><span class="small">เลือกท่าแล้วดูแอนิเมชันได้ตรงสนามด้านบน</span></div>
+      <span class="command-indicator" id="commandIndicator">READY</span>
+    </div>
+    <div id="combatStatus" class="battle-notice" role="status" aria-live="polite">กำลังเตรียมสนาม...</div>
+    <div class="combat-command-grid">
+      <button type="button" class="combat-command basic" data-command="basic"><span class="combat-command-icon">⚔️</span><strong>Basic Attack</strong><small id="basicLabel">โจมตีปกติ</small><em>J</em></button>
+      <button type="button" class="combat-command skill" data-command="skill"><span class="combat-command-icon">✨</span><strong>Skill</strong><small id="skillLabel">สกิลประจำอาชีพ</small><em>K</em></button>
+      <button type="button" class="combat-command ultimate" data-command="ultimate"><span class="combat-command-icon">🌟</span><strong>Ultimate</strong><small id="ultimateLabel">ใช้ EX 100</small><em>L</em></button>
+    </div>
+    <div class="element-picker">
+      <div class="element-title"><b>🎨 สีธาตุของเอฟเฟกต์</b><span class="small">เปลี่ยนเฉพาะภาพ ไม่เปลี่ยนดาเมจ</span></div>
+      <div id="elementChoices" class="element-choices" role="group" aria-label="เลือกธาตุ"></div>
+    </div>
+   </section>
   </div>
-  <div class="panel-head"><h3>🧑‍🚀 ผู้ช่วย 2 ช่อง</h3><span class="small">ใช้ได้ช่องละหนึ่งครั้งต่อการทดสอบ</span></div>
-  <div id="assistActions" class="support-actions"></div>
-  <div class="status" id="combatStatus">พร้อมลงสนาม</div>
+  <aside class="battle-aside">
+   <section class="panel party-console" aria-label="เลือกสมาชิกลงสนาม">
+     <div class="panel-head"><h2>🧑‍🤝‍🧑 ตัวละครหลัก</h2><span class="chip">4 SLOTS</span></div>
+     <p class="small" style="margin:0 0 10px">กดเลือกตัวละครเพื่อเปลี่ยนผู้โจมตี · เป้าหมายใช้ HP ร่วมกัน</p>
+     <div id="battleRoster" class="battle-roster"></div>
+   </section>
+   <section class="panel support-console" aria-label="ใช้ผู้ช่วย">
+     <div class="panel-head"><h2>✦ ผู้ช่วย</h2><span class="chip">2 SUPPORTS</span></div>
+     <div id="assistActions" class="support-actions"></div>
+     <p class="small" style="margin:8px 0 0">แต่ละช่องใช้ได้หนึ่งครั้งต่อไฟต์ · กดเริ่มไฟต์ใหม่เพื่อเติมสิทธิ์</p>
+   </section>
+   <details class="panel battle-log-panel">
+     <summary>📜 บันทึกการต่อสู้ <span class="small">แตะเพื่อเปิด / ปิด</span></summary>
+     <div id="battleLog" class="logbox" aria-live="polite"></div>
+   </details>
+   <div class="lab-fallback"><span class="small">ต้องการเปิดเฉพาะสนามต้นแบบ?</span><a id="fullDemo" href="labs/saber.html" target="_blank" rel="noopener">เปิดอาชีพนี้เต็มหน้าจอ</a></div>
+  </aside>
  </div>
- <div class="arena-wrap">
-  <iframe id="battleFrame" class="arena-frame" title="AdvengerSAGA class battle demo" loading="eager" referrerpolicy="no-referrer"></iframe>
-  <div class="frame-link"><span>อนิเมชันแต่ละอาชีพใช้ต้นแบบ Optimized ที่ผ่านการประเมินแล้ว</span><a id="fullDemo" href="labs/saber.html" target="_blank" rel="noopener">เปิดฉากต่อสู้เต็มหน้าจอ</a></div>
- </div>
- <div class="panel" style="margin-top:13px"><div class="panel-head"><h3>📜 บันทึกการทดสอบ</h3><span class="chip">SYNCED PARTY</span></div><div id="battleLog" class="logbox"></div></div>
 </section>
 <section id="about" class="screen">
  <div class="hero-banner"><div class="eyebrow">DEVELOPMENT ROADMAP</div><h1>AdvengerSAGA</h1><p>โครงสร้างเริ่มต้น 4 ตัวละครหลัก และ 2 ผู้ช่วย เน้นรักษาคุณภาพเอฟเฟกต์และความลื่นของต้นแบบก่อนขยายเป็นระบบต่อสู้แบบทีมเต็มรูปแบบ</p></div>
