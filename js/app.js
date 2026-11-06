@@ -133,7 +133,7 @@ function renderBattle(){
    (fallen?' fallen':'')+(used?' acted':'')+'" data-deploy="'+unitId+
    '" aria-pressed="'+selected+'" aria-label="'+esc(unit.name)+' HP '+hp+'/'+max+' '+status+
    '" style="--char-color:'+unit.accent+'" '+(disabled?'disabled':'')+'>'+
-   '<span class="roster-top"><img src="'+esc(c.art)+'" alt="" loading="lazy" decoding="async">'+
+   '<span class="roster-top"><img src="'+esc(c.portrait||c.art)+'" alt="" loading="lazy" decoding="async">'+
    '<span class="roster-copy"><strong>'+esc(unit.name)+'</strong><small>MAIN 0'+(i+1)+'</small></span></span>'+
    '<span class="roster-hp"><b class="roster-hp-label">HP</b><span class="roster-meter"><i style="width:'+percent+'%"></i></span><small>'+hp+'/'+max+'</small></span>'+
    '<span class="roster-ex"><span class="roster-ex-label">EX</span><span class="roster-meter"><i style="width:'+ex+'%"></i></span><small>'+ex+'%</small></span>'+
