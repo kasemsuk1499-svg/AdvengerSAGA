@@ -156,12 +156,13 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 </style>
 <link rel="stylesheet" href="css/team-arena.css?v=0.4">
 <link rel="stylesheet" href="css/fate-inspired.css?v=0.4">
+<link rel="stylesheet" href="css/turn-battle.css?v=0.5">
 </head>
 <body>
 <div class="shell">
 <header>
  <div class="logo"><div class="mark">✦</div><div><div class="eyebrow">4 + 2 Party System</div><div class="brand">AdvengerSAGA</div><div class="sub">Anime Combat · Optimized Battle Labs</div></div></div>
- <span class="tag">FGO-STYLE REF · v0.4</span>
+ <span class="tag">TURN-BASED · v0.5</span>
 </header>
 <nav aria-label="การนำทาง">
  <button class="nav-btn active" data-screen="formation">🧩 จัดทีม</button>
@@ -188,7 +189,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <section id="battle" class="screen" aria-label="สนามต่อสู้ AdvengerSAGA">
  <div class="battle-heading">
    <div><div class="eyebrow">ADVENGERSAGA · BATTLE COMMAND</div>
-   <h1 class="battle-title">⚔️ ADVENGER BATTLE</h1><p class="small">มุมกล้อง RPG สไตล์อนิเมะ · ทีม 4 คนพร้อมกัน · ศัตรูฝั่งตรงข้าม · ผู้ช่วย 2 คน</p></div>
+   <h1 class="battle-title">⚔️ ADVENGER BATTLE</h1><p class="small">สนามแบบแถวเดียว 4 คน · สลับเทิร์นฝ่ายเรา/ศัตรู · ผู้ช่วย 2 คน</p></div>
    <div class="battle-heading-actions">
     <button type="button" id="battleReset" class="button ghost">↻ เริ่มไฟต์ใหม่</button>
     <button type="button" class="button ghost" data-screen="formation">🧩 จัดทีม</button>
@@ -204,14 +205,19 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
     <div id="teamArena" class="as-stage" aria-label="สนามต่อสู้: สมาชิกหลัก 4 คนยืนอยู่พร้อมกัน และหุ่นฝึก 1 ตัว"></div>
     <div class="arena-foot"><span class="arena-active-info"><span class="foot-active-icon">✦</span> <b id="activeName">Saber</b><span id="activeSubtitle">นักดาบ</span></span><span>ENERGY <b id="activeEnergy">100/100</b></span></div>
    </section>
+   <section class="turn-board" aria-label="ลำดับเทิร์นต่อสู้">
+    <div class="turn-head"><span class="turn-heading" id="roundLabel">ROUND 1 · ลำดับเทิร์น</span><span class="turn-phase" id="turnPhase">ฝ่ายเรา</span></div>
+    <div class="turn-order" id="turnOrder" aria-live="polite"></div>
+    <div class="turn-info" id="turnInfo">เลือกตัวที่ยังไม่ออกท่าได้คนละ 1 ครั้ง ก่อนศัตรูโจมตี</div>
+   </section>
    <section class="panel party-console" aria-label="เลือกสมาชิกลงสนาม">
      <div class="panel-head"><h2>✧ PARTY STATUS</h2><span class="chip">MAIN · 4/4</span></div>
-     <p class="small" style="margin:0 0 10px">แตะการ์ดสถานะเพื่อเลือกตัวที่ออกท่าต่อไป · ทั้ง 4 คนยังยืนอยู่ในสนาม</p>
+     <p class="small" style="margin:0 0 10px">ตัวละหนึ่งคำสั่งต่อรอบ · ตัวที่ใช้แล้วจะรอรอบถัดไป</p>
      <div id="battleRoster" class="battle-roster"></div>
    </section>
    <section class="combat-console panel" aria-label="คำสั่งโจมตี">
     <div class="command-topline">
-      <div><h2>✦ COMMAND CARDS</h2><span class="small">เลือกตัวละครด้านบนก่อนใช้การ์ดคำสั่ง</span></div>
+      <div><h2>✦ COMMAND CARDS</h2><span class="small">Basic / Skill / Ultimate ใช้หนึ่งเทิร์น · ป้องกันเพื่อผ่านเทิร์นได้</span></div>
       <span class="command-indicator" id="commandIndicator">READY</span>
     </div>
     <div id="combatStatus" class="battle-notice" role="status" aria-live="polite">กำลังเตรียมสนาม...</div>
@@ -220,6 +226,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
       <button type="button" class="combat-command skill" data-command="skill"><span class="command-seal">II</span><span class="combat-command-icon">✦</span><span class="command-type">SPECIAL</span><strong>SKILL</strong><small id="skillLabel">สกิลประจำอาชีพ</small><em>K</em></button>
       <button type="button" class="combat-command ultimate" data-command="ultimate"><span class="command-seal">III</span><span class="combat-command-icon">✶</span><span class="command-type">LIMIT BREAK</span><strong>ULTIMATE</strong><small id="ultimateLabel">ใช้ EX 100</small><em>L</em></button>
     </div>
+    <div class="turn-utility"><button type="button" class="guard-command" id="guardCommand" data-command="guard">🛡️ ป้องกัน / ผ่านเทิร์น</button><small>รับความเสียหายลดลง 50% เมื่อถูกโจมตีรอบนี้ · EX +15</small></div>
     <details class="element-picker" id="elementPanel"><summary>✧ ปรับธาตุของเอฟเฟกต์ <span class="small">แตะเพื่อเลือกสี</span></summary><div id="elementChoices" class="element-choices" role="group" aria-label="เลือกธาตุ"></div></details>
    </section>
   </div>
