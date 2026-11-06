@@ -1,4 +1,4 @@
-# AdvengerSAGA — Shared Class Animations + Individual Characters (v0.7)
+# AdvengerSAGA — Tanjiro Fire Saber + Modular Character System (v0.8)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield and two support slots.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,20 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v0.8 — Tanjiro Kamado playable Fire Saber
+
+The first named playable character is now registered as `tanjiro`, **class Saber**, **element Fire**, with separate files under `characters/tanjiro/`. Existing demo characters remain available and previous saved team selections are preserved.
+
+- **Basic: Quick Slash**, inherited unchanged from Saber (1 hit, 110 base damage).
+- **Skill: Hinokami Flash**, custom 3-hit Fire combo (70 + 95 + 130 = 295 base damage).
+- **Ultimate: Hinokami Kagura**, custom cinematic Fire combo (90 + 110 + 140 + 260 = 600 base damage; consumes 100 EX).
+- **Stats:** 1100 HP, 100 EX maximum. The element palette is locked to Fire for this character.
+- **Team picker:** choose Tanjiro from the main-team formation selection to replace one demo fighter. Changing the four-character formation starts a fresh battle to initialize the new member's HP/turn/EX properly.
+- **PNG-ready assets:** `characters/tanjiro/assets/standing.png` for the battlefield, `portrait.png` for formation and battle cards, `cutin.png` for Ultimate. Files have NOT been uploaded; the game currently uses the generic `standing.svg` fallback in all three places. See [Tanjiro asset guide](characters/tanjiro/assets/README.md). Uploading PNGs at those paths requires no code changes.
+- **Performance:** skills use the shared optimized FX field and do not create separate continuous animation loops.
+
+Code checks and simulated combat tests passed for registration, team selection, all three attacks, HP/damage, EX cost, battle turns and local save. Visual review and mobile performance on a real device still need user confirmation.
 
 ## v0.7 — Inherit approved class attacks, override moves individually
 
