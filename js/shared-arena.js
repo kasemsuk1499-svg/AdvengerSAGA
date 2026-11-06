@@ -124,7 +124,7 @@
   async cinematic(title,subtitle,duration=830){
    const overlay=this.stage.querySelector('#asCinematic'),actor=this.actor(this.active);
    const portrait=overlay.querySelector('.as-portrait'),char=AdvengerCharacters.get(this.active);
-   portrait.innerHTML='<img src="'+esc(char.cutin||char.portrait||char.art)+'" alt="">';
+   portrait.innerHTML='<img src="'+esc(char.cutin||char.portrait||char.art)+'" data-char-fallback="'+esc(char.fallback||char.art)+'" alt="">';
    overlay.querySelector('strong').textContent=title;
    overlay.querySelector('span').textContent=subtitle;
    overlay.classList.add('show');
