@@ -81,6 +81,22 @@
       (fallen?' ถูกน็อก':done?' ใช้เทิร์นแล้ว':' พร้อมใช้เทิร์น'));
    }
   }
+  async guard(id){
+   const actor=this.actor(id);
+   if(!actor)return;
+   this.focus(id);
+   const p=this.field.point(actor);
+   this.announce('GUARD','ตั้งรับแรงโจมตีศัตรู · EX +15');
+   this.field.emit('shield',p,p,'#8bdbff',this.reduced?130:460,{radius:43});
+   if(!this.reduced&&actor.animate){
+    actor.animate([
+     {transform:'translateY(0) scale(1)'},
+     {offset:.45,transform:'translateY(-6px) scale(1.07)'},
+     {transform:'translateY(0) scale(1)'}
+    ],{duration:500,easing:'ease-in-out'});
+   }
+   await wait(this.reduced?130:480);
+  }
   async enemyAttack(id,damage,guarded=false){
    const target=this.actor(id);
    if(!target||!this.target)return;
