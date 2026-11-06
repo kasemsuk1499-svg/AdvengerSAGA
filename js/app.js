@@ -4,35 +4,21 @@
 (function(){
 'use strict';
 const KEY='AdvengerSAGA_FORMATION_V1';
-const UNIT={
- saber:{name:'Saber',th:'นักดาบ',emoji:'⚔️',accent:'#82d7ff',back:'#254268',desc:'Quick Slash · Combo · Limit Break'},
- mage:{name:'Mage',th:'นักเวท',emoji:'🪄',accent:'#bba0ff',back:'#3e3267',desc:'Arcane Bolt · Rune Cascade · Astral Collapse'},
- tank:{name:'Tank',th:'ผู้พิทักษ์',emoji:'🛡️',accent:'#f4c98a',back:'#625139',desc:'Shield Bash · Reversal · Aegis Fall'},
- gunner:{name:'Gunner',th:'มือปืน',emoji:'🔫',accent:'#8bedcc',back:'#254b4c',desc:'Precision Shot · Crossfire · Zero Horizon'}
-};
+const UNIT=Object.fromEntries(AdvengerCharacters.all().map(u=>[u.id,{name:u.name,th:u.nameTh,emoji:u.icon,accent:u.accent,back:'#233657',desc:[u.skills.basic,u.skills.skill,u.skills.ultimate].join(' · ')}]));
 const SUPPORT={
  focus:{name:'Attack Booster',label:'เสริมพลัง',icon:'✦',desc:'เพิ่มความเสียหายท่าถัดไป 25%'},
  battery:{name:'Energy Charge',label:'เติมพลัง',icon:'⚡',desc:'เติม EX ให้ตัวลงสนาม 30 หน่วย'}
 };
 const UNITS=Object.keys(UNIT),SUPPORTS=Object.keys(SUPPORT);
-const MOVES={
- saber:{basic:'Quick Slash',skill:'Elemental Triple',ultimate:'Astral Rend'},
- mage:{basic:'Arcane Bolt',skill:'Rune Cascade',ultimate:'Astral Collapse'},
- tank:{basic:'Shield Bash',skill:'Bulwark Reversal',ultimate:'Aegis Fall'},
- gunner:{basic:'Precision Shot',skill:'Rapid Crossfire',ultimate:'Zero Horizon'}
-};
-const ELEMENTS={
- saber:[['water','น้ำ','#68caff'],['fire','ไฟ','#ff9a6b'],['wind','ลม','#79e9be'],['lightning','สายฟ้า','#f9e58b'],['void','มืด','#c39bff']],
- mage:[['arcane','เวท','#bba6ff'],['fire','ไฟ','#ff9867'],['frost','น้ำแข็ง','#90dfff'],['storm','พายุ','#f4dc85'],['nature','ธรรมชาติ','#80e3b6']],
- tank:[['earth','ดิน','#d7b38c'],['metal','โลหะ','#c9d8f6'],['wind','ลม','#75dabf'],['lightning','สายฟ้า','#fbe78f'],['void','มืด','#bb98ff']],
- gunner:[['kinetic','พลังงาน','#77e4ff'],['fire','ไฟ','#ff9b69'],['lightning','สายฟ้า','#ffe58a'],['ice','น้ำแข็ง','#a6eaff'],['void','มืด','#cc9aff']]
-};
+const MOVES=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).skills]));
+const ELEMENTS=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).colors]));
+const MAX_DUMMY_HP=4200;
 const $=id=>document.getElementById(id);
 const fresh=()=>({
- party:['saber','mage','tank','gunner'],assist:['focus','battery'],
- active:'saber',enemyPct:1,energy:{saber:100,mage:100,tank:100,gunner:100},
- used:[false,false],boost:false,elements:{saber:'water',mage:'arcane',tank:'earth',gunner:'kinetic'},logs:['AdvengerSAGA — พร้อมเริ่มทดสอบทีม 4+2'],
- screen:'formation'
+ party:['saber','mage','tank','gunner'],assist:['focus','battery'],active:'saber',enemyPct:1,
+ energy:Object.fromEntries(UNITS.map(id=>[id,100])),used:[false,false],boost:false,
+ elements:Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).defaultElement])),
+ logs:['AdvengerSAGA · ทีม 4 คนยืนในสนามพร้อมกัน'],screen:'formation'
 });
 function read(){
  try{
@@ -53,8 +39,8 @@ function read(){
   return x;
  }catch(e){return fresh()}
 }
-let state=read(),picker=null,loadedUnit=null,frameReady=false,actionBusy=false,view='formation';
-const frame=$('battleFrame');
+let state=read(),picker=null,frameReady=false,actionBusy=false,view='formation';
+let arena=null,partyMounted='';
 function store(){
  try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){/* private browsing quota */}
 }
@@ -140,15 +126,15 @@ function renderBattle(){
    '<i aria-hidden="true"></i>'+label+'</button>';
  }).join('');
  $('battleLog').innerHTML=state.logs.slice().reverse().map(line=>'<div class="logline">'+esc(line)+'</div>').join('');
- $('fullDemo').href='labs/'+active+'.html';
+ $('fullDemo').href='characters/'+active+'/lab.html';
 }
-function render(){renderFormation();renderBattle();store()}
+function render(){renderFormation();renderBattle();if(frameReady)arena?.energy(state.energy);store()}
 function show(tab){
  if(actionBusy&&tab!=='battle'){notice('รอให้แอนิเมชันจบก่อนออกจากสนาม');return}
  view=tab;
  document.querySelectorAll('.screen').forEach(el=>el.classList.toggle('active',el.id===tab));
  document.querySelectorAll('[data-screen]').forEach(b=>b.classList.toggle('active',b.dataset.screen===tab));
- if(tab==='battle')ensureFrame();
+ if(tab==='battle')ensureArena();
  render();
 }
 function choose(type,index,id){
@@ -167,100 +153,76 @@ function choose(type,index,id){
  }
  picker=null;render();
 }
-function ensureFrame(force){
+function ensureArena(force=false){
  if(view!=='battle')return;
- const target=state.active;
- if(loadedUnit===target&&!force)return;
- actionBusy=false;
- loadedUnit=target;frameReady=false;
- frame.src='labs/'+target+'.html?embed=1&v=2';
- $('fullDemo').href=frame.src;
-}
-function sendSync(){
- if(!frameReady||!frame.contentWindow)return;
- const packet={app:'AdvengerSAGA',type:'SYNC',unit:state.active,
-   enemyPercent:state.enemyPct,energy:state.energy[state.active],element:state.elements[state.active]};
- frame.contentWindow.postMessage(packet,location.origin==='null'?'*':location.origin);
+ try{
+  if(!arena)arena=new AdvengerSharedArena($('teamArena'));
+  const p=state.party.join(',');
+  if(force||!frameReady||partyMounted!==p){arena.mount(state.party,state.active);partyMounted=p}
+  else arena.focus(state.active);
+  arena.energy(state.energy);frameReady=true;
+ }catch(e){console.error(e);frameReady=false;notice('โหลดสนามไม่ได้: '+e.message)}
 }
 function sendCommand(kind){
  if(view!=='battle'||!['basic','skill','ultimate'].includes(kind))return;
- if(!frameReady)return notice('กำลังโหลดสนามต่อสู้');
+ if(!frameReady)return notice('สนามยังไม่พร้อม');
  if(actionBusy)return;
- if(state.enemyPct<=0)return notice('เป้าหมายหมด HP แล้ว กดเริ่มไฟต์ใหม่');
- if(kind==='ultimate'&&state.energy[state.active]<100)return notice('EX ไม่ถึง 100 ยังใช้อัลติเมทไม่ได้');
- actionBusy=true;renderBattle();
- try{frame.contentWindow.postMessage({app:'AdvengerSAGA',type:'COMMAND',unit:state.active,kind},location.origin==='null'?'*':location.origin)}
- catch(e){actionBusy=false;renderBattle();notice('ส่งคำสั่งไปยังสนามไม่สำเร็จ')}
+ if(state.enemyPct<=0)return notice('ศัตรูหมด HP แล้ว กดเริ่มไฟต์ใหม่');
+ const id=state.active,c=AdvengerCharacters.get(id);
+ if(kind==='ultimate'&&state.energy[id]<100)return notice('EX ไม่ถึง 100');
+ if(!c)return notice('ไม่พบโมดูลตัวละคร');
+ actionBusy=true;const bonus=state.boost?1.25:1;
+ let hits=0,damageDone=0;
+ if(kind==='ultimate')state.energy[id]=0;
+ renderBattle();arena.energy(state.energy);
+ const takeDamage=raw=>{
+  const old=Math.round(state.enemyPct*MAX_DUMMY_HP);
+  const dealt=Math.min(old,Math.max(0,Math.round(raw*bonus)));
+  state.enemyPct=(old-dealt)/MAX_DUMMY_HP;hits++;damageDone+=dealt;
+  $('enemyHealth').textContent=Math.round(state.enemyPct*100)+'%';
+  $('targetHpBar').style.width=state.enemyPct*100+'%';
+  $('targetHpTrack').setAttribute('aria-valuenow',String(Math.round(state.enemyPct*100)));
+  return dealt;
+ };
+ arena.play(id,kind,state.elements[id],takeDamage).then(success=>{
+  if(success){
+   if(kind!=='ultimate')state.energy[id]=Math.min(100,state.energy[id]+(kind==='skill'?30:20));
+   if(state.boost&&hits)state.boost=false;
+   log(c.icon+' '+c.name+' · '+kind.toUpperCase()+' · '+hits+' HIT · '+damageDone+' DMG'+(bonus>1?' [BOOST]':''));
+  }else log('⚠️ ท่าโจมตีไม่สำเร็จ: '+c.name);
+ }).catch(err=>{console.error(err);log('⚠️ เกิดข้อผิดพลาด: '+String(err.message||err))})
+ .finally(()=>{actionBusy=false;arena.energy(state.energy);render()});
 }
 function setElement(element){
- if(actionBusy||!frameReady)return;
- if(!ELEMENTS[state.active].some(([v])=>v===element))return;
- state.elements[state.active]=element;
- frame.contentWindow?.postMessage({app:'AdvengerSAGA',type:'ELEMENT',unit:state.active,element},location.origin==='null'?'*':location.origin);
- renderBattle();store();
+ if(actionBusy||!frameReady||!ELEMENTS[state.active].some(([key])=>key===element))return;
+ state.elements[state.active]=element;renderBattle();store();
 }
 function deploy(id){
- if(actionBusy)return notice('กรุณาให้ท่าปัจจุบันจบก่อนสลับตัว');
- if(state.active===id)return;
- if(!state.party.includes(id))return;
- state.active=id;ensureFrame(true);
- log('🔁 สลับตัวลงสนาม → '+UNIT[id].name);
- render();
+ if(actionBusy)return notice('รอแอนิเมชันจบก่อนสลับตัว');
+ if(!state.party.includes(id)||id===state.active)return;
+ state.active=id;arena?.focus(id);
+ log('🔁 เลือก '+UNIT[id].name+' ออกโจมตี · ทีมยังยืนครบ 4 คน');render();
 }
 function useSupport(index){
- if(actionBusy)return notice('ใช้ผู้ช่วยหลังจบแอนิเมชันโจมตีนะจ๊ะ');
- if(state.used[index])return;
- if(state.enemyPct<=0)return notice('รีเซ็ตสนามก่อนใช้งานอีกครั้ง');
- const id=state.assist[index],v=SUPPORT[id];
+ if(actionBusy)return notice('รอแอนิเมชันก่อนใช้ผู้ช่วย');
+ if(state.used[index]||state.enemyPct<=0)return;
+ const id=state.assist[index];
  if(id==='battery'){
-  if(state.energy[state.active]>=100)return notice('EX เต็มอยู่แล้ว ลองใช้ Ultimate ก่อนนะจ๊ะ');
+  if(state.energy[state.active]>=100)return notice('EX เต็มแล้ว');
   state.energy[state.active]=Math.min(100,state.energy[state.active]+30);
-  sendSync();
-  log('⚡ ผู้ช่วยเติม EX ให้ '+UNIT[state.active].name+' +30');
+  log('⚡ เติม EX ให้ '+UNIT[state.active].name+' +30');
  }else if(id==='focus'){
   if(state.boost)return notice('โบนัสโจมตีพร้อมใช้อยู่แล้ว');
-  state.boost=true;
-  log('✦ ผู้ช่วยเตรียมบัฟโจมตี +25% ให้ท่าถัดไป');
+  state.boost=true;log('✦ บัฟดาเมจท่าถัดไป 25%');
  }
- state.used[index]=true;render();
+ state.used[index]=true;arena?.energy(state.energy);render();
 }
 function resetEncounter(){
- if(actionBusy)return notice('รอจบแอนิเมชันก่อนรีเซ็ต');
- state.enemyPct=1;
- state.used=[false,false];state.boost=false;
- state.energy={saber:100,mage:100,tank:100,gunner:100};
- log('↻ รีเซ็ตเป้าหมาย EX และสิทธิ์ผู้ช่วยทั้งหมด');
- ensureFrame(true);render();
+ if(actionBusy)return notice('รอจบแอนิเมชันก่อน');
+ state.enemyPct=1;state.used=[false,false];state.boost=false;
+ state.energy=Object.fromEntries(UNITS.map(id=>[id,100]));
+ arena?.reset();arena?.energy(state.energy);log('↻ รีเซ็ตไฟต์ใหม่');render();
 }
-window.addEventListener('message',e=>{
- if(e.source!==frame.contentWindow)return;
- if(location.origin!=='null'&&e.origin!==location.origin)return;
- const d=e.data;
- if(!d||d.app!=='AdvengerSAGA'||d.unit!==state.active)return;
- if(d.type==='READY'){
-  frameReady=true;actionBusy=false;sendSync();renderBattle();return;
- }
- if(d.type==='REJECT'){
-  actionBusy=false;renderBattle();notice('ยังโจมตีไม่ได้ ลองอีกครั้งหรือรีเซ็ตสนาม');return;
- }
- if(d.type==='START'){
-  actionBusy=true;renderBattle();return;
- }
- if(d.type==='RESET'){resetEncounter();return}
- if(d.type==='ACTION'){
-  actionBusy=false;
-  if(!Number.isFinite(d.max)||d.max<=0||!Number.isFinite(d.before)||!Number.isFinite(d.after))return;
-  const plain=Math.max(0,(d.before-d.after)/d.max);
-  const bonus=state.boost&&plain>0?1.25:1;
-  const applied=Math.min(state.enemyPct,plain*bonus);
-  state.enemyPct=Math.max(0,state.enemyPct-applied);
-  state.energy[d.unit]=Math.min(100,Math.max(0,Number(d.energy)||0));
-  if(state.boost&&plain>0)state.boost=false;
-  log(UNIT[d.unit].emoji+' '+UNIT[d.unit].name+' · '+d.kind.toUpperCase()+' −'+Math.round(applied*1000)+' HP'+(bonus>1?' (BOOST)':''));
-  // When a support's boost changes damage, resync the training dummy.
-  sendSync();render();
- }
-});
 document.addEventListener('click',e=>{
  const btn=e.target.closest('button');if(!btn)return;
  if(btn.dataset.screen){show(btn.dataset.screen);return}
@@ -268,6 +230,7 @@ document.addEventListener('click',e=>{
  if(btn.dataset.supportSlot!==undefined){picker={type:'support',index:Number(btn.dataset.supportSlot)};renderPicker();return}
  if(btn.dataset.pick&&picker){choose(picker.type,picker.index,btn.dataset.pick);return}
  if(btn.dataset.deploy){deploy(btn.dataset.deploy);return}
+ if(btn.dataset.fieldUnit){deploy(btn.dataset.fieldUnit);return}
  if(btn.dataset.command){sendCommand(btn.dataset.command);return}
  if(btn.dataset.elementChoice){setElement(btn.dataset.elementChoice);return}
  if(btn.dataset.assist!==undefined){useSupport(Number(btn.dataset.assist));return}
@@ -284,9 +247,10 @@ $('cancelPicker').addEventListener('click',()=>{picker=null;renderPicker()});
 $('startBattle').addEventListener('click',()=>show('battle'));
 $('battleReset').addEventListener('click',resetEncounter);
 $('resetTeam').addEventListener('click',()=>{
- state=fresh();picker=null;loadedUnit=null;frameReady=false;
+ state=fresh();picker=null;partyMounted='';frameReady=false;
+ if(view==='battle')ensureArena(true);
  log('↻ จัดทีมใหม่เป็น 4 อาชีพต้นแบบ');render();notice('คืนค่าการจัดทีมเรียบร้อย');
 });
-$('labLinks').innerHTML=UNITS.map(id=>'<a class="button ghost" target="_blank" rel="noopener" href="labs/'+id+'.html">'+UNIT[id].emoji+' '+UNIT[id].name+'</a>').join('');
+$('labLinks').innerHTML=UNITS.map(id=>'<a class="button ghost" target="_blank" rel="noopener" href="characters/'+id+'/lab.html">'+UNIT[id].emoji+' '+UNIT[id].name+'</a>').join('');
 render();
 })();
