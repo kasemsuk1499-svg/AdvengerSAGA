@@ -15,6 +15,7 @@
   mount(party,selected){
    if(this.busy)return;
    if(party.length!==4||new Set(party).size!==4)throw Error('Shared arena requires exactly four unique units');
+   if(this.field){this.field.destroy();this.field=null;}
    this.party=party.slice();this.active=selected;
    const actors=party.map((id,i)=>{
     const char=AdvengerCharacters.get(id);
