@@ -30,7 +30,9 @@
  function hitEnemy(state,id,raw,multiplier=1){
   const foe=state.enemies.find(e=>e.id===id);
   if(!foe||foe.hp<=0||!valid(raw))return 0;
-  const dealt=Math.min(foe.hp,Math.max(0,Math.round(raw*(valid(multiplier)?multiplier:1))));
+  const amount=Math.max(0,Math.round(raw*(valid(multiplier)?multiplier:1)));
+  if(g.AdvengerLifeEngine)return g.AdvengerLifeEngine.hit(state,'enemy',id,amount);
+  const dealt=Math.min(foe.hp,amount);
   foe.hp-=dealt;
   return dealt;
  }
@@ -50,7 +52,9 @@
  }
  function applyStrike(state,move){
   if(!move||state.hp[move.heroId]<=0)return 0;
-  const damage=Math.min(state.hp[move.heroId],Math.max(0,Math.round(move.damage)));
+  const amount=Math.max(0,Math.round(move.damage));
+  if(g.AdvengerLifeEngine)return g.AdvengerLifeEngine.hit(state,'ally',move.heroId,amount);
+  const damage=Math.min(state.hp[move.heroId],amount);
   state.hp[move.heroId]-=damage;
   return damage;
  }

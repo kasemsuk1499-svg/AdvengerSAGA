@@ -50,6 +50,7 @@
   if(!DB.isNegative(key))return false;
   if(has(s,side,id,'statusImmunity'))return true;
   if(DB.isControl(key)&&has(s,side,id,'ccImmunity'))return true;
+  if(key==='death'&&(has(s,side,id,'deathImmunity')||has(s,side,id,'damageImmunity')))return true;
   if(key==='poison'&&has(s,side,id,'poisonImmunity'))return true;
   if((key==='burn'||key==='dragonFlame')&&has(s,side,id,'burnImmunity'))return true;
   if(key==='bleed'&&has(s,side,id,'bleedImmunity'))return true;
@@ -69,7 +70,9 @@
   const n=Math.max(0,Math.round(raw||0));
   if(!alive(s,side,id)||n<=0)return 0;
   let actual=0;
-  if(side==='enemy'){
+  if(g.AdvengerLifeEngine){
+   actual=g.AdvengerLifeEngine.hit(s,side,id,n);
+  }else if(side==='enemy'){
    actual=g.AdvengerBattleCore.hitEnemy(s,id,n);
   }else{
    actual=Math.min(s.hp[id],n);s.hp[id]-=actual;
@@ -106,7 +109,8 @@
   const turns=clamp(Math.round(safe(fx.turns,1)),1,999);
   const attackPower=attack(s,from,sourceId);
   if(fx.key==='death'&&prior){
-   damage(s,side,id,maxHP(s,side,id)*100);
+   if(g.AdvengerLifeEngine)g.AdvengerLifeEngine.execute(s,side,id);
+   else damage(s,side,id,maxHP(s,side,id)*100);
    a.splice(a.indexOf(prior),1);
    return true;
   }
@@ -205,7 +209,9 @@
     st.turns--;
     if(st.turns<=0){
      if(st.key==='death'){
-      const actual=damage(s,side,id,maxHP(s,side,id)*100);
+      const actual=g.AdvengerLifeEngine?
+       (g.AdvengerLifeEngine.execute(s,side,id)?maxHP(s,side,id):0):
+       damage(s,side,id,maxHP(s,side,id)*100);
       if(actual)events.push({kind:'deathExpiry',side,id,key:'death',amount:actual});
      }
      const result=remove(s,side,id,st.key,'expire');

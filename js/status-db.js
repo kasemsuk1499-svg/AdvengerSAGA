@@ -37,7 +37,9 @@
   ['weaknessBoost','โจมตีจุดอ่อน↑',false],['poisonImmunity','ป้องกันพิษ',false],
   ['magicImmunity','คุ้มกันเวท',false],['statusImmunity','ป้องกันสถานะ',false],
   ['ccImmunity','ป้องกันควบคุม',false],['burnImmunity','ป้องกันไฟ',false],
-  ['bleedImmunity','ป้องกันเลือดไหล',false]
+  ['bleedImmunity','ป้องกันเลือดไหล',false],
+  ['deathImmunity','ป้องกันคำสาปมรณะ',false],
+  ['damageImmunity','คุ้มกันความเสียหาย',false]
  ];
  const labels=Object.freeze({
   ...Object.fromEntries(rows.map(([id,nameTh])=>[id,nameTh])),

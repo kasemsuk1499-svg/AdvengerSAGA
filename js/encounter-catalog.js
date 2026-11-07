@@ -35,7 +35,7 @@
    return {id:'foe-'+index,kind:opt.characterId||opt.kind,characterId:opt.characterId||null,
     name:base.name,nameTh:base.nameTh,icon:base.icon||'◆',
     hp:maxHP,maxHP,attack,stats,art:base.art||sprites,fallback:base.fallback||base.art||sprites,
-    statusOnHit:opt.statusOnHit||base.statusOnHit||null,boss:!!(opt.boss??base.boss)};
+    statusOnHit:opt.statusOnHit||base.statusOnHit||null,life:opt.life||base.life||null,boss:!!(opt.boss??base.boss)};
   });
  }
  function spawn(id){

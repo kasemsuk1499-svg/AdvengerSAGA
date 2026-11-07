@@ -49,8 +49,8 @@
      triggers:[{event:'battleStart',target:'self',effect:status('magicImmunity',1,2)}]}
    }}
  ];
- const VALID_TARGETS=new Set(['self','singleEnemy','threeEnemies','fourEnemies','allEnemies','allAllies','singleAlly']);
- const VALID_TYPES=new Set(['damage','heal','status','cleanse','reduceBuffDuration','revive']);
+ const VALID_TARGETS=new Set(['self','singleEnemy','threeEnemies','fourEnemies','allEnemies','allAllies','singleAlly','twoAllies']);
+ const VALID_TYPES=new Set(['damage','heal','status','cleanse','reduceBuffDuration','revive','guts','autoRevive','immortality','execute']);
  function register(entry,replace=false){
   if(!entry||typeof entry.id!=='string'||!/^[a-z][a-z0-9-]*$/.test(entry.id)||(!replace&&all.has(entry.id)))
    throw new Error('Invalid or duplicate skill database hero');
