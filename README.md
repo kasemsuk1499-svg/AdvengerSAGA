@@ -1,4 +1,4 @@
-# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.4)
+# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.5)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,15 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v1.5 — Skill Creator Lab / ห้องทดลองสร้างสกิลตัวละคร
+
+- **Playable 🧪 Skill Creator** tab: visually build and reorder **1–24 sequential effects**, with separate target override, multi-target and multi-hit, status chance per landed hit, healing, cleanse, Guts, Revive, Immortality, Execute and self-buffs. The approved example of **4 enemies × 4 hits each = up to 16 hits**, then Paralysis per hit, then self ATK +40% for 4 turns, is available as an editable template. **Paralysis chance is intentionally blank** until the author specifies it.
+- Create, rename, duplicate and delete **standalone reusable skills**. Equip them to any registered character in **Basic / Skill 1 / Skill 2 / Ultimate** slots. Custom buttons appear alongside original attacks and reference kits without replacing them.
+- Cast these skills during the actual **SPD turn**, with a separate per-skill cooldown and EX 100 required for Ultimate. The existing 30-stat, status, death/revive and lightweight shared-VFX engines are reused.
+- Added **🧪 SKILL LAB · 4 enemies** training encounter so the full 16-hit behavior can actually be tested in battle.
+- Local browser persistence plus copyable **JSON export/import**; **not** cloud-synced or committed to GitHub automatically. The original class animations remain unchanged.
+- Full workflow and developer guide: [Skill Creator Lab](docs/SKILL_CREATOR_LAB.md). Custom passive scripting and per-character animated-art editing are future work.
 
 ## v1.4 — Death, Guts, Immortality & Revival / ความตายและการคืนชีพ
 
@@ -21,7 +30,7 @@ Repository **Settings → Pages → Build and deployment → Source: Deploy from
 ## v1.3 — Seven Knights–inspired Status Skill System / ระบบสถานะผิดปกติ
 
 - **17 reusable ailments** catalogued in `js/status-db.js` and executed by `js/status-engine.js`: Burn, Dragon Flame, Bleed, Poison, Death, Stun, Paralysis, Shock, Freeze, Petrify, Sleep, Fear, Blind, Silence, Confusion, Heal Block and Soul Death.
-- Effects resolve in array order; `eachHit:true` rolls an ailment independently for each **landed** hit in the preceding damage step. `target:'self'` on a final effect permits a self ATK buff after hitting the enemy (no retroactive boost). `fourEnemies` supports up to 4 targets in the skill engine; current battlefield encounters still cap at 3.
+- Effects resolve in array order; `eachHit:true` rolls an ailment independently for each **landed** hit in the preceding damage step. `target:'self'` on a final effect permits a self ATK buff after hitting the enemy (no retroactive boost). `fourEnemies` supports up to 4 targets in the skill engine; v1.5 added a dedicated four-foe testing encounter.
 - CC blocks its target's pending **SPD initiative action**, decrementing one duration per missed action; Silence prevents active/ultimate skills, while basic and guard remain available.
 - DoT, status reactions, cleanse, poison/CC immunity, deterministic chance using EFFECT_HIT / EFFECT_RESIST, 5-stack Bleed, and local status save restore are integrated into existing battles.
 - The new **STATUS LAB** in the battle panel can apply a chosen ailment for testing without consuming a turn. All 17 statuses are visible in **ข้อมูล**.
