@@ -46,7 +46,7 @@ test('Lucy heals, removes debuffs and grants defense',()=>{
  a.match(S.statusText(s,'ally','saber'),/DEF↑/);
 });
 test('Rachel passive revives once, Ellen blocks magic damage',()=>{
- const s=fresh();a.match(S.statusText(s,'ally','saber'),/Weakness/);
+ const s=fresh();a.match(S.statusText(s,'ally','saber'),/โจมตีจุดอ่อน/);
  a.equal(S.adjustDamage(s,'enemy','foe-0','ally','gunner',200,'magic'),0);
  s.hp.saber=0;a.equal(S.onLethal(s,'saber'),true);a.equal(s.hp.saber,800);
  s.hp.saber=0;a.equal(S.onLethal(s,'saber'),false);
