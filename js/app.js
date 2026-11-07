@@ -19,7 +19,7 @@ const fresh=()=>{
  const party=['saber','mage','tank','gunner'];
  return {
   ...RULES.initial(party),battleVersion:CORE.version,party,assist:['focus','battery'],active:party[0],
-   encounterId:'training',enemies:CORE.spawn('training'),targetId:'foe-0',
+   encounterId:'training',enemies:CORE.spawn('training'),targetId:'foe-0',enemyCursor:0,
   energy:Object.fromEntries(UNITS.map(id=>[id,100])),
   used:[false,false],boost:false,
   elements:Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).defaultElement])),
@@ -62,9 +62,11 @@ function read(){
   }
   state.used=[!!d.used?.[0],!!d.used?.[1]];state.boost=!!d.boost;
   state.logs=Array.isArray(d.logs)?d.logs.filter(v=>typeof v==='string').slice(-20):[];
+  state.enemyCursor=!legacy&&Number.isInteger(d.enemyCursor)?
+   Math.max(0,Math.min(state.enemies.length,d.enemyCursor)):0;
   if(CORE.outcome(state))state.phase=CORE.outcome(state);
-  else if(state.phase==='enemy'){
-   // An interrupted enemy animation resolves as a fresh player round.
+  else if(state.phase==='enemy'&&legacy){
+   // v0.8 had no enemy cursor; preserve its safe migration behavior.
    state.round=Math.min(999,state.round+1);state.phase='player';
    state.acted=RULES.counters(state.party);state.guarded=RULES.counters(state.party);
   }else if(state.phase==='player'&&!RULES.available(state.party,state.hp,state.acted).length){
@@ -229,6 +231,14 @@ function show(tab){
  document.querySelectorAll('[data-screen]').forEach(b=>b.classList.toggle('active',b.dataset.screen===tab));
  if(tab==='battle')ensureArena();
  render();
+ if(tab==='battle'&&state.phase==='enemy'&&!actionBusy&&frameReady){
+  actionBusy=true;
+  enemyPhase().catch(err=>{
+   console.error('Enemy phase resume failed',err);
+   log('⚠️ ระบบเทิร์นศัตรูขัดข้อง · เริ่มรอบถัดไปเพื่อให้เล่นต่อได้');
+   CORE.nextRound(state);
+  }).finally(()=>{actionBusy=false;render()});
+ }
 }
 function choose(type,index,id){
  if(actionBusy)return notice('รอให้แอนิเมชันจบก่อนเปลี่ยนทีม');
@@ -247,7 +257,7 @@ function choose(type,index,id){
    // turn state and EX without retaining actions from the old party.
    Object.assign(state,RULES.initial(state.party));
    state.battleVersion=CORE.version;state.active=state.party[0];
-   state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);
+   state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);state.enemyCursor=0;
    state.energy=Object.fromEntries(UNITS.map(unitId=>[unitId,100]));
    state.used=[false,false];state.boost=false;
    partyMounted='';arena?.reset();
@@ -276,17 +286,20 @@ function ensureArena(force=false){
 async function enemyPhase(){
  state.phase='enemy';renderBattle();store();
  const attacking=CORE.living(state).slice();
- for(let i=0;i<attacking.length;i++){
+ const start=Math.max(0,Math.min(attacking.length,state.enemyCursor||0));
+ for(let i=start;i<attacking.length;i++){
   const foe=attacking[i];
   if(!CORE.livingParty(state).length)break;
+  state.enemyCursor=i;store();
   const move=CORE.strike(state,foe,i);
   if(!move)continue;
   arena.selectTarget(foe.id);
   await arena.enemyAttack(move.heroId,move.damage,move.guarded,foe.name);
   const dealt=CORE.applyStrike(state,move);
   log('🔴 '+foe.name+' → '+UNIT[move.heroId].name+' −'+dealt+' HP'+(move.guarded?' [GUARD]':''));
-  renderBattle();store();
+  state.enemyCursor=i+1;renderBattle();store();
  }
+ state.enemyCursor=0;
  state.guarded=RULES.counters(state.party);
  const result=CORE.outcome(state);
  if(result==='defeat'){
@@ -332,7 +345,7 @@ function sendCommand(kind){
  const attackTarget=state.targetId;
  let hits=0,damageDone=0;
  if(kind==='ultimate')state.energy[id]=0;
- renderBattle();arena.energy(state.energy);store();
+ renderBattle();arena.energy(state.energy); // provisional EX is only persisted after the move completes
  const takeDamage=raw=>{
   const dealt=CORE.hitEnemy(state,attackTarget,raw,bonus);
   hits++;damageDone+=dealt;
@@ -415,7 +428,7 @@ function resetEncounter(){
  const newRound=RULES.initial(state.party);
  Object.assign(state,newRound);
  state.battleVersion=CORE.version;state.active=state.party[0];
- state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);
+ state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);state.enemyCursor=0;
  state.used=[false,false];state.boost=false;
  state.energy=Object.fromEntries(UNITS.map(id=>[id,100]));
  arena?.reset();arena?.syncEnemies(state.enemies,state.targetId);
