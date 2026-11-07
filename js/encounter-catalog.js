@@ -4,12 +4,12 @@
  'use strict';
  const sprites='assets/training-sentinel.svg';
  const types=Object.freeze({
-  sentinel:Object.freeze({speed:95,name:'Training Sentinel',nameTh:'หุ่นทดสอบ',icon:'◆',maxHP:4200,attack:215,art:sprites,boss:false}),
-  scout:Object.freeze({speed:125,name:'Void Scout',nameTh:'หน่วยลาดตระเวน',icon:'◇',maxHP:1300,attack:120,art:sprites,boss:false}),
-  guardian:Object.freeze({speed:70,name:'Iron Guardian',nameTh:'ผู้พิทักษ์เหล็ก',icon:'⬡',maxHP:2100,attack:175,art:sprites,boss:false}),
-  wisp:Object.freeze({speed:115,name:'Arcane Wisp',nameTh:'ภูตอาคม',icon:'✧',maxHP:1100,attack:150,art:sprites,boss:false,
+  sentinel:Object.freeze({speed:95,name:'Training Sentinel',nameTh:'หุ่นทดสอบ',icon:'◆',element:'metal',maxHP:4200,attack:215,art:sprites,boss:false}),
+  scout:Object.freeze({speed:125,name:'Void Scout',nameTh:'หน่วยลาดตระเวน',icon:'◇',element:'wind',maxHP:1300,attack:120,art:sprites,boss:false}),
+  guardian:Object.freeze({speed:70,name:'Iron Guardian',nameTh:'ผู้พิทักษ์เหล็ก',icon:'⬡',element:'earth',maxHP:2100,attack:175,art:sprites,boss:false}),
+  wisp:Object.freeze({speed:115,name:'Arcane Wisp',nameTh:'ภูตอาคม',icon:'✧',element:'arcane',maxHP:1100,attack:150,art:sprites,boss:false,
    statusOnHit:{key:'attackDown',power:.12,turns:2,chance:1}}),
-  overlord:Object.freeze({speed:90,name:'Abyss Overlord',nameTh:'จอมราชันแห่งห้วงลึก',icon:'♛',maxHP:6800,attack:295,art:sprites,boss:true})
+  overlord:Object.freeze({speed:90,name:'Abyss Overlord',nameTh:'จอมราชันแห่งห้วงลึก',icon:'♛',element:'void',maxHP:6800,attack:295,art:sprites,boss:true})
  });
  const encounters=Object.freeze({
   training:Object.freeze({name:'Training Grounds',nameTh:'ฝึกต่อสู้ · ศัตรู 1 ตัว',enemies:['sentinel']}),
@@ -39,8 +39,10 @@
    const stats=g.AdvengerStatDB?.create({maxHP,attack,
     speed:opt.speed??opt.stats?.SPD??base.stats?.SPD??base.speed??100,
     stats:{...(base.stats||{}),...(opt.stats||{}),MAX_HP:maxHP,P_ATK:attack}})||null;
+   const element=opt.element??base.element??base.defaultElement??null;
+   if(element&&!g.AdvengerElements.has(element))throw Error('Unknown enemy element '+element);
    return {id:'foe-'+index,kind:opt.characterId||opt.kind,characterId:opt.characterId||null,
-    name:base.name,nameTh:base.nameTh,icon:base.icon||'◆',
+    element,name:base.name,nameTh:base.nameTh,icon:base.icon||'◆',
     hp:maxHP,maxHP,attack,stats,art:base.art||sprites,fallback:base.fallback||base.art||sprites,
     statusOnHit:opt.statusOnHit||base.statusOnHit||null,life:opt.life||base.life||null,boss:!!(opt.boss??base.boss)};
   });

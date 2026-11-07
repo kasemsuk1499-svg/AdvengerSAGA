@@ -164,6 +164,8 @@
   // training/lab damage remains identical to the original validated rules.
   if(fromSide==='ally'&&s.mode==='campaign'&&g.AdvengerCampaign?.stage(s.campaignStage))
    x*=1+g.AdvengerCampaign.attackBonus();
+  // Uses innate character / authored enemy affinity, NOT mutable FX colors.
+  x*=g.AdvengerElements?.damageMultiplier(s,fromSide,fromId,toSide,toId)??1;
   return Math.max(0,Math.round(x));
  }
  function cast(s,actorId,kind,selectedId,createdSkill=null){

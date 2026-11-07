@@ -47,6 +47,9 @@ function read(){
   state.party=d.party.slice();state.assist=d.assist.slice();
   for(const id of UNITS){
    if(ELEMENTS[id].some(([v])=>v===d.elements?.[id]))state.elements[id]=d.elements[id];
+   // The custom creator's innate element is authoritative after editing it.
+   if(AdvengerCharacters.get(id)?.createdInLab)
+    state.elements[id]=AdvengerCharacters.get(id).defaultElement;
   }
   if(![2,3,4].includes(d.battleVersion)){
    state.active=state.party[0];
@@ -170,7 +173,9 @@ function renderBattle(){
    '<span class="roster-select">'+status+'</span></button>';
  }).join('');
  $('activeName').textContent=u.emoji+' '+u.name;
- $('activeSubtitle').textContent=u.th;
+ const innate=AdvengerElements.get(AdvengerCharacters.get(id).element||
+   AdvengerCharacters.get(id).defaultElement);
+ $('activeSubtitle').textContent=u.th+(innate?' · '+innate.icon+' '+innate.name:'');
  $('activeEnergy').textContent=Math.round(state.energy[id])+'/100';
  $('encounterSelect').value=state.encounterId;
  $('enemyName').textContent=foe?foe.name:'ALL ENEMIES DEFEATED';
@@ -261,7 +266,8 @@ function renderBattle(){
  $('elementChoices').innerHTML=ELEMENTS[id].map(([key,label,color])=>{
   const selected=state.elements[id]===key;
   return '<button type="button" class="element-choice'+(selected?' active':'')+'" data-element-choice="'+key+
-   '" aria-pressed="'+selected+'" style="--swatch:'+color+'" '+(!canAct?'disabled':'')+
+   '" aria-pressed="'+selected+'" style="--swatch:'+color+'" '+
+   (!canAct||AdvengerCharacters.get(id)?.createdInLab?'disabled':'')+
    '><i aria-hidden="true"></i>'+label+'</button>';
  }).join('');
  $('battleLog').innerHTML=state.logs.slice().reverse().map(line=>'<div class="logline">'+esc(line)+'</div>').join('');
@@ -629,6 +635,8 @@ function sendCommand(kind){
  })();
 }
 function setElement(element){
+ if(AdvengerCharacters.get(state.active)?.createdInLab)
+  return notice('ธาตุตัวละครที่สร้างเองกำหนดใน Character Creator · เปลี่ยนได้ที่แล็บ');
  if(actionBusy||state.phase!=='player'||!frameReady||INIT.current(state)?.id!==state.active||!ELEMENTS[state.active].some(([key])=>key===element))return;
  state.elements[state.active]=element;renderBattle();store();
 }
