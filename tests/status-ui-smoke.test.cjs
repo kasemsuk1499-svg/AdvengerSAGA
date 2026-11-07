@@ -37,7 +37,7 @@ function boot({customHero=false}={}){
  const store=new Map(),localStorage={
   getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)
  };
- const attacks=[];
+ const attacks=[],nativeMoves=[];
  const g={document,localStorage,setTimeout:()=>0,console};
  g.window=g;vm.createContext(g);
  const load=p=>new vm.Script(fs.readFileSync(path.join(root,p),'utf8'),{filename:p}).runInContext(g);
@@ -70,7 +70,8 @@ function boot({customHero=false}={}){
   reset(){ }
   announce(){ }
   async guard(){ }
-  async play(id,kind,element,hit){
+  async play(id,kind,element,hit,sourceHeroId){
+   nativeMoves.push({id,kind,sourceHeroId});
    hit(g.AdvengerCampaignBridge?.state()?.mode==='campaign'?5000:50);
    return true;
   }
@@ -84,7 +85,7 @@ function boot({customHero=false}={}){
  const click=data=>{const event={target:{closest:selector=>selector==='button'?{dataset:data}:null}};
   for(const listener of listeners.click||[])listener(event);
  };
- return {g,nodes,click,listeners,attacks};
+ return {g,nodes,click,listeners,attacks,nativeMoves};
 }
 test('campaign starts from hub, hides cheat labs, saves in-progress mission and resumes',()=>{
  const app=boot();
@@ -185,6 +186,59 @@ test('Life Lab Guts keeps a hero at 1 HP, second lethal KO, manual revive restor
  data=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
  a.equal(data.hp.gunner,360);
  a.match(app.nodes.get('battleLog').innerHTML,/REVIVE/);
+});
+test('equipping a custom Basic truly replaces original Basic button and its action',async()=>{
+ const app=boot();const C=app.g.AdvengerSkillCreator;
+ const skill=C.add({name:'Arc Pulse',target:'singleEnemy',damageType:'magic',
+  cooldownRounds:2,effects:[{type:'damage',hits:2,attackPct:1}]});
+ C.assign('gunner','basic',skill.id);
+ app.click({screen:'battle'});
+ a.match(app.nodes.get('basicLabel').textContent,/Arc Pulse/);
+ a.doesNotMatch(app.nodes.get('createdBattleSkills').innerHTML,/data-created-skill=/);
+ app.click({command:'basic'});
+ await new Promise(resolve=>setImmediate(resolve));
+ const saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(saved.acted.gunner,true);
+ a.equal(saved.createdSkillTimers.gunner[skill.id],3);
+ a.equal(app.nativeMoves.length,0,'the original native basic choreography was replaced');
+ a.match(app.nodes.get('battleLog').innerHTML,/Arc Pulse/);
+});
+test('existing Saber class Skill replaces Gunner Skill without spawning a duplicate action',async()=>{
+ const app=boot();const C=app.g.AdvengerSkillCreator;
+ C.assign('gunner','skill1','native:saber:skill');
+ app.click({screen:'battle'});
+ a.match(app.nodes.get('skillLabel').textContent,/Elemental Triple/);
+ app.click({command:'skill'});
+ await new Promise(resolve=>setImmediate(resolve));
+ a.equal(app.nativeMoves.length,1);
+ a.equal(app.nativeMoves[0].id,'gunner');
+ a.equal(app.nativeMoves[0].sourceHeroId,'saber');
+ a.equal(app.nativeMoves[0].kind,'skill');
+ const saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(saved.acted.gunner,true);
+});
+test('existing Seven Knights active skill equips into Skill 1 and uses its source cooldown',async()=>{
+ const app=boot();const C=app.g.AdvengerSkillCreator;
+ C.assign('gunner','skill1','kit:rachel:skill1');
+ app.click({screen:'battle'});
+ a.match(app.nodes.get('skillLabel').textContent,/Blazing Strike/);
+ app.click({command:'skill'});
+ await new Promise(resolve=>setImmediate(resolve));
+ const saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(saved.acted.gunner,true);
+ a.equal(saved.createdSkillTimers.gunner['kit:rachel:skill1'],4);
+ a.ok(saved.enemies[0].hp<saved.enemies[0].maxHP);
+ a.match(app.nodes.get('battleLog').innerHTML,/Blazing Strike/);
+});
+test('equipped original Ultimate in Basic still charges EX 100',async()=>{
+ const app=boot();app.g.AdvengerSkillCreator.assign('gunner','basic','native:saber:ultimate');
+ app.click({screen:'battle'});
+ app.click({command:'basic'});
+ await new Promise(resolve=>setImmediate(resolve));
+ const saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(app.nativeMoves[0].kind,'ultimate');
+ a.equal(app.nativeMoves[0].sourceHeroId,'saber');
+ a.equal(saved.energy.gunner,0);
 });
 test('custom authored skill appears for equipped character and casts on their SPD turn',async()=>{
  const app=boot();
