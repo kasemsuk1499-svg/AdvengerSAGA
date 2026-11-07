@@ -1,6 +1,6 @@
-# AdvengerSAGA — Tanjiro Fire Saber + Modular Character System (v0.8)
+# AdvengerSAGA — Shared Battle Core, Enemy Encounters & Tanjiro (v0.9)
 
-**A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield and two support slots.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
+**A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
 ## Open and publish
 
@@ -8,6 +8,25 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v0.9 — ระบบต่อสู้กลาง / Shared Battle Core
+
+The browser game now runs three **data-defined encounter presets** using the same character animations and optimized Canvas effect renderer:
+
+| Encounter | Enemy formation | Notes |
+| --- | --- | --- |
+| Training Grounds | Training Sentinel ×1 | Original practice encounter remains available |
+| Three-Way Skirmish | Void Scout, Iron Guardian, Arcane Wisp | Target any living enemy |
+| Abyss Boss | Arcane Wisp, Abyss Overlord, Void Scout | One boss plus two minions; boss is not yet a separate illustrated asset |
+
+- **Central data**: `js/encounter-catalog.js` contains enemy base stats, names, images, boss flags and encounter rosters. Add new enemies and fights there without modifying any character's attack scripts.
+- **Central combat rules**: `js/battle-core.js` owns target selection, enemy HP, damage capping, guard reduction, deterministic enemy targeting, defeat/victory and round transitions. The UI uses this shared engine; the pre-approved class/character Basic, Skill and Ultimate animations are **unchanged**.
+- **Multiple enemies**: clickable target buttons and battlefield target sprites. Combo strikes continue against the initially chosen target for that action; after a KO, selection moves to the next living enemy. Each living enemy counterattacks once after all surviving heroes use their round action.
+- **Player party**: four heroes, two one-use support commands, EX, Guard, local save and formation swaps remain intact.
+- **Existing save migration**: browser saves from v0.8 (battleVersion 2) keep their party, selected elements, HP/EX, remaining enemy percentage and support usage. New battle saves use version 3; no cloud account is required.
+- **Regression checks**: run `node --test tests/battle-core.test.cjs` without any npm installation. GitHub Actions also runs the same tests on each push to main.
+- **Performance**: one optimized effects canvas shared by all units; no per-enemy Canvas or extra animation loop.
+- **Limitations**: enemy visuals currently reuse a temporary training-sentinel SVG. Opponents use simple deterministic target selection, not advanced tactical AI. No loot, character leveling, story chapters, inventory, multiplayer or cloud save yet. Mobile animation responsiveness and final balancing still require real-device checks.
 
 ## v0.8 — Tanjiro Kamado playable Fire Saber
 
