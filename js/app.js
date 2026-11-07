@@ -16,7 +16,7 @@ const CORE=AdvengerBattleCore,ENCOUNTERS=AdvengerEncounters;
 const SKILLS=AdvengerSkillEngine,SKILL_DB=AdvengerSkillDB;
 const RULES=AdvengerTurnRules,STATS=AdvengerStatDB,INIT=AdvengerInitiative;
 const AILMENTS=AdvengerStatusDB,STATUS=AdvengerStatusEngine,LIFE=AdvengerLifeEngine,LIFE_TYPES=AdvengerLifeDB;
-const CREATOR=AdvengerSkillCreator;
+const CREATOR=AdvengerSkillCreator,CAMPAIGN=AdvengerCampaign;
 CREATOR.load();
 const $=id=>document.getElementById(id);
 const fresh=()=>{
@@ -25,7 +25,8 @@ const fresh=()=>{
   ...RULES.initial(party),battleVersion:CORE.version,party,assist:['focus','battery'],active:party[0],
    encounterId:'training',enemies:CORE.spawn('training'),targetId:'foe-0',enemyCursor:0,
   energy:Object.fromEntries(UNITS.map(id=>[id,100])),
-  used:[false,false],boost:false,
+  used:[false,false],boost:false,mode:'lab',campaignStage:null,
+  campaignRewarded:false,campaignResult:null,campaignAtkBonus:0,
   elements:Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).defaultElement])),
   logs:['AdvengerSAGA · Turn-Based · ROUND 1'],screen:'formation'
  };
@@ -54,6 +55,14 @@ function read(){
   }
   const legacy=d.battleVersion===2;
   state.encounterId=!legacy&&ENCOUNTERS.get(d.encounterId)?d.encounterId:'training';
+  if(d.mode==='campaign'&&CAMPAIGN.stage(d.campaignStage)&&
+    CAMPAIGN.unlocked(d.campaignStage)&&d.encounterId===d.campaignStage){
+   state.mode='campaign';state.campaignStage=d.campaignStage;
+   state.campaignRewarded=!!d.campaignRewarded;
+   state.campaignAtkBonus=CAMPAIGN.attackBonus();
+   state.campaignResult=d.campaignResult&&typeof d.campaignResult==='object'?
+    d.campaignResult:null;
+  }
   state.enemies=CORE.restore(legacy?null:d.enemies,state.encounterId);
   if(legacy&&Number.isFinite(d.enemyPct))
    state.enemies[0].hp=Math.round(Math.max(0,Math.min(1,d.enemyPct))*state.enemies[0].maxHP);
@@ -90,7 +99,7 @@ function read(){
   return state;
  }catch(e){return fresh()}
 }
-let state=read(),picker=null,frameReady=false,actionBusy=false,view='formation';
+let state=read(),picker=null,frameReady=false,actionBusy=false,view='campaign';
 let arena=null,partyMounted='';
 function store(){
  try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){/* private browsing quota */}
@@ -250,7 +259,72 @@ function renderBattle(){
  renderAilmentDemo();
  renderLifeLab();
 }
-function render(){renderFormation();renderBattle();if(frameReady)arena?.energy(state.energy);store()}
+
+function isCampaignBattle(){
+ return state.mode==='campaign'&&!!CAMPAIGN.stage(state.campaignStage);
+}
+function launchCampaign(id){
+ if(actionBusy)return notice('รอให้เทิร์นปัจจุบันจบก่อน');
+ if(!CAMPAIGN.unlocked(id))return notice('ยังไม่ได้ปลดล็อกภารกิจนี้');
+ state.mode='campaign';state.campaignStage=id;state.encounterId=id;
+ state.campaignRewarded=false;state.campaignResult=null;
+ state.campaignAtkBonus=CAMPAIGN.attackBonus();
+ resetEncounter();
+ const mission=CAMPAIGN.stage(id);
+ log('📜 '+mission.number+' · '+mission.title+' · '+mission.objective);
+ show('battle');
+}
+function enterTraining(){
+ if(actionBusy)return notice('รอให้เทิร์นปัจจุบันจบก่อน');
+ state.mode='lab';state.campaignStage=null;state.campaignRewarded=false;
+ state.campaignResult=null;state.campaignAtkBonus=0;state.encounterId='training';
+ resetEncounter();show('battle');
+}
+function useCampaignItem(itemId){
+ if(!isCampaignBattle()||view!=='battle'||actionBusy||!frameReady||
+   state.phase!=='player'||!CAMPAIGN.items[itemId])return;
+ const entry=INIT.current(state),actor=state.active;
+ if(entry?.side!=='ally'||entry.id!==actor||state.hp[actor]<=0||
+   !STATUS.canUse(state,'ally',actor,'basic'))return;
+ if(!CAMPAIGN.read().inventory[itemId])return notice('ไอเทมหมดแล้ว');
+ let target=null,amount=0;
+ if(itemId==='potion'){
+  target=state.party.filter(id=>state.hp[id]>0&&
+   state.hp[id]<RULES.hpMax(id)&&STATUS.canHeal(state,'ally',id))
+   .sort((a,b)=>state.hp[a]/RULES.hpMax(a)-state.hp[b]/RULES.hpMax(b))[0];
+  if(!target)return notice('ไม่มีสมาชิกที่บาดเจ็บและรับการรักษาได้');
+  amount=LIFE.heal(state,'ally',target,Math.ceil(RULES.hpMax(target)*.4));
+  if(!amount)return notice('ใช้ยาไม่ได้');
+ }else{
+  target=state.party.find(id=>state.hp[id]<=0&&STATUS.canRevive(state,'ally',id));
+  if(!target||!LIFE.revive(state,'ally',target,{hpPct:.4}))
+   return notice('ไม่มีสมาชิก KO ที่ชุบชีวิตได้');
+  amount=state.hp[target];
+ }
+ if(!CAMPAIGN.consume(itemId))return notice('ไอเทมหมดแล้ว');
+ actionBusy=true;
+ log('🎒 '+UNIT[actor].name+' ใช้ '+CAMPAIGN.items[itemId].name+' ให้ '+
+  UNIT[target].name+' +'+amount+' HP');
+ arena?.announce('ITEM',CAMPAIGN.items[itemId].name+' → '+UNIT[target].name);
+ (async()=>{
+  try{state.acted[actor]=true;await finishHeroTurn()}
+  catch(e){console.error('Campaign item',e);log('⚠️ ใช้ไอเทมขัดข้อง')}
+  finally{actionBusy=false;render();resumeEnemyTurn()}
+ })();
+}
+window.AdvengerCampaignBridge=Object.freeze({
+ state:()=>state,view:()=>view,
+ isBusy:()=>actionBusy,isReady:()=>frameReady,
+ start:launchCampaign,training:enterTraining,item:useCampaignItem,
+ refresh:render,show,notice,
+ maxHP:RULES.hpMax,canHeal:STATUS.canHeal,canRevive:STATUS.canRevive,
+ canAct:()=>state.phase==='player'&&!actionBusy&&frameReady&&
+  INIT.current(state)?.side==='ally'&&INIT.current(state)?.id===state.active&&
+  state.hp[state.active]>0
+});
+
+function render(){renderFormation();renderBattle();if(frameReady)arena?.energy(state.energy);
+ window.AdvengerCampaignUI?.render();store()}
 function show(tab){
  if(actionBusy&&tab!=='battle'){notice('รอให้แอนิเมชันจบก่อนออกจากสนาม');return}
  view=tab;
@@ -272,6 +346,9 @@ function choose(type,index,id){
    changed=true;
   }
   if(changed){
+   if(isCampaignBattle()){
+    state.campaignRewarded=false;state.campaignResult=null;
+   }
    // The reserve may not have an HP entry yet. A changed main formation
    // starts a clean encounter so every selected character has valid HP,
    // turn state and EX without retaining actions from the old party.
@@ -333,7 +410,15 @@ function reportLifeEvents(){
 
 function concludeBattle(result){
  if(!result)return false;
+ if(state.phase===result&&(!isCampaignBattle()||state.campaignRewarded))return true;
  state.phase=result;
+ if(result==='victory'&&isCampaignBattle()&&!state.campaignRewarded){
+  const survivors=state.party.filter(id=>state.hp[id]>0).length;
+  const reward=CAMPAIGN.complete(state.campaignStage,survivors,state.round);
+  state.campaignRewarded=true;state.campaignResult=reward;
+  log('🎁 ภารกิจสำเร็จ · '+reward.stars+' ดาว · '+
+   (reward.first?'+'+reward.xp+' EXP · +'+reward.gold+' G':'เล่นซ้ำ ไม่มีรางวัลทองและ EXP'));
+ }
  if(result==='victory'){
   log('🏆 VICTORY · ชนะใน ROUND '+state.round);
   arena?.announce('VICTORY','ALL ENEMIES DEFEATED');
@@ -545,6 +630,10 @@ function useSupport(index){
 }
 function resetEncounter(){
  if(actionBusy)return notice('รอให้แอนิเมชันจบก่อน');
+ if(isCampaignBattle()){
+  state.campaignRewarded=false;state.campaignResult=null;
+  state.campaignAtkBonus=CAMPAIGN.attackBonus();
+ }
  const newRound=RULES.initial(state.party);
  Object.assign(state,newRound);
  state.battleVersion=CORE.version;state.active=state.party[0];
@@ -566,6 +655,7 @@ function selectEnemy(id){
  CORE.select(state,id);arena?.selectTarget(state.targetId);render();
 }
 function setEncounter(id){
+ if(isCampaignBattle())return notice('ภารกิจเนื้อเรื่องเปลี่ยนสนามไม่ได้ · กลับแผนที่เพื่อเลือกด่าน');
  if(actionBusy||!ENCOUNTERS.get(id)){
   notice('รอให้แอนิเมชันจบก่อนเปลี่ยนสนาม');
   $('encounterSelect').value=state.encounterId;return;
@@ -640,6 +730,7 @@ function renderLifeLab(){
   btn.disabled=actionBusy||['victory','defeat'].includes(state.phase);
 }
 function testLife(kind){
+ if(isCampaignBattle())return notice('LIFE LAB ใช้ได้เฉพาะสนามฝึก');
  if(actionBusy||['victory','defeat'].includes(state.phase))
   return notice('อยู่ระหว่างคิวหรือจบการต่อสู้แล้ว');
  const id=$('lifeDemoTarget').value;
@@ -687,6 +778,7 @@ function renderAilmentDemo(){
  $('ailmentDemoAlly').disabled=actionBusy||state.hp[state.active]<=0||state.phase!=='player';
 }
 function testAilment(side){
+ if(isCampaignBattle())return notice('STATUS LAB ใช้ได้เฉพาะสนามฝึก');
  if(actionBusy||state.phase!=='player')return notice('ทดลองสถานะได้เฉพาะช่วงเลือกคำสั่ง');
  const key=$('ailmentDemoKind').value;
  if(!AILMENTS.get(key))return;
@@ -710,7 +802,7 @@ function renderSkillDatabase(canAct){
   SKILL_DB.all().map(x=>'<option value="'+esc(x.id)+'"'+(kitId===x.id?' selected':'')+
    '>'+esc(x.name)+' · '+esc(x.role)+'</option>').join('');
  select.value=kitId;
- select.disabled=actionBusy||state.phase==='enemy';
+ select.disabled=actionBusy||state.phase==='enemy'||isCampaignBattle();
  $('dbPassiveInfo').textContent=kit?
   '✧ PASSIVE: '+kit.skills.passive.name+' · ใช้เมื่อเข้าไฟต์และเมื่อเข้าเงื่อนไข':
   'เลือกตัวละครอ้างอิงเพื่อเปิดใช้ Active Skill 1, Active Skill 2 และ Passive ในระบบกลาง';
@@ -797,6 +889,7 @@ function sendCreatedSkill(slot){
 }
 
 function setSkillKit(kitId){
+ if(isCampaignBattle())return notice('เปลี่ยนชุดสกิลอ้างอิงได้เฉพาะสนามฝึก');
  if(actionBusy||state.phase==='enemy')return notice('เปลี่ยนชุดสกิลได้หลังแอนิเมชันจบ');
  if(kitId&&!SKILL_DB.get(kitId))return;
  const id=state.active;
@@ -850,7 +943,10 @@ document.addEventListener('error',event=>{
 },true);
 document.addEventListener('click',e=>{
  const btn=e.target.closest('button');if(!btn)return;
- if(btn.dataset.screen){show(btn.dataset.screen);return}
+ if(btn.dataset.screen){
+  if(btn.dataset.screen==='battle'&&isCampaignBattle()){enterTraining();return}
+  show(btn.dataset.screen);return;
+ }
  if(btn.dataset.mainSlot!==undefined){picker={type:'main',index:Number(btn.dataset.mainSlot)};renderPicker();return}
  if(btn.dataset.supportSlot!==undefined){picker={type:'support',index:Number(btn.dataset.supportSlot)};renderPicker();return}
  if(btn.dataset.pick&&picker){choose(picker.type,picker.index,btn.dataset.pick);return}
@@ -879,7 +975,7 @@ $('ailmentDemoEnemy').addEventListener('click',()=>testAilment('enemy'));
 $('ailmentDemoAlly').addEventListener('click',()=>testAilment('ally'));
 $('lifeDemoTarget').addEventListener('change',renderLifeLab);
 $('encounterSelect').addEventListener('change',e=>setEncounter(e.target.value));
-$('startBattle').addEventListener('click',()=>show('battle'));
+$('startBattle').addEventListener('click',enterTraining);
 $('battleReset').addEventListener('click',resetEncounter);
 $('resetTeam').addEventListener('click',()=>{
  state=fresh();picker=null;partyMounted='';frameReady=false;
