@@ -12,13 +12,14 @@ const SUPPORT={
 const UNITS=Object.keys(UNIT),SUPPORTS=Object.keys(SUPPORT);
 const MOVES=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).skills]));
 const ELEMENTS=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).colors]));
-const MAX_DUMMY_HP=4200;
+const CORE=AdvengerBattleCore,ENCOUNTERS=AdvengerEncounters;
 const RULES=AdvengerTurnRules;
 const $=id=>document.getElementById(id);
 const fresh=()=>{
  const party=['saber','mage','tank','gunner'];
  return {
-  ...RULES.initial(party),party,assist:['focus','battery'],active:party[0],enemyPct:1,
+  ...RULES.initial(party),battleVersion:CORE.version,party,assist:['focus','battery'],active:party[0],
+   encounterId:'training',enemies:CORE.spawn('training'),targetId:'foe-0',
   energy:Object.fromEntries(UNITS.map(id=>[id,100])),
   used:[false,false],boost:false,
   elements:Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).defaultElement])),
@@ -37,15 +38,18 @@ function read(){
   for(const id of UNITS){
    if(ELEMENTS[id].some(([v])=>v===d.elements?.[id]))state.elements[id]=d.elements[id];
   }
-  if(d.battleVersion!==2){
-   // Preserve formation and colors from the old free-attack prototype,
-   // but start a clean turn-based encounter to avoid inconsistent old saves.
+  if(![2,3].includes(d.battleVersion)){
    state.active=state.party[0];
-   state.logs=['🔄 อัปเกรดเป็น Turn-Based: เริ่มไฟต์ใหม่โดยคงทีมและธาตุเดิม'];
+   state.logs=['🔄 อัปเกรดเกม: คงทีมและธาตุเดิม เริ่มไฟต์ใหม่ด้วยระบบกลาง'];
    return state;
   }
+  const legacy=d.battleVersion===2;
+  state.encounterId=!legacy&&ENCOUNTERS.get(d.encounterId)?d.encounterId:'training';
+  state.enemies=CORE.restore(legacy?null:d.enemies,state.encounterId);
+  if(legacy&&Number.isFinite(d.enemyPct))
+   state.enemies[0].hp=Math.round(Math.max(0,Math.min(1,d.enemyPct))*state.enemies[0].maxHP);
+  CORE.select(state,legacy?'foe-0':d.targetId);
   state.round=Number.isInteger(d.round)?Math.min(999,Math.max(1,d.round)):1;
-  state.enemyPct=Number.isFinite(d.enemyPct)?Math.max(0,Math.min(1,d.enemyPct)):1;
   state.phase=['player','enemy','victory','defeat'].includes(d.phase)?d.phase:'player';
   for(const id of UNITS){
    const max=RULES.hpMax(id);
@@ -58,8 +62,7 @@ function read(){
   }
   state.used=[!!d.used?.[0],!!d.used?.[1]];state.boost=!!d.boost;
   state.logs=Array.isArray(d.logs)?d.logs.filter(v=>typeof v==='string').slice(-20):[];
-  if(state.enemyPct<=0)state.phase='victory';
-  else if(!RULES.alive(state.party,state.hp).length)state.phase='defeat';
+  if(CORE.outcome(state))state.phase=CORE.outcome(state);
   else if(state.phase==='enemy'){
    // An interrupted enemy animation resolves as a fresh player round.
    state.round=Math.min(999,state.round+1);state.phase='player';
@@ -122,7 +125,8 @@ function renderFormation(){
 }
 function renderBattle(){
  const id=state.active,u=UNIT[id],inAction=actionBusy,player=state.phase==='player';
- const canAct=frameReady&&!inAction&&player&&state.enemyPct>0&&
+ const enemies=CORE.living(state),foe=CORE.target(state),foePct=foe?foe.hp/foe.maxHP:0;
+ const canAct=frameReady&&!inAction&&player&&enemies.length>0&&
    state.hp[id]>0&&!state.acted[id];
  $('battle').style.setProperty('--active-char-color',u.accent);
  $('battleRoster').innerHTML=state.party.map((unitId,i)=>{
@@ -145,10 +149,19 @@ function renderBattle(){
  $('activeName').textContent=u.emoji+' '+u.name;
  $('activeSubtitle').textContent=u.th;
  $('activeEnergy').textContent=Math.round(state.energy[id])+'/100';
- const enemyHP=Math.round(state.enemyPct*100);
- $('enemyHealth').textContent=enemyHP+'%';
- $('targetHpBar').style.width=state.enemyPct*100+'%';
- $('targetHpTrack').setAttribute('aria-valuenow',String(enemyHP));
+ $('encounterSelect').value=state.encounterId;
+ $('enemyName').textContent=foe?foe.name:'ALL ENEMIES DEFEATED';
+ $('enemyHealth').textContent=foe?foe.hp+'/'+foe.maxHP:'0 HP';
+ $('targetHpBar').style.width=(foePct*100)+'%';
+ $('targetHpTrack').setAttribute('aria-valuenow',String(Math.round(foePct*100)));
+ $('enemyTargets').innerHTML=state.enemies.map(e=>{
+  const selected=e.id===state.targetId,dead=e.hp<=0;
+  return '<button type="button" class="enemy-target-button'+(selected?' selected':'')+
+   (e.boss?' boss':'')+'" data-target-pick="'+esc(e.id)+'" '+
+   (dead||inAction||!player?'disabled':'')+' aria-pressed="'+selected+'">'+
+   '<strong>'+esc(e.icon)+' '+esc(e.name)+(e.boss?' [BOSS]':'')+'</strong>'+
+   '<small>'+e.hp+'/'+e.maxHP+' HP'+(dead?' · KO':'')+'</small></button>';
+ }).join('');
  $('roundLabel').textContent='ROUND '+state.round+' · TURN ORDER';
  const phaseEl=$('turnPhase');
  phaseEl.classList.toggle('enemy',state.phase==='enemy');
@@ -161,7 +174,10 @@ function renderBattle(){
   const status=fallen?'KO':done?'DONE':selected?'NEXT':'READY';
   return '<div class="turn-token'+(selected?' current':'')+(done?' done':'')+(fallen?' ko':'')+
    '"><strong>'+UNIT[unitId].emoji+' '+esc(UNIT[unitId].name)+'</strong><span>'+status+'</span></div>';
- }).join('')+'<div class="turn-token enemy'+(state.phase==='enemy'?' current':'')+'"><strong>◆ ENEMY</strong><span>COUNTER</span></div>';
+ }).join('')+state.enemies.map(foe=>'<div class="turn-token enemy'+
+   (foe.hp<=0?' ko':'')+(state.phase==='enemy'&&foe.hp>0?' current':'')+
+   '"><strong>'+esc(foe.icon)+' '+esc(foe.name)+'</strong><span>'+
+   (foe.hp<=0?'KO':'ENEMY')+'</span></div>').join('');
  $('turnInfo').textContent=state.phase==='player'?'ฝ่ายเรา: '+
   RULES.available(state.party,state.hp,state.acted).length+' คนยังไม่ออกท่าในรอบนี้ · แต่ละคนใช้ได้ 1 คำสั่ง':
   state.phase==='enemy'?'ศัตรูกำลังเลือกเป้าหมายและโจมตีกลับ':
@@ -202,7 +218,8 @@ function renderBattle(){
  }).join('');
  $('battleLog').innerHTML=state.logs.slice().reverse().map(line=>'<div class="logline">'+esc(line)+'</div>').join('');
  $('fullDemo').href='characters/'+id+'/lab.html';
- if(frameReady)arena?.status(state.hp,RULES.maxHP(state.party),state.acted,state.guarded,state.phase,state.active);
+ if(frameReady){arena?.syncEnemies(state.enemies,state.targetId);
+  arena?.status(state.hp,RULES.maxHP(state.party),state.acted,state.guarded,state.phase,state.active);}
 }
 function render(){renderFormation();renderBattle();if(frameReady)arena?.energy(state.energy);store()}
 function show(tab){
@@ -229,8 +246,8 @@ function choose(type,index,id){
    // starts a clean encounter so every selected character has valid HP,
    // turn state and EX without retaining actions from the old party.
    Object.assign(state,RULES.initial(state.party));
-   state.active=state.party[0];
-   state.enemyPct=1;
+   state.battleVersion=CORE.version;state.active=state.party[0];
+   state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);
    state.energy=Object.fromEntries(UNITS.map(unitId=>[unitId,100]));
    state.used=[false,false];state.boost=false;
    partyMounted='';arena?.reset();
@@ -251,8 +268,8 @@ function ensureArena(force=false){
  try{
   if(!arena)arena=new AdvengerSharedArena($('teamArena'));
   const p=state.party.join(',');
-  if(force||!frameReady||partyMounted!==p){arena.mount(state.party,state.active);partyMounted=p}
-  else arena.focus(state.active);
+  if(force||!frameReady||partyMounted!==p){arena.mount(state.party,state.active,state.enemies,state.targetId);partyMounted=p}
+  else {arena.focus(state.active);arena.syncEnemies(state.enemies,state.targetId)}
   arena.energy(state.energy);frameReady=true;
  }catch(e){console.error(e);frameReady=false;notice('โหลดสนามไม่ได้: '+e.message)}
 }
