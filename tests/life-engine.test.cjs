@@ -16,7 +16,7 @@ const load=file=>new vm.Script(fs.readFileSync(path.join(root,file),'utf8'),{fil
  'characters/tank/character.js','characters/gunner/character.js',
  'js/encounter-catalog.js','js/battle-core.js','js/turn-rules.js',
  'js/initiative.js','js/skill-db.js','js/status-db.js',
- 'js/status-engine.js','js/life-engine.js','js/skill-engine.js'
+ 'js/status-engine.js','js/life-db.js','js/life-engine.js','js/skill-engine.js'
 ].forEach(load);
 const LIFE=g.AdvengerLifeEngine,S=g.AdvengerSkillEngine,
  STATUS=g.AdvengerStatusEngine,DB=g.AdvengerSkillDB,
@@ -32,6 +32,13 @@ function fresh(enc='training'){
   skillKits:{}};
  S.clear(s);LIFE.reset(s);INIT.begin(s);return s;
 }
+test('death/revival library catalog lists nine reusable effects',()=>{
+ const all=g.AdvengerLifeDB.all();
+ a.equal(all.length,9);
+ for(const name of ['death','deathImmunity','soulDeath','revive',
+  'autoRevive','guts','immortality','execute','damageImmunity'])
+  a.ok(g.AdvengerLifeDB.get(name)?.nameTh);
+});
 test('Guts prevents exactly one lethal hit, maintaining 1 HP',()=>{
  const s=fresh();
  a.equal(LIFE.grant(s,'ally','gunner',{type:'guts',uses:1}),true);
