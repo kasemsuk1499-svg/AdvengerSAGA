@@ -15,8 +15,10 @@
  const presets=C.classIds.map(id=>g.AdvengerClasses[id]);
  const saved=C.get();
  let draft=saved?JSON.parse(JSON.stringify(saved)):
-  {id:C.id,classId:baseId,name:'',nameTh:'',description:'',
-   portrait:null,stats:C.initial(baseId),slots:{}};
+  {id:C.id,classId:baseId,
+   element:g.AdvengerElements.defaultForClass(baseId),
+   name:'',nameTh:'',description:'',
+   portrait:null,stats:C.initial(baseId),slots:{},animations:{}};
  function message(value,error=false){
   $('charLabMessage').textContent=value;
   $('charLabMessage').classList.toggle('error',error);
@@ -33,8 +35,14 @@
   $('charLabImage').src=photo();
   $('charLabClassLabel').textContent=klass.label.toUpperCase();
   $('charLabPreviewName').textContent=draft.nameTh||draft.name||'ตัวละครใหม่';
+  const element=g.AdvengerElements.get(draft.element);
   $('charLabPreviewRole').textContent=(base.icon||'⚔️')+' '+klass.label+
-   ' · '+klass.labelTh;
+   ' · '+klass.labelTh+' · '+(element?.icon||'🌈')+' '+(element?.name||'');
+  $('charLabElementDescription').textContent=element?
+   element.icon+' '+element.name+' · แพ้ทางได้เปรียบ: '+
+   (element.strongAgainst.length?element.strongAgainst.map(id=>
+    g.AdvengerElements.get(id)?.name||id).join(', '):'ไม่มีโบนัสเฉพาะ')+
+   ' · โบนัสโจมตี +15% เมื่อได้เปรียบ':'เลือกธาตุประจำตัว';
   $('charLabCorePreview').innerHTML=core.map(id=>
    '<div><small>'+esc(STATS.get(id).nameTh)+'</small>'+
    '<strong>'+Number(draft.stats[id]||0).toLocaleString()+'</strong></div>'
@@ -62,6 +70,14 @@
  function renderSkills(){
   const library=S.catalog();
   const active=S.assignments()?.[C.id];
+  const activeAnimations=S.animationAssignments()?.[C.id];
+  draft.animations||={};
+  if(activeAnimations&&saved){
+   for(const slot of S.slots){
+    if(activeAnimations[slot])draft.animations[slot]=activeAnimations[slot];
+    else delete draft.animations[slot];
+   }
+  }
   if(active&&saved){
    // The actual equipment DB is authoritative after the first creation.
    for(const slot of S.slots){
@@ -83,6 +99,14 @@
     library[group].map(skill=>'<option value="'+esc(skill.id)+'"'+
      (draft.slots[slot]===skill.id?' selected':'')+'>'+
      esc(skill.name)+'</option>').join('')+'</optgroup>').join('')+
+    '</select>'+
+    '<span class="character-animation-label">🎬 แอนิเมชันของช่องนี้</span>'+
+    '<select data-char-animation="'+esc(slot)+'">'+
+    '<option value="">อัตโนมัติ · ใช้ภาพท่าเดิม</option>'+
+    g.AdvengerAnimations.all().map(animation=>
+     '<option value="'+esc(animation.id)+'"'+
+     (draft.animations[slot]===animation.id?' selected':'')+'>'+
+     esc(animation.name)+'</option>').join('')+
     '</select></label>'
   ).join('');
  }
@@ -96,6 +120,11 @@
   $('charLabNameTh').value=draft.nameTh;
   $('charLabDescription').value=draft.description;
   $('charLabClass').value=draft.classId;
+  $('charLabElement').innerHTML=g.AdvengerElements.all().map(element=>
+   '<option value="'+esc(element.id)+'">'+
+   esc(element.icon+' '+element.name)+'</option>').join('');
+  $('charLabElement').value=draft.element||
+   g.AdvengerElements.defaultForClass(draft.classId);
   renderStats();renderSkills();renderPreview();
  }
  function reload(){
@@ -127,11 +156,18 @@
    $(id).addEventListener('input',()=>{updateBase();renderPreview()});
   $('charLabClass').addEventListener('change',event=>{
    draft.classId=event.target.value;
+   draft.element=g.AdvengerElements.defaultForClass(draft.classId);
+   $('charLabElement').value=draft.element;
    draft.stats=C.initial(draft.classId);
    draft.portrait=null;
    $('charLabPortrait').value='';
    renderStats();renderPreview();
    message('เปลี่ยนอาชีพแล้ว ค่าสเตตัสรีเซ็ตเป็นค่าตั้งต้นของสายใหม่');
+  });
+  $('charLabElement').addEventListener('change',event=>{
+   draft.element=event.target.value;renderPreview();
+   message('🌈 เลือกธาตุ '+g.AdvengerElements.get(draft.element)?.name+
+    ' · กดบันทึกตัวละครเพื่อใช้ในการต่อสู้');
   });
   $('charLabPreset').addEventListener('click',()=>{
    if(typeof g.confirm==='function'&&!g.confirm('คืนค่าสเตตัสทั้ง 30 ค่าเป็นค่าตั้งต้นของอาชีพนี้?'))return;
@@ -147,9 +183,15 @@
   });
   $('charLabSkills').addEventListener('change',e=>{
    const slot=e.target?.dataset?.charSlot;
-   if(!S.slots.includes(slot))return;
-   if(e.target.value)draft.slots[slot]=e.target.value;
-   else delete draft.slots[slot];
+   const animationSlot=e.target?.dataset?.charAnimation;
+   if(S.slots.includes(slot)){
+    if(e.target.value)draft.slots[slot]=e.target.value;
+    else delete draft.slots[slot];
+   }
+   if(S.slots.includes(animationSlot)){
+    if(e.target.value)draft.animations[animationSlot]=e.target.value;
+    else delete draft.animations[animationSlot];
+   }
   });
   $('charLabPortrait').addEventListener('change',event=>{
    const file=event.target.files?.[0];
