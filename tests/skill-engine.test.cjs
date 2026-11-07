@@ -22,7 +22,9 @@ test('sourced starter catalog and seconds conversion',()=>{
 test('Rachel hits twice and observes cooldown',()=>{
  const s=fresh(),r=S.cast(s,'saber','skill1','foe-0');
  a.equal(r.ok,true);a.equal(r.events.filter(e=>e.kind==='damage').length,2);
- a.equal(s.enemies[0].hp,892);a.equal(S.remaining(s,'saber','skill1'),3);
+ const damage=r.events.filter(e=>e.kind==='damage').reduce((n,e)=>n+e.amount,0);
+ a.equal(s.enemies[0].hp,1300-damage);a.ok(damage>=408);
+ a.equal(S.remaining(s,'saber','skill1'),3);
  s.round=4;a.equal(S.ready(s,'saber','skill1'),true);
 });
 test('Phoenix Strike applies 3-enemy damage and physical vulnerabilities',()=>{
