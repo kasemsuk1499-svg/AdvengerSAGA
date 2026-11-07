@@ -14,7 +14,7 @@ const MOVES=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).skil
 const ELEMENTS=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).colors]));
 const CORE=AdvengerBattleCore,ENCOUNTERS=AdvengerEncounters;
 const SKILLS=AdvengerSkillEngine,SKILL_DB=AdvengerSkillDB;
-const RULES=AdvengerTurnRules,STATS=AdvengerStatDB;
+const RULES=AdvengerTurnRules,STATS=AdvengerStatDB,INIT=AdvengerInitiative;
 const $=id=>document.getElementById(id);
 const fresh=()=>{
  const party=['saber','mage','tank','gunner'];
@@ -27,7 +27,9 @@ const fresh=()=>{
   logs:['AdvengerSAGA · Turn-Based · ROUND 1'],screen:'formation'
  };
  STATS.resetRuntime(initial);
- return SKILLS.clear(initial);
+ SKILLS.clear(initial);
+ INIT.begin(initial);
+ return initial;
 };
 function read(){
  try{
@@ -41,7 +43,7 @@ function read(){
   for(const id of UNITS){
    if(ELEMENTS[id].some(([v])=>v===d.elements?.[id]))state.elements[id]=d.elements[id];
   }
-  if(![2,3].includes(d.battleVersion)){
+  if(![2,3,4].includes(d.battleVersion)){
    state.active=state.party[0];
    state.logs=['🔄 อัปเกรดเกม: คงทีมและธาตุเดิม เริ่มไฟต์ใหม่ด้วยระบบกลาง'];
    return state;
@@ -78,9 +80,8 @@ function read(){
   }
   if(!legacy&&d.skillKits)SKILLS.restore(state,d);
   STATS.restoreRuntime(state,!legacy?d.statRuntime:null);
-  const available=RULES.available(state.party,state.hp,state.acted);
-  state.active=available.includes(d.active)?d.active:
-   (available[0]||RULES.alive(state.party,state.hp)[0]||state.party[0]);
+  state.active=state.party.includes(d.active)?d.active:state.party[0];
+  INIT.restore(state,d);
   return state;
  }catch(e){return fresh()}
 }
@@ -133,16 +134,17 @@ function renderFormation(){
 function renderBattle(){
  const id=state.active,u=UNIT[id],inAction=actionBusy,player=state.phase==='player';
  const enemies=CORE.living(state),foe=CORE.target(state),foePct=foe?foe.hp/foe.maxHP:0;
+ const current=INIT.current(state);
  const canAct=frameReady&&!inAction&&player&&enemies.length>0&&
-   state.hp[id]>0&&!state.acted[id];
+   current?.side==='ally'&&current.id===id&&state.hp[id]>0&&!state.acted[id];
  $('battle').style.setProperty('--active-char-color',u.accent);
  $('battleRoster').innerHTML=state.party.map((unitId,i)=>{
   const unit=UNIT[unitId],c=AdvengerCharacters.get(unitId),selected=id===unitId;
   const ex=Math.round(state.energy[unitId]);
   const hp=state.hp[unitId],max=RULES.hpMax(unitId),percent=Math.round(hp/max*100);
   const fallen=hp<=0,used=!!state.acted[unitId];
-  const status=fallen?'✖ KO':used?'✓ DONE':selected?'✦ NEXT':'พร้อมออกท่า';
-  const disabled=fallen||used||!player||inAction;
+  const status=fallen?'✖ KO':used?'✓ DONE':selected&&canAct?'✦ SPD TURN':'รอคิว SPD';
+  const disabled=fallen||used||!player||inAction||!selected;
   return '<button type="button" class="battle-member'+(selected?' active':'')+
    (fallen?' fallen':'')+(used?' acted':'')+'" data-deploy="'+unitId+
    '" aria-pressed="'+selected+'" aria-label="'+esc(unit.name)+' HP '+hp+'/'+max+' '+status+
@@ -175,19 +177,27 @@ function renderBattle(){
  phaseEl.classList.toggle('victory',state.phase==='victory'||state.phase==='defeat');
  phaseEl.textContent=state.phase==='enemy'?'🔴 เทิร์นศัตรู':state.phase==='victory'?'🏆 ชนะ':
   state.phase==='defeat'?'💀 แพ้':'🔵 เทิร์นฝ่ายเรา';
- $('turnOrder').innerHTML=state.party.map((unitId,i)=>{
+ $('turnOrder').innerHTML=INIT.order(state).map(entry=>entry.side==='ally'?(()=>{
+  const unitId=entry.id;
+
   const fallen=state.hp[unitId]<=0,done=!!state.acted[unitId];
   const selected=id===unitId&&canAct;
   const status=fallen?'KO':done?'DONE':selected?'NEXT':'READY';
   return '<div class="turn-token'+(selected?' current':'')+(done?' done':'')+(fallen?' ko':'')+
-   '"><strong>'+UNIT[unitId].emoji+' '+esc(UNIT[unitId].name)+'</strong><span>'+status+'</span></div>';
- }).join('')+state.enemies.map(foe=>'<div class="turn-token enemy'+
-   (foe.hp<=0?' ko':'')+(state.phase==='enemy'&&foe.hp>0?' current':'')+
-   '"><strong>'+esc(foe.icon)+' '+esc(foe.name)+'</strong><span>'+
-   (foe.hp<=0?'KO':'ENEMY')+'</span></div>').join('');
- $('turnInfo').textContent=state.phase==='player'?'ฝ่ายเรา: '+
-  RULES.available(state.party,state.hp,state.acted).length+' คนยังไม่ออกท่าในรอบนี้ · แต่ละคนใช้ได้ 1 คำสั่ง':
-  state.phase==='enemy'?'ศัตรูกำลังเลือกเป้าหมายและโจมตีกลับ':
+   '"><strong>'+UNIT[unitId].emoji+' '+esc(UNIT[unitId].name)+'</strong>'+
+   '<small>SPD '+entry.spd+'</small><span>'+status+'</span></div>';
+ })():(()=>{
+  const foe=state.enemies.find(x=>x.id===entry.id);
+  const fallen=!foe||foe.hp<=0,done=state.initiativeDone?.includes(INIT.token(entry));
+  const active=current?.side==='enemy'&&current.id===entry.id&&state.phase==='enemy';
+  return '<div class="turn-token enemy'+(active?' current':'')+(done?' done':'')+(fallen?' ko':'')+
+   '"><strong>'+esc(foe?.icon||'◆')+' '+esc(foe?.name||'Enemy')+'</strong>'+
+   '<small>SPD '+entry.spd+'</small><span>'+(fallen?'KO':done?'DONE':active?'NEXT':'WAIT')+'</span></div>';
+ })()).join('');
+ $('turnInfo').textContent=state.phase==='player'?
+  'คิว '+UNIT[current?.id]?.name+' · SPD '+(current?.spd??'-')+' · ตัวเร็วออกก่อน ทุกตัวใช้ได้หนึ่งคำสั่งต่อรอบ':
+  state.phase==='enemy'?'คิว '+(state.enemies.find(e=>e.id===current?.id)?.name||'Enemy')+
+  ' · SPD '+(current?.spd??'-')+' · ศัตรูกำลังออกคำสั่ง':
   state.phase==='victory'?'กำจัดเป้าหมายสำเร็จ · เริ่มไฟต์ใหม่เพื่อเล่นอีกครั้ง':
   'ทีมหลัก HP หมดทุกคน · เริ่มไฟต์ใหม่เพื่อเล่นอีกครั้ง';
  $('assistActions').innerHTML=state.assist.map((supportId,i)=>{
@@ -202,7 +212,7 @@ function renderBattle(){
   !frameReady?'⌛ กำลังโหลดสนาม...':
   inAction?'⚔️ กำลังดำเนินท่าโจมตี โปรดรอให้จบ':
   state.boost?'✦ BOOST +25% พร้อมใช้ · '+u.name+' ออกคำสั่ง':
-  '🔵 '+u.name+' · เลือก Basic / Skill / Ultimate หรือป้องกัน';
+  '🔵 '+u.name+' (SPD '+(current?.spd??'-')+') · เลือก Basic / Skill / Ultimate หรือป้องกัน';
  $('combatStatus').textContent=hint;
  const indicator=$('commandIndicator');
  indicator.textContent=state.phase==='player'?(!frameReady?'LOADING':inAction?'ACTION':'YOUR TURN'):
@@ -238,14 +248,7 @@ function show(tab){
  document.querySelectorAll('[data-screen]').forEach(b=>b.classList.toggle('active',b.dataset.screen===tab));
  if(tab==='battle')ensureArena();
  render();
- if(tab==='battle'&&state.phase==='enemy'&&!actionBusy&&frameReady){
-  actionBusy=true;
-  enemyPhase().catch(err=>{
-   console.error('Enemy phase resume failed',err);
-   log('⚠️ ระบบเทิร์นศัตรูขัดข้อง · เริ่มรอบถัดไปเพื่อให้เล่นต่อได้');
-   CORE.nextRound(state);
-  }).finally(()=>{actionBusy=false;render()});
- }
+ if(tab==='battle')resumeEnemyTurn();
 }
 function choose(type,index,id){
  if(actionBusy)return notice('รอให้แอนิเมชันจบก่อนเปลี่ยนทีม');
@@ -267,6 +270,7 @@ function choose(type,index,id){
    state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);state.enemyCursor=0;
    SKILLS.clear(state);
    STATS.resetRuntime(state);
+   INIT.begin(state);
    state.energy=Object.fromEntries(UNITS.map(unitId=>[unitId,100]));
    state.used=[false,false];state.boost=false;
    partyMounted='';arena?.reset();
@@ -292,72 +296,103 @@ function ensureArena(force=false){
   arena.energy(state.energy);frameReady=true;
  }catch(e){console.error(e);frameReady=false;notice('โหลดสนามไม่ได้: '+e.message)}
 }
-async function enemyPhase(){
- state.phase='enemy';renderBattle();store();
- const attacking=CORE.living(state).slice();
- const start=Math.max(0,Math.min(attacking.length,state.enemyCursor||0));
- for(let i=start;i<attacking.length;i++){
-  const foe=attacking[i];
-  if(!CORE.livingParty(state).length)break;
-  state.enemyCursor=i;store();
-  const move=CORE.strike(state,foe,i);
-  if(!move)continue;
-  move.damage=SKILLS.adjustDamage(state,'enemy',foe.id,'ally',move.heroId,move.damage);
-  arena.selectTarget(foe.id);
-  await arena.enemyAttack(move.heroId,move.damage,move.guarded,foe.name);
-  const dealt=CORE.applyStrike(state,move);
-  if(SKILLS.onLethal(state,move.heroId))log('✦ '+UNIT[move.heroId].name+' · Passive REVIVE!');
-  if(state.hp[move.heroId]>0&&foe.statusOnHit&&SKILLS.addStatus(state,'ally',move.heroId,foe.statusOnHit,foe.id))
-   log('🌀 '+foe.name+' ติดสถานะ '+foe.statusOnHit.key+' ให้ '+UNIT[move.heroId].name);
-  log('🔴 '+foe.name+' → '+UNIT[move.heroId].name+' −'+dealt+' HP'+(move.guarded?' [GUARD]':''));
-  state.enemyCursor=i+1;renderBattle();store();
+
+function concludeBattle(result){
+ if(!result)return false;
+ state.phase=result;
+ if(result==='victory'){
+  log('🏆 VICTORY · ชนะใน ROUND '+state.round);
+  arena?.announce('VICTORY','ALL ENEMIES DEFEATED');
+ }else{
+  log('💀 DEFEAT · ทีมหลักทั้งหมด HP เป็นศูนย์');
+  arena?.announce('DEFEAT','เริ่มไฟต์ใหม่เพื่อท้าทายอีกครั้ง');
  }
- state.enemyCursor=0;
- state.guarded=RULES.counters(state.party);
+ return true;
+}
+function finishRound(){
+ // A full round ends only when every surviving unit has acted (or was KO).
+ // Status durations and DoT tick exactly once here.
  const statuses=SKILLS.advanceRound(state);
  for(const effect of statuses){
   if(effect.amount)log('☄️ '+(effect.side==='enemy'?
     (state.enemies.find(e=>e.id===effect.id)?.name||'Enemy'):
     (UNIT[effect.id]?.name||'Ally'))+' · '+effect.key+' −'+effect.amount+' HP');
  }
- const result=CORE.outcome(state);
- if(result==='defeat'){
-  state.phase='defeat';log('💀 DEFEAT · ทีมหลักทั้งหมด HP เป็นศูนย์');
-  arena.announce('DEFEAT','เริ่มไฟต์ใหม่เพื่อท้าทายอีกครั้ง');
-  return;
+ if(concludeBattle(CORE.outcome(state)))return false;
+ CORE.nextRound(state);
+ INIT.begin(state);
+ arena?.focus(state.active);
+ log('⚡ ROUND '+state.round+' · จัดลำดับใหม่จาก SPD');
+ arena?.announce('ROUND '+state.round,'SPD TURN ORDER');
+ return true;
+}
+async function runInitiative(){
+ // This loop automatically resolves consecutive enemy turns and pauses only
+ // at the exact hero whose SPD slot is next. Every enemy action is saved once.
+ for(let steps=0;steps<24;steps++){
+  if(concludeBattle(CORE.outcome(state)))return;
+  let next=INIT.sync(state);
+  if(!next){
+   if(!finishRound())return;
+   next=INIT.sync(state);
+   if(!next)return;
+  }
+  if(next.side==='ally'){
+   arena?.focus(next.id);
+   CORE.select(state,state.targetId);
+   arena?.syncEnemies(state.enemies,state.targetId);
+   renderBattle();store();
+   return;
+  }
+  const foe=state.enemies.find(e=>e.id===next.id);
+  if(!foe||foe.hp<=0){INIT.complete(state,'enemy',next.id);continue;}
+  state.phase='enemy';renderBattle();store();
+  const move=CORE.strike(state,foe,next.slot);
+  if(move){
+   move.damage=SKILLS.adjustDamage(state,'enemy',foe.id,'ally',move.heroId,move.damage);
+   arena?.selectTarget(foe.id);
+   try{await arena.enemyAttack(move.heroId,move.damage,move.guarded,foe.name)}
+   catch(err){console.error('Enemy animation failed; applying the turn result',err)}
+   const dealt=CORE.applyStrike(state,move);
+   if(SKILLS.onLethal(state,move.heroId))
+    log('✦ '+UNIT[move.heroId].name+' · Passive REVIVE!');
+   if(state.hp[move.heroId]>0&&foe.statusOnHit&&
+     SKILLS.addStatus(state,'ally',move.heroId,foe.statusOnHit,foe.id))
+    log('🌀 '+foe.name+' ใส่สถานะ '+foe.statusOnHit.key+' ให้ '+UNIT[move.heroId].name);
+   log('🔴 '+foe.name+' (SPD '+next.spd+') → '+UNIT[move.heroId].name+
+    ' −'+dealt+' HP'+(move.guarded?' [GUARD]':''));
+  }
+  INIT.complete(state,'enemy',next.id);
+  CORE.select(state,state.targetId);
+  renderBattle();store();
  }
- if(result==='victory'){
-  state.phase='victory';log('🏆 VICTORY · ชนะใน ROUND '+state.round);
-  arena.announce('VICTORY','ALL ENEMIES DEFEATED');
-  return;
- }
- CORE.nextRound(state);arena.focus(state.active);
- arena.syncEnemies(state.enemies,state.targetId);
- log('🔵 ROUND '+state.round+' · ฝ่ายเราเริ่มออกคำสั่ง');
- arena.announce('ROUND '+state.round,'YOUR TURN');
+ throw new Error('Initiative queue overflow');
 }
 async function finishHeroTurn(){
- if(CORE.outcome(state)==='victory'){
-  state.phase='victory';log('🏆 VICTORY · ชนะใน ROUND '+state.round);
-  arena.syncEnemies(state.enemies,state.targetId);
-  arena.announce('VICTORY','ALL ENEMIES DEFEATED');
-  return;
- }
+ const id=state.active;
+ if(!INIT.complete(state,'ally',id))throw new Error('Hero action does not match SPD turn');
  CORE.select(state,state.targetId);
- arena.syncEnemies(state.enemies,state.targetId);
- const remaining=RULES.available(state.party,state.hp,state.acted);
- if(remaining.length){
-  state.active=remaining[0];arena.focus(state.active);
-  return;
- }
- await enemyPhase();
+ arena?.syncEnemies(state.enemies,state.targetId);
+ await runInitiative();
 }
+function resumeEnemyTurn(){
+ if(view!=='battle'||!frameReady||actionBusy||state.phase!=='enemy')return;
+ actionBusy=true;
+ runInitiative().catch(err=>{
+  console.error('SPD initiative resume failed',err);
+  log('⚠️ คิวศัตรูขัดข้อง ลองเข้าสนามใหม่อีกครั้ง');
+ }).finally(()=>{
+  actionBusy=false;render();
+ });
+}
+
 function sendCommand(kind){
  if(view!=='battle'||!['basic','skill','ultimate','guard'].includes(kind))return;
  if(!frameReady)return notice('สนามยังไม่พร้อม');
  if(actionBusy||state.phase!=='player')return;
  const id=state.active,c=AdvengerCharacters.get(id);
- if(!c||state.hp[id]<=0||state.acted[id]||!CORE.living(state).length)return;
+ if(!c||INIT.current(state)?.side!=='ally'||INIT.current(state)?.id!==id||
+  state.hp[id]<=0||state.acted[id]||!CORE.living(state).length)return;
  if(kind==='ultimate'&&state.energy[id]<100)return notice('EX ไม่ถึง 100');
  actionBusy=true;
  const oldEnergy=state.energy[id],bonus=state.boost?1.25:1;
@@ -403,34 +438,27 @@ function sendCommand(kind){
   }catch(err){
    console.error(err);
    log('⚠️ เกิดข้อผิดพลาดระหว่างเทิร์น: '+String(err.message||err));
-   // Recover from interrupted enemy animation without locking the player.
-   if(state.phase==='enemy'){
-    state.round=Math.min(999,state.round+1);state.enemyCursor=0;
-    state.acted=RULES.counters(state.party);state.guarded=RULES.counters(state.party);
-    state.phase='player';
-    state.active=RULES.available(state.party,state.hp,state.acted)[0]||id;
-    arena.focus(state.active);
-   }
+   // Keep unconsumed SPD slots and retry an interrupted enemy turn on return.
+   INIT.sync(state);
   }finally{
-   actionBusy=false;arena.energy(state.energy);render();
+   actionBusy=false;arena.energy(state.energy);render();resumeEnemyTurn();
   }
  })();
 }
 function setElement(element){
- if(actionBusy||state.phase!=='player'||!frameReady||!ELEMENTS[state.active].some(([key])=>key===element))return;
+ if(actionBusy||state.phase!=='player'||!frameReady||INIT.current(state)?.id!==state.active||!ELEMENTS[state.active].some(([key])=>key===element))return;
  state.elements[state.active]=element;renderBattle();store();
 }
 function deploy(id){
- if(actionBusy||state.phase!=='player')return;
- if(!state.party.includes(id)||state.active===id)return;
- if(state.hp[id]<=0)return notice(UNIT[id].name+' HP หมดแล้ว');
- if(state.acted[id])return notice(UNIT[id].name+' ออกคำสั่งในรอบนี้ไปแล้ว');
- state.active=id;arena?.focus(id);
- render();
+ if(actionBusy||state.phase!=='player'||!state.party.includes(id))return;
+ if(id!==INIT.current(state)?.id)
+  return notice('ต้องรอคิว SPD ของ '+UNIT[id].name+' ก่อนนะ');
+ arena?.focus(id);render();
 }
 function useSupport(index){
  if(actionBusy||state.phase!=='player')return notice('ใช้ผู้ช่วยได้เฉพาะเทิร์นฝ่ายเรา');
- if(state.hp[state.active]<=0||state.acted[state.active])return notice('ต้องเลือกตัวที่ยังออกคำสั่งได้');
+ if(INIT.current(state)?.side!=='ally'||INIT.current(state)?.id!==state.active||
+   state.hp[state.active]<=0||state.acted[state.active])return notice('ต้องรอคิว SPD ของตัวละคร');
  if(state.used[index]||!CORE.living(state).length)return;
  const id=state.assist[index];
  if(id==='battery'){
@@ -451,12 +479,13 @@ function resetEncounter(){
  state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);state.enemyCursor=0;
  SKILLS.clear(state);
  STATS.resetRuntime(state);
+ INIT.begin(state);
  state.used=[false,false];state.boost=false;
  state.energy=Object.fromEntries(UNITS.map(id=>[id,100]));
  arena?.reset();arena?.syncEnemies(state.enemies,state.targetId);
  arena?.focus(state.active);arena?.energy(state.energy);
- log('↻ เริ่มต่อสู้ใหม่ · ROUND 1 · ฟื้น HP/EX และผู้ช่วยทั้งหมด');
- render();
+ log('↻ เริ่มต่อสู้ใหม่ · ROUND 1 · เรียงคิวด้วย SPD');
+ render();resumeEnemyTurn();
 }
 function selectEnemy(id){
  if(actionBusy||state.phase!=='player')return;
@@ -542,7 +571,8 @@ function setSkillKit(kitId){
 function sendDatabaseSkill(kind){
  if(view!=='battle'||actionBusy||!frameReady||state.phase!=='player')return;
  const id=state.active;
- if(state.hp[id]<=0||state.acted[id]||!CORE.living(state).length)return;
+ if(INIT.current(state)?.side!=='ally'||INIT.current(state)?.id!==id||
+   state.hp[id]<=0||state.acted[id]||!CORE.living(state).length)return;
  if(!SKILLS.ready(state,id,kind))return notice('สกิลติดคูลดาวน์หรือเงื่อนไขยังไม่ครบ');
  actionBusy=true;
  // The engine is pure data-driven: effects resolve once, the shared field only animates results.
@@ -566,7 +596,7 @@ function sendDatabaseSkill(kind){
    log('⚠️ แอนิเมชันสกิลฐานข้อมูลขัดข้อง แต่ผลการใช้สกิลถูกบันทึกแล้ว');
    state.acted[id]=true;
    if(state.phase==='player')await finishHeroTurn();
-  }finally{actionBusy=false;arena?.energy(state.energy);render()}
+  }finally{actionBusy=false;arena?.energy(state.energy);render();resumeEnemyTurn()}
  })();
 }
 // Portraits and cut-ins may point to PNG files not uploaded yet.
