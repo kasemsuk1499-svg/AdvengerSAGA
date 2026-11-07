@@ -27,7 +27,8 @@
    if(!window.AdvengerCharacters?.get(entry.id))
     throw new Error('Character did not register: '+entry.id);
   }
-  await load('js/app.js?v=0.8');
+  await load('js/app.js?v=1.5');
+  await load('js/skill-creator-ui.js?v=1.5');
  }catch(err){
   console.error('[AdvengerSAGA] Character loader:',err);
   const info=document.createElement('div');
