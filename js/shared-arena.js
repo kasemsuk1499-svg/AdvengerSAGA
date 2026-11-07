@@ -56,7 +56,7 @@
     root.innerHTML=enemies.map((foe,i)=>'<button type="button" class="as-target" data-target-enemy="'+esc(foe.id)+
      '" data-count="'+count+'" data-slot="'+i+'" aria-label="เลือกเป้าหมาย '+esc(foe.name)+'">'+
      '<span class="as-lock" aria-hidden="true">TARGET</span>'+
-     '<img src="'+esc(foe.art)+'" draggable="false" alt="">'+
+     '<img src="'+esc(foe.art)+'" data-char-fallback="'+esc(foe.fallback||foe.art)+'" draggable="false" alt="">'+
      '<span class="as-target-name">'+esc(foe.name)+'</span></button>').join('');
     this.enemySignature=signature;
    }
