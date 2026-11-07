@@ -70,7 +70,10 @@ function boot({customHero=false}={}){
   reset(){ }
   announce(){ }
   async guard(){ }
-  async play(id,kind,element,hit){hit(50);return true}
+  async play(id,kind,element,hit){
+   hit(g.AdvengerCampaignBridge?.state()?.mode==='campaign'?5000:50);
+   return true;
+  }
   async playDatabaseSkill(){return true}
   async enemyAttack(id,damage,guarded,name){attacks.push({id,damage,name})}
  };
@@ -103,6 +106,26 @@ test('campaign starts from hub, hides cheat labs, saves in-progress mission and 
  saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
  a.equal(saved.campaignStage,'story-01');
  a.equal(saved.mode,'campaign');
+});
+test('actual Basic command clears campaign stage and grants first-clear reward exactly once',async()=>{
+ const app=boot();const M=app.g.AdvengerCampaign;
+ app.nodes.get('campaignLaunch').events.click();
+ a.equal(M.stats().xp,0);
+ app.click({command:'basic'});
+ await new Promise(resolve=>setImmediate(resolve));
+ let p=M.stats();
+ a.equal(p.xp,45);a.equal(p.gold,80);
+ a.equal(p.cleared['story-01'],true);
+ a.equal(p.stars['story-01'],3);
+ a.equal(app.nodes.get('campaignBattleResult').hidden,false);
+ a.match(app.nodes.get('campaignResultTitle').textContent,/ภารกิจสำเร็จ/);
+ app.click({command:'basic'});
+ p=M.stats();a.equal(p.xp,45);a.equal(p.gold,80);
+ app.click({screen:'campaign'});
+ app.nodes.get('campaignLaunch').events.click();
+ app.click({command:'basic'});
+ await new Promise(resolve=>setImmediate(resolve));
+ p=M.stats();a.equal(p.xp,45);a.equal(p.gold,80);
 });
 test('campaign item shop unlocks purchases only after earning gold',()=>{
  const app=boot();
