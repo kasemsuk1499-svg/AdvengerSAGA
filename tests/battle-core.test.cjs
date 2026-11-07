@@ -97,6 +97,17 @@ test('approved class animation presets and Tanjiro skill overrides load together
  await tanjiro.perform(a,'skill');assert.deepEqual(hits.splice(0),[70,95,130]);
  await tanjiro.perform(a,'ultimate');assert.deepEqual(hits.splice(0),[90,110,140,260]);
 });
+test('one registered character module can also be assigned to the enemy or boss team',()=>{
+ const enemies=E.instantiate([{characterId:'tanjiro',attack:180,boss:true}]);
+ assert.equal(enemies.length,1);
+ assert.equal(enemies[0].characterId,'tanjiro');
+ assert.equal(enemies[0].maxHP,1100);
+ assert.equal(enemies[0].attack,180);
+ assert.equal(enemies[0].boss,true);
+ assert.match(enemies[0].art,/characters\/tanjiro\/assets\//);
+ assert.throws(()=>E.instantiate([]));
+ assert.throws(()=>E.instantiate(['scout','scout','scout','scout']));
+});
 test('browser entrypoint loads core in order and all referenced modules exist',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const srcs=[...html.matchAll(/<script src="([^"]+)"/g)].map(x=>x[1].split('?')[0]);
