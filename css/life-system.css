@@ -1,0 +1,14 @@
+/* v1.4 Death & Revival Lab; no new animations or timers. */
+#battle .life-lab{border:1px solid #725680;border-radius:12px;background:linear-gradient(130deg,#291b36,#142536);padding:12px;margin:12px 0;}
+#battle .life-lab summary{color:#f4dafa;cursor:pointer;font-size:12px;font-weight:800;margin-bottom:10px}
+#battle .life-lab summary .small{color:#c4acdd;font-weight:400;font-size:10px}
+#battle .life-lab>label{display:block;font-size:11px;color:#c7b1d9;margin-bottom:6px}
+#battle .life-lab select{width:100%;color:#e6e9ff;background:#17233a;border:1px solid #7a638b;border-radius:7px;padding:8px 10px;font-size:12px}
+#battle .life-demo-info{font-size:11px;min-height:18px;margin:10px 0;color:#ebd7ff}
+#battle .life-lab-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+#battle .life-lab-grid button{font-size:11px;border:1px solid #7b5b94;border-radius:8px;padding:10px 8px;cursor:pointer;color:#f6ecff;background:#3c294d;min-height:38px;line-height:1.4}
+#battle .life-lab-grid button[data-life-test="damage"]{background:#542e44}
+#battle .life-lab-grid button[data-life-test="revive"]{background:#245346}
+#battle .life-lab-grid button:disabled{cursor:not-allowed;opacity:.5}
+#battle .life-lab>.small{font-size:10px;line-height:1.6;color:#c5b7d2}
+@media(max-width:580px){#battle .life-lab-grid{grid-template-columns:1fr}}
