@@ -27,7 +27,8 @@
  let currentId=null;
  let draft=makeEmpty();
  function makeEmpty(){
-  return {name:'',target:'singleEnemy',damageType:'physical',cooldownRounds:3,
+  return {name:'',overlimit:false,target:'singleEnemy',
+   damageType:'physical',cooldownRounds:3,
    effects:[{type:'damage',attackPct:1,defensePct:0,hpPct:0,hits:1}]};
  }
  function defaultFx(type){
@@ -63,27 +64,29 @@
     '</select></label>';
  };
  function renderEffects(){
+  const limits=draft.overlimit?C.overlimitLimits:C.normalLimits;
+  const pMax=limits.power*100;
   $('skillLabEffects').innerHTML=draft.effects.map((fx,i)=>{
    let fields=select(i,'type','ประเภทเอฟเฟกต์',C.types.map(id=>[id,typeLabels[id]]),fx.type)+
     '<label>เป้าหมายของขั้นนี้<select data-step="'+i+'" data-field="target">'+
     chooseTarget(fx.target||'',true)+'</select></label>';
    if(fx.type==='damage'){
-    fields+=numeric(i,'hits','ฮิตต่อเป้าหมาย',fx.hits,{min:1,max:12})+
-     numeric(i,'attackPct','ดาเมจจาก ATK (%)',fx.attackPct,{percent:true,max:10000,step:.1})+
-     numeric(i,'defensePct','ดาเมจจาก DEF (%)',fx.defensePct,{percent:true,max:10000,step:.1})+
-     numeric(i,'hpPct','ดาเมจจาก MAX_HP (%)',fx.hpPct,{percent:true,max:10000,step:.1});
+    fields+=numeric(i,'hits','ฮิตต่อเป้าหมาย',fx.hits,{min:1,max:limits.hits})+
+     numeric(i,'attackPct','ดาเมจจาก ATK (%)',fx.attackPct,{percent:true,max:pMax,step:.1})+
+     numeric(i,'defensePct','ดาเมจจาก DEF (%)',fx.defensePct,{percent:true,max:pMax,step:.1})+
+     numeric(i,'hpPct','ดาเมจจาก MAX_HP (%)',fx.hpPct,{percent:true,max:pMax,step:.1});
    }else if(fx.type==='status'){
     const keys=Object.entries(g.AdvengerStatusDB.labels).map(([k,label])=>[k,label+' ('+k+')']);
     fields+=select(i,'key','สถานะ',keys,fx.key)+
      numeric(i,'chance','โอกาสติดสถานะ (%)',fx.chance,{percent:true,max:100,step:.1})+
      numeric(i,'turns','ระยะเวลา (เทิร์น)',fx.turns,{min:1,max:999})+
-     numeric(i,'power','ความแรง (%) · เว้นว่างได้',fx.power,{percent:true,max:10000,step:.1})+
+     numeric(i,'power','ความแรง (%) · เว้นว่างได้',fx.power,{percent:true,max:pMax,step:.1})+
      '<label class="creator-check"><input type="checkbox" data-step="'+i+
      '" data-field="eachHit" '+(fx.eachHit?'checked':'')+
      '>ตรวจโอกาสแยกต่อฮิตที่โจมตีสำเร็จ</label>';
    }else if(fx.type==='heal'){
-    fields+=numeric(i,'attackPct','ฮีลตาม ATK (%)',fx.attackPct,{percent:true,max:10000,step:.1})+
-     numeric(i,'defensePct','ฮีลตาม DEF (%)',fx.defensePct,{percent:true,max:10000,step:.1});
+    fields+=numeric(i,'attackPct','ฮีลตาม ATK (%)',fx.attackPct,{percent:true,max:pMax,step:.1})+
+     numeric(i,'defensePct','ฮีลตาม DEF (%)',fx.defensePct,{percent:true,max:pMax,step:.1});
    }else if(fx.type==='cleanse'){
     fields+=numeric(i,'count','จำนวนสถานะที่ล้าง',fx.count,{min:1,max:99});
    }else if(fx.type==='reduceBuffDuration'){
@@ -91,22 +94,23 @@
    }else if(fx.type==='revive'){
     fields+=numeric(i,'hpPct','HP หลังชุบ (%)',fx.hpPct,{percent:true,max:100,step:.1});
    }else if(fx.type==='guts'){
-    fields+=numeric(i,'uses','จำนวนครั้งที่รอด',fx.uses,{min:1,max:9});
+    fields+=numeric(i,'uses','จำนวนครั้งที่รอด',fx.uses,{min:1,max:limits.uses});
    }else if(fx.type==='autoRevive'){
     fields+=numeric(i,'hpPct','HP หลังฟื้น (%)',fx.hpPct,{percent:true,max:100,step:.1})+
-     numeric(i,'uses','จำนวนครั้ง',fx.uses,{min:1,max:9});
+     numeric(i,'uses','จำนวนครั้ง',fx.uses,{min:1,max:limits.uses});
    }else if(fx.type==='immortality'){
     fields+=numeric(i,'turns','จำนวนเทิร์นอมตะ',fx.turns,{min:1,max:999})+
      numeric(i,'uses','จำนวนครั้ง',fx.uses,{min:1,max:9});
    }else if(fx.type==='execute'){
-    fields+=numeric(i,'hpThresholdPct','เกณฑ์ HP เป้าหมาย (%)',fx.hpThresholdPct,{percent:true,max:100,step:.1})+
-     numeric(i,'attackLimitPct','เพดานเทียบ ATK (%)',fx.attackLimitPct,{percent:true,max:10000,step:.1});
+    fields+=numeric(i,'hpThresholdPct','เกณฑ์ HP เป้าหมาย (%)',fx.hpThresholdPct,{percent:true,max:pMax,step:.1})+
+     numeric(i,'attackLimitPct','เพดานเทียบ ATK (%)',fx.attackLimitPct,{percent:true,max:pMax,step:.1});
    }
    const note=fx.type==='status'&&fx.eachHit?
     'ตรวจหนึ่งครั้งต่อหนึ่งฮิตที่โดนเป้าหมายในขั้นโจมตีก่อนหน้า':
     fx.type==='damage'?'จำนวนฮิต × จำนวนเป้าหมาย ไม่ใช่แชร์จำนวนฮิตกัน':
     fx.type==='revive'?'ใช้กับเพื่อนที่ KO; ตั้งเป้าหมายของขั้นนี้เป็นเพื่อนร่วมทีมหรือทั้งหมด':'';
-   return '<article class="creator-step-card" data-step-card="'+i+'">'+
+   return '<article class="creator-step-card'+(draft.overlimit?' creator-step-overlimit':'')+
+    '" data-step-card="'+i+'">'+
     '<div class="creator-step-top"><strong>ขั้นที่ '+(i+1)+' · '+esc(typeLabels[fx.type])+'</strong>'+
     '<div class="creator-step-tools">'+
     '<button data-lab-step="up" data-step="'+i+'" '+(i===0?'disabled':'')+'>↑ เลื่อนขึ้น</button>'+
@@ -125,9 +129,20 @@
   const raw={...draft};
   delete raw.id;
   $('skillLabPreview').textContent=JSON.stringify(raw,null,2);
+  const hits=draft.effects.filter(x=>x.type==='damage')
+   .reduce((sum,x)=>sum+Math.max(0,Number(x.hits)||0)*4,0);
+  const limits=draft.overlimit?C.overlimitLimits:C.normalLimits;
+  text('skillLabOverlimitInfo',draft.overlimit?
+   '😈 OVERLIMIT ACTIVE · '+draft.effects.length+'/'+limits.effects+
+   ' ขั้น · สูงสุด '+limits.hits.toLocaleString()+
+   ' ฮิต/เป้าหมาย · ระเบิดดาเมจแบบรวมเพื่อไม่ให้แลค':
+   'NORMAL · '+draft.effects.length+'/'+limits.effects+
+   ' ขั้น · เปิด Overlimit เพื่อปลดพลัง');
+  $('skillLabCooldown').max=String(limits.cooldown);
  }
  function readBase(){
   draft.name=$('skillLabName').value;
+  draft.overlimit=!!$('skillLabOverlimit').checked;
   draft.target=$('skillLabTarget').value;
   draft.damageType=$('skillLabDamageType').value;
   const cd=$('skillLabCooldown').value;
@@ -186,9 +201,12 @@
  }
  function renderBase(){
   $('skillLabName').value=draft.name||'';
+  $('skillLabOverlimit').checked=!!draft.overlimit;
   $('skillLabTarget').value=draft.target;
   $('skillLabDamageType').value=draft.damageType;
   $('skillLabCooldown').value=draft.cooldownRounds??'';
+  $('skillLabCooldown').max=String((draft.overlimit?
+   C.overlimitLimits:C.normalLimits).cooldown);
  }
  function render(){
   renderList();renderBase();renderEffects();renderEquipCatalog();renderEquip();
@@ -240,6 +258,11 @@
   });
   for(const id of ['skillLabName','skillLabCooldown','skillLabTarget','skillLabDamageType'])
    $(id).addEventListener('input',()=>{readBase();preview()});
+  $('skillLabOverlimit').addEventListener('change',()=>{
+   readBase();renderEffects();
+   message(draft.overlimit?'😈 โหมด OVERLIMIT เปิดแล้ว · ปลดพลังได้ตามใจ!':
+    'โหมด NORMAL · หากมีค่าเกินเพดานให้ลดก่อนบันทึก');
+  });
   $('skillLabList').addEventListener('change',e=>selectSkill(e.target.value));
   $('skillLabHero').addEventListener('change',renderEquip);
   $('skillLabSlot').addEventListener('change',renderEquip);
@@ -252,13 +275,18 @@
    }catch(e){message('⚠️ '+e.message,true)}
   });
   $('skillLabAdd').addEventListener('click',()=>{
-   if(draft.effects.length>=C.maxEffects)return message('สูงสุด '+C.maxEffects+' ขั้น',true);
+   const max=(draft.overlimit?C.overlimitLimits:C.normalLimits).effects;
+   if(draft.effects.length>=max)return message('สูงสุด '+max+' ขั้น',true);
    draft.effects.push(defaultFx('damage'));renderEffects();
   });
   $('skillLabNew').addEventListener('click',()=>selectSkill(''));
   $('skillLabExample').addEventListener('click',()=>{
    currentId=null;draft=C.example();render();
    message('⚡ ตัวอย่าง 4×4: กำหนดโอกาสติดอัมพาตก่อนกดบันทึก (ยังไม่มีเปอร์เซ็นต์ที่ตกลงกัน)');
+  });
+  $('skillLabOverlimitExample').addEventListener('click',()=>{
+   currentId=null;draft=C.overlimitExample();render();
+   message('☄️ สกิลล้างโลก: 99,999 ฮิต × 4 เป้าหมาย · ยัดพลังได้อีก · กดบันทึกได้เลย');
   });
   $('skillLabSave').addEventListener('click',save);
   $('skillLabDuplicate').addEventListener('click',()=>{
@@ -283,7 +311,7 @@
   $('skillLabImport').addEventListener('click',()=>{
    try{
     const raw=$('skillLabTransfer').value;
-    if(raw.length>1500000)throw Error('ข้อมูลนำเข้าใหญ่เกิน 1.5 MB');
+    if(raw.length>8000000)throw Error('ข้อมูลนำเข้าใหญ่เกิน 8 MB');
     const parsed=JSON.parse(raw);
     if(typeof g.confirm==='function'&&!g.confirm('นำเข้าคลังสกิลจาก JSON และแทนที่คลังเดิมในเบราว์เซอร์นี้?'))return;
     C.importData(parsed);
