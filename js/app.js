@@ -15,7 +15,7 @@ const ELEMENTS=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).c
 const CORE=AdvengerBattleCore,ENCOUNTERS=AdvengerEncounters;
 const SKILLS=AdvengerSkillEngine,SKILL_DB=AdvengerSkillDB;
 const RULES=AdvengerTurnRules,STATS=AdvengerStatDB,INIT=AdvengerInitiative;
-const AILMENTS=AdvengerStatusDB,STATUS=AdvengerStatusEngine;
+const AILMENTS=AdvengerStatusDB,STATUS=AdvengerStatusEngine,LIFE=AdvengerLifeEngine;
 const $=id=>document.getElementById(id);
 const fresh=()=>{
  const party=['saber','mage','tank','gunner'];
@@ -29,6 +29,7 @@ const fresh=()=>{
  };
  STATS.resetRuntime(initial);
  SKILLS.clear(initial);
+ LIFE.reset(initial);
  INIT.begin(initial);
  return initial;
 };
@@ -81,6 +82,7 @@ function read(){
   }
   if(!legacy&&d.skillKits)SKILLS.restore(state,d);
   STATS.restoreRuntime(state,!legacy?d.statRuntime:null);
+  LIFE.restore(state,!legacy?d.lifeRuntime:null);
   state.active=state.party.includes(d.active)?d.active:state.party[0];
   INIT.restore(state,d);
   return state;
@@ -242,6 +244,7 @@ function renderBattle(){
  renderSkillDatabase(canAct);
  renderStatLive();
  renderAilmentDemo();
+ renderLifeLab();
 }
 function render(){renderFormation();renderBattle();if(frameReady)arena?.energy(state.energy);store()}
 function show(tab){
@@ -273,6 +276,7 @@ function choose(type,index,id){
    state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);state.enemyCursor=0;
    SKILLS.clear(state);
    STATS.resetRuntime(state);
+   LIFE.reset(state);
    INIT.begin(state);
    state.energy=Object.fromEntries(UNITS.map(unitId=>[unitId,100]));
    state.used=[false,false];state.boost=false;
@@ -300,6 +304,29 @@ function ensureArena(force=false){
  }catch(e){console.error(e);frameReady=false;notice('โหลดสนามไม่ได้: '+e.message)}
 }
 
+
+function reportLifeEvents(){
+ for(const event of LIFE.drain(state)){
+  const name=event.side==='ally'?(UNIT[event.id]?.name||event.id):
+   (state.enemies.find(e=>e.id===event.id)?.name||event.id);
+  const labels={
+   guts:'GUTS · รอดชีวิตด้วย 1 HP',
+   autoRevive:'AUTO REVIVE · ฟื้นคืนชีพอัตโนมัติ',
+   revive:'REVIVE · ชุบชีวิต',
+   immortality:'IMMORTALITY · ฟื้นด้วย 1 HP',
+   immortalityExpired:'IMMORTALITY หมดเวลา · KO',
+   soulDeath:'SOUL DEATH · ปิดกั้นการฟื้นคืนชีพ',
+   ko:'KO',
+   grant:'ได้รับพรชีวิต'
+  };
+  if(event.type!=='grant')
+   log('💠 '+name+' · '+(labels[event.type]||event.type)+
+    (event.hp?' · '+event.hp+' HP':''));
+  if(['revive','autoRevive','immortality','guts'].includes(event.type))
+   arena?.announce(event.type.toUpperCase(),name);
+ }
+}
+
 function concludeBattle(result){
  if(!result)return false;
  state.phase=result;
@@ -316,11 +343,13 @@ function finishRound(){
  // A full round ends only when every surviving unit has acted (or was KO).
  // Status durations and DoT tick exactly once here.
  const statuses=SKILLS.advanceRound(state);
+ LIFE.finishRound(state);
  for(const effect of statuses){
   if(effect.amount)log('☄️ '+(effect.side==='enemy'?
     (state.enemies.find(e=>e.id===effect.id)?.name||'Enemy'):
     (UNIT[effect.id]?.name||'Ally'))+' · '+effect.key+' −'+effect.amount+' HP');
  }
+ reportLifeEvents();
  if(concludeBattle(CORE.outcome(state)))return false;
  CORE.nextRound(state);
  INIT.begin(state);
@@ -333,6 +362,7 @@ async function runInitiative(){
  // This loop automatically resolves consecutive enemy turns and pauses only
  // at the exact hero whose SPD slot is next. Every enemy action is saved once.
  for(let steps=0;steps<24;steps++){
+  reportLifeEvents();
   if(concludeBattle(CORE.outcome(state)))return;
   let next=INIT.sync(state);
   if(!next){
@@ -372,14 +402,15 @@ async function runInitiative(){
    const reactions=STATUS.onHit(state,'ally',move.heroId,dealt);
    for(const effect of reactions)if(effect.amount)
     log('✦ '+UNIT[move.heroId].name+' · '+AILMENTS.labels[effect.key]+' −'+effect.amount+' HP');
-   if(SKILLS.onLethal(state,move.heroId))
-    log('✦ '+UNIT[move.heroId].name+' · Passive REVIVE!');
+   // The central Life Engine handles the lethal hit and records its outcome.
+   reportLifeEvents();
    if(state.hp[move.heroId]>0&&foe.statusOnHit&&
      SKILLS.addStatus(state,'ally',move.heroId,foe.statusOnHit,foe.id))
     log('🌀 '+foe.name+' ใส่สถานะ '+foe.statusOnHit.key+' ให้ '+UNIT[move.heroId].name);
    log('🔴 '+foe.name+' (SPD '+next.spd+') → '+UNIT[move.heroId].name+
     ' −'+dealt+' HP'+(move.guarded?' [GUARD]':''));
   }
+  reportLifeEvents();
   INIT.complete(state,'enemy',next.id);
   CORE.select(state,state.targetId);
   renderBattle();store();
@@ -388,6 +419,7 @@ async function runInitiative(){
 }
 async function finishHeroTurn(){
  const id=state.active;
+ reportLifeEvents();
  if(!INIT.complete(state,'ally',id))throw new Error('Hero action does not match SPD turn');
  CORE.select(state,state.targetId);
  arena?.syncEnemies(state.enemies,state.targetId);
@@ -438,6 +470,7 @@ function sendCommand(kind){
     if(reaction.amount)log('✦ '+(state.enemies.find(e=>e.id===attackTarget)?.name||'Enemy')+
      ' · '+AILMENTS.labels[reaction.key]+' −'+reaction.amount+' HP');
   }
+  reportLifeEvents();
   hits++;damageDone+=dealt;
   const foe=state.enemies.find(e=>e.id===attackTarget);
   if(foe){
@@ -514,6 +547,7 @@ function resetEncounter(){
  state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);state.enemyCursor=0;
  SKILLS.clear(state);
  STATS.resetRuntime(state);
+ LIFE.reset(state);
  INIT.begin(state);
  state.used=[false,false];state.boost=false;
  state.energy=Object.fromEntries(UNITS.map(id=>[id,100]));
@@ -659,6 +693,7 @@ function sendDatabaseSkill(kind){
    const damage=report.events.filter(e=>e.kind==='damage').reduce((v,e)=>v+e.amount,0);
    const healing=report.events.filter(e=>e.kind==='heal').reduce((v,e)=>v+e.amount,0);
    log('📖 '+UNIT[id].name+' · '+report.skill.name+' · '+damage+' DMG · '+healing+' HEAL');
+   reportLifeEvents();
    if(damage>0&&state.boost)state.boost=false;
    state.energy[id]=Math.min(100,state.energy[id]+15);
    state.acted[id]=true;
@@ -667,6 +702,7 @@ function sendDatabaseSkill(kind){
    console.error(err);
    log('⚠️ แอนิเมชันสกิลฐานข้อมูลขัดข้อง แต่ผลการใช้สกิลถูกบันทึกแล้ว');
    state.acted[id]=true;
+   reportLifeEvents();
    if(state.phase==='player')await finishHeroTurn();
   }finally{actionBusy=false;arena?.energy(state.energy);render();resumeEnemyTurn()}
  })();
