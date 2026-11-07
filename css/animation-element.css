@@ -1,0 +1,14 @@
+/* AdvengerSAGA v2.2 — animation and innate element selector styles.
+ * Pure CSS; no additional rendering loops or animation libraries. */
+.character-creator-layout #charLabElement{font-weight:750;border-color:#819bcb}
+.character-creator-layout #charLabElementDescription{font-size:10px;color:#b4cbea;line-height:1.55}
+.character-skill-slots label{padding:10px 0;border-bottom:1px solid #42516c}
+.character-skill-slots .character-animation-label{display:block;margin-top:8px;font-size:11px;color:#ebd9ff}
+.character-skill-slots [data-char-animation]{border-color:#886ba9}
+.character-preview-panel #charLabPreviewRole{line-height:1.6}
+#skillLabAnimation{border-color:#8c73ba}
+#skillLabAnimationSave{margin:2px 0 10px}
+#battle #createdSkillPanel .created-battle-empty{line-height:1.6}
+@media(max-width:600px){
+ .character-skill-slots [data-char-animation],#skillLabAnimation{font-size:12px;min-height:42px}
+}
