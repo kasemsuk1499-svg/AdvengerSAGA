@@ -1,4 +1,4 @@
-# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v2.0)
+# AdvengerSAGA — Chronicle RPG Campaign + Skill Loadouts (v2.1)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,14 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v2.1 — Equip Existing Skills as Replacements / เปลี่ยนท่าเดิมเป็นสกิลที่เลือก
+
+- **Equipped means replace, not append.** Basic / Skill 1 / Ultimate in the main combat command cards now use the assigned ability instead of the character's original skill. An optional **Skill 2** card appears only when a skill is assigned to that fourth slot.
+- Pick from **12 original class move variants** (Saber/Mage/Tank/Gunner Basic/Skill/Ultimate), **15 active moves from the five curated Seven Knights reference kits**, or **any user-authored skill**. Choose a source in Skill Creator's equip panel or Character Creator's four skill slots.
+- Original class sources keep their native combat choreography using the acting hero's sprite. Seven Knights and custom effects use the shared lightweight skill VFX and rules, with source cooldowns, statuses, damage and revival behavior. The source character's **passive is not copied** when only an active skill is selected.
+- Empty/unassigned slots automatically fall back to the character's regular Basic/Skill/Ultimate. A borrowed Ultimate still costs EX 100 even when placed into another slot; borrowed active skills remain subject to Silence. Cooldowns and SPD turns remain enforced.
+- Existing saved user skills and assignments still work, and local JSON backups include borrowed skill IDs. The laboratory retains its standalone reference-kit testing controls, which are kept separate from campaign loadouts.
 
 ## v2.0 — Playable RPG Campaign / โหมดผจญภัยจริง
 
@@ -31,7 +39,7 @@ Repository **Settings → Pages → Build and deployment → Source: Deploy from
 ## v1.5 — Skill Creator Lab / ห้องทดลองสร้างสกิลตัวละคร
 
 - **Playable 🧪 Skill Creator** tab: visually build and reorder **1–24 sequential effects**, with separate target override, multi-target and multi-hit, status chance per landed hit, healing, cleanse, Guts, Revive, Immortality, Execute and self-buffs. The approved example of **4 enemies × 4 hits each = up to 16 hits**, then Paralysis per hit, then self ATK +40% for 4 turns, is available as an editable template. **Paralysis chance is intentionally blank** until the author specifies it.
-- Create, rename, duplicate and delete **standalone reusable skills**. Equip them to any registered character in **Basic / Skill 1 / Skill 2 / Ultimate** slots. Custom buttons appear alongside original attacks and reference kits without replacing them.
+- Create, rename, duplicate and delete **standalone reusable skills**. Equip them to any registered character in **Basic / Skill 1 / Skill 2 / Ultimate** slots. Equipped skills replace the matching original command cards instead of creating duplicate action buttons; original skills remain the fallback when a slot is empty.
 - Cast these skills during the actual **SPD turn**, with a separate per-skill cooldown and EX 100 required for Ultimate. The existing 30-stat, status, death/revive and lightweight shared-VFX engines are reused.
 - Added **🧪 SKILL LAB · 4 enemies** training encounter so the full 16-hit behavior can actually be tested in battle.
 - Local browser persistence plus copyable **JSON export/import**; **not** cloud-synced or committed to GitHub automatically. The original class animations remain unchanged.

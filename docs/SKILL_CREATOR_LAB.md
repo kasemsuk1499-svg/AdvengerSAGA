@@ -8,11 +8,11 @@
 2. Enter a skill name, main target group, physical/magic damage type and cooldown in rounds.
 3. Press **+ เพิ่มเอฟเฟกต์**; pick from Damage, Status, Heal, Cleanse, Revive, Guts, Auto Revive, Immortality, Execute or Reduce Buff Duration. Each step has its own optional target selector.
 4. Add, remove and move individual effect rows with up/down buttons. The engine executes effects strictly in the displayed sequence.
-5. Press **💾 บันทึกลงคลัง**. Then select an existing character and one of the four slots (Basic, Skill 1, Skill 2, Ultimate), and press **ติดตั้งสกิลนี้**. A single saved skill can be equipped by several characters.
+5. Press **💾 บันทึกลงคลัง** for a newly authored skill, or directly choose an existing original class / Seven Knights skill from **สกิลที่จะใช้แทนช่องนี้**. Pick a character and one of Basic, Skill 1, Skill 2, Ultimate, then press **ติดตั้งสกิลนี้**. The source ability replaces the action in that slot; one saved skill can still be assigned to multiple characters.
 6. Choose **⚔️ สนามทดสอบ**, expand **🧪 MY CREATED SKILLS** and press the assigned skill when that character's SPD turn comes. Ultimate requires EX 100 and consumes EX; all authored skills consume one normal action and have independent cooldowns.
 7. Choose **🧪 SKILL LAB · ศัตรู 4 ตัว** in the encounter selector when testing the confirmed 4-target × 4-hits-per-target rule.
 
-Existing original class attacks (and reference skill-kit buttons) remain available: authored skills appear as **separate, additional buttons** so original animations and existing balance are not overwritten.
+**Replacement loadout (v2.1):** the regular Basic / Skill / Ultimate command cards call equipped abilities *instead of* the defaults. An additional Skill 2 command appears only when the corresponding fourth slot is assigned. Empty slots always revert to the original class moves. Select from (a) original Saber/Mage/Tank/Gunner class moves, (b) original active skills in the curated Seven Knights database, or (c) new authored skills. This does not overwrite source skill files or animations. Borrowed original class moves replay their existing light class choreography on the current actor. Borrowed Seven Knights skills use the existing data-driven VFX and cooldowns, but do not import their source hero's passive. The separate reference-kit lab remains available for testing.
 
 ## Example — four enemies, four hits each, Paralysis, self buff
 
@@ -50,7 +50,7 @@ Allied and enemy target selectors, Speed Initiative, status resistance, life eng
 - `js/skill-creator.js`: normalized skill records, validation, local library, equipped slots, JSON import/export.
 - `js/skill-creator-ui.js`: visual ordered-effect editor and assignment interface.
 - `js/skill-engine.js`: `readyCreated`, `createdRemaining`, and custom `cast` support, with saved per-skill cooldowns.
-- `js/app.js`: custom buttons in battle and SPD/EX/cooldown integration.
+- `js/app.js`: replacement command-slot routing (Basic / Skill 1 / optional Skill 2 / Ultimate), with inherited class fallback, SPD/EX/cooldowns and status checks.
 - `css/skill-creator.css`: responsive layouts and the four-foe arena positioning.
 
 Data is persisted automatically in the current browser under `AdvengerSAGA_SKILL_CREATOR_V1`. Use **ส่งออก JSON** to place your complete library/assignments in a copyable text field; **นำเข้า JSON** validates and replaces the library after confirmation. This is **not** a server, database account, GitHub commit, or cloud sync. Clearing browser storage will erase the local library unless exported.
