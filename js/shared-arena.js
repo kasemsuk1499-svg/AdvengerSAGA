@@ -240,7 +240,8 @@
    if(!owner||!character||!['basic','skill','ultimate'].includes(kind))return false;
    this.focus(id);this.busy=true;
    this.stage.classList.add('as-busy');
-   const color=character.colors.find(([name])=>name===element)?.[2]||character.accent;
+   const color=window.AdvengerElements?.get(element)?.color||
+    character.colors.find(([name])=>name===element)?.[2]||character.accent;
    const origin=()=>this.field.point(this.actor(id));
    const target=()=>this.field.point(this.target);
    const fx=this.field;
@@ -280,30 +281,66 @@
     this.stage.classList.remove('as-busy');
    }
   }
-  async playDatabaseSkill(id,skill,report){
+  async playReanimated(id,kind,element,onDamage,sourceHeroId,animationId){
+   const chosen=window.AdvengerAnimations?.get(animationId);
+   if(!chosen)return this.play(id,kind,element,onDamage,sourceHeroId);
+   // Sample the original move's damage packets without visuals, then run
+   // the chosen choreography VISUALLY ONLY. The selected animation cannot
+   // change hit count, coefficients, EX cost, damage or status effects.
+   let hits;
+   try{hits=await window.AdvengerAnimations.capture(sourceHeroId||id,kind)}
+   catch(e){console.error('Animation damage capture',e);return false}
+   const success=await this.play(id,chosen.kind,element,()=>0,chosen.classId);
+   if(!success)return false;
+   let number=0;
+   const color=window.AdvengerElements?.get(element)?.color||
+    window.AdvengerCharacters.get(id)?.accent||'#fff';
+   for(const h of hits){
+    number++;
+    const dealt=onDamage(h.amount,kind,h.critical,number);
+    if(dealt>0)this.hitNumber(dealt,color);
+   }
+   return true;
+  }
+  async playDatabaseSkill(id,skill,report,animationId=null,elementOverride=null){
    if(this.busy||!this.party.includes(id)||!report?.ok)return false;
+   const preset=window.AdvengerAnimations?.get(animationId);
+   let choreographed=false;
+   if(preset){
+    // All skill effects are already computed by SkillEngine.cast. The class
+    // choreography is only visualization; it must not deal damage again.
+    choreographed=await this.play(id,preset.kind,
+     elementOverride||window.AdvengerCharacters.get(id)?.defaultElement,
+     ()=>0,preset.classId);
+    if(!choreographed)return false;
+   }
    const actor=this.actor(id);
    if(!actor)return false;
    this.busy=true;this.focus(id);this.stage.classList.add('as-busy');
-   const element=AdvengerCharacters.get(id)?.defaultElement||'arcane';
-   const color=this.field.color(element);
+   const element=elementOverride||
+    AdvengerCharacters.get(id)?.defaultElement||'arcane';
+   const color=window.AdvengerElements?.get(element)?.color||this.field.color(element);
    try{
     this.announce('SKILL DATABASE · '+skill.name,'Data-driven ability · '+report.hero.name);
     const point=this.field.point(actor);
-    this.field.emit('charge',point,point,color,this.reduced?130:480);
-    await wait(this.reduced?80:350);
+    if(!choreographed){
+     this.field.emit('charge',point,point,color,this.reduced?130:480);
+     await wait(this.reduced?80:350);
+    }
     const targets=report.targets.map(t=>{
      const el=t.side==='ally'?this.actor(t.id):
       Array.from(this.stage.querySelectorAll('[data-target-enemy]')).find(n=>n.dataset.targetEnemy===t.id);
      return {t,el};
     }).filter(({el})=>el);
-    for(const {t,el} of targets){
-     const dest=this.field.point(el);
-     const ally=t.side==='ally';
-     this.field.emit(ally?'shield':'projectile',point,dest,
-      ally?'#78f3c9':color,this.reduced?170:340,{role:ally?'heal':'orb'});
+    if(!choreographed){
+     for(const {t,el} of targets){
+      const dest=this.field.point(el);
+      const ally=t.side==='ally';
+      this.field.emit(ally?'shield':'projectile',point,dest,
+       ally?'#78f3c9':color,this.reduced?170:340,{role:ally?'heal':'orb'});
+     }
+     await wait(this.reduced?85:330);
     }
-    await wait(this.reduced?85:330);
     for(const evt of report.events){
      const node=evt.side==='ally'?this.actor(evt.id):
       Array.from(this.stage.querySelectorAll('[data-target-enemy]')).find(n=>n.dataset.targetEnemy===evt.id);
