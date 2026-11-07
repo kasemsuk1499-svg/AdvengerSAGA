@@ -70,9 +70,9 @@ test('win, loss and next round reset are deterministic',()=>{
  const loss=make('boss');
  for(const id of loss.party)loss.hp[id]=0;
  assert.equal(C.outcome(loss),'defeat');
- const round=make('training');round.round=3;
+ const round=make('training');round.round=3;round.enemyCursor=2;
  C.nextRound(round);
- assert.equal(round.round,4);assert.equal(round.phase,'player');
+ assert.equal(round.round,4);assert.equal(round.phase,'player');assert.equal(round.enemyCursor,0);
  assert.deepEqual(Object.values(round.acted),[false,false,false,false]);
  assert.deepEqual(Object.values(round.guarded),[false,false,false,false]);
  assert.equal(round.active,'saber');
