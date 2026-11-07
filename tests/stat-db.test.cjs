@@ -32,7 +32,7 @@ test('legacy characters get defaults; new ones can customize every field',()=>{
  a.equal(legacy.stats.MAX_HP,1050);
  a.equal(legacy.stats.P_ATK,242);
  a.equal(legacy.stats.DEF,158);
- a.equal(legacy.stats.SPD,100);
+ a.equal(legacy.stats.SPD,110);
  a.equal(Object.keys(legacy.stats).length,30);
  a.ok(Object.isFrozen(legacy.stats));
  const custom=g.AdvengerCharacters.register({

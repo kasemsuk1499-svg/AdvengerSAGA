@@ -22,7 +22,7 @@ const make=(encounter='training')=>{
  I.begin(s);
  return s;
 };
-const keys=s=>I.order(s).map(e=>I.token(e));
+const keys=s=>Array.from(I.order(s),e=>I.token(e));
 test('class SPD uses approved presets without changing old combat attack values',()=>{
  a.equal(S.forCharacter('gunner').SPD,120);
  a.equal(S.forCharacter('saber').SPD,110);
@@ -55,7 +55,7 @@ test('equal SPD ties: allies first, then formation slot, then enemy slot',()=>{
  for(const enemy of s.enemies)
   enemy.stats=S.create({maxHP:enemy.maxHP,stats:{SPD:100}});
  s.initiativeOrder=I.order(s);s.initiativeDone=[];
- const ties=s.initiativeOrder.filter(x=>x.spd===100).map(I.token);
+ const ties=Array.from(s.initiativeOrder.filter(x=>x.spd===100),I.token);
  a.deepEqual(ties,[
   'ally:mage','enemy:foe-0','enemy:foe-1','enemy:foe-2'
  ]);
@@ -129,7 +129,7 @@ test('browser loads the initiative module before app.js and locks free character
  a.ok(scripts.indexOf('js/initiative.js')<scripts.indexOf('js/character-loader.js'));
  const app=fs.readFileSync(path.join(root,'js/app.js'),'utf8');
  a.match(app,/runInitiative/);a.match(app,/INIT\.complete/);
- a.match(app,/data\.?set|INIT\.order/);
+ a.match(app,/INIT\.order/);
  a.doesNotThrow(()=>new vm.Script(app));
  const arena=fs.readFileSync(path.join(root,'js/shared-arena.js'),'utf8');
  a.match(arena,/id!==activeId/);
