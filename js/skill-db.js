@@ -34,7 +34,8 @@
      effects:[{type:'cleanse',count:2},status('defenseUp',.18,3)],
      enhancements:[{type:'defenseUp',value:.22}]},
     passive:{name:'Spirit Dancer',target:'allAllies',
-     triggers:[{event:'battleStart',target:'allAllies',effect:status('poisonImmunity',1,2)}]}
+     triggers:[{event:'battleStart',target:'allAllies',effect:status('poisonImmunity',1,2)},
+               {event:'basicUsed',target:'allAllies',effect:status('poisonImmunity',1,2)}]}
    }},
   {id:'ellen',name:'Ellen',nameTh:'เอลเลน',role:'Attack',source:'https://gamewith.net/sevenknights-rebirth/70587',
    sourceChecked:'2026-11-07',
