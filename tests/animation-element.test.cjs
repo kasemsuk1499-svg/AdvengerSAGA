@@ -131,7 +131,7 @@ test('swapped native choreography replays original hit values, not chosen animat
 });
 test('visual-only animation for a DB skill does not execute any extra combat damage',async()=>{
  const {g}=boot(),proto=g.AdvengerSharedArena.prototype;
- const visual=[],hits=[],fake={id:'hero'},enemy={id:'foe-0'};
+ const visual=[],hits=[],fake={id:'hero'},enemy={id:'foe-0',dataset:{targetEnemy:'foe-0'}};
  const stage=Object.create(proto);
  stage.party=['saber'];stage.busy=false;stage.reduced=true;
  stage.actor=()=>fake;
