@@ -8,14 +8,17 @@
  const slots=Object.freeze(['basic','skill1','skill2','ultimate']);
  const types=Object.freeze(['damage','status','heal','cleanse',
   'revive','guts','autoRevive','immortality','execute','reduceBuffDuration']);
- const maxEffects=24,maxSkills=150;
+ const normalLimits=Object.freeze({effects:24,hits:12,power:100,cooldown:30,uses:9});
+ const overlimitLimits=Object.freeze({effects:128,hits:1000000,power:1000000,
+  cooldown:999,uses:999});
+ const maxEffects=overlimitLimits.effects,maxSkills=150;
  const allowedTargets=new Set(g.AdvengerSkillDB.targetTypes);
  const num=(v,lo,hi,label)=>{
   if(v===''||v==null||!Number.isFinite(Number(v))||
     Number(v)<lo||Number(v)>hi)throw Error(label+' ต้องอยู่ระหว่าง '+lo+'–'+hi);
   return Number(v);
  };
- const percent=(v,label)=>num(v,0,100,label); // fractions: 1 = 100%; UI divides percent inputs
+ const percent=(v,label,limit=normalLimits.power)=>num(v,0,limit,label); // fraction 1 = 100%
  const integer=(v,lo,hi,label)=>{
   const n=num(v,lo,hi,label);
   if(!Number.isInteger(n))throw Error(label+' ต้องเป็นจำนวนเต็ม');
@@ -31,20 +34,20 @@
   if(!t||t.length>70)throw Error('ชื่อสกิลต้องยาว 1–70 ตัวอักษร');
   return t;
  };
- function effect(raw){
+ function effect(raw,limits=normalLimits){
   if(!plain(raw)||!types.includes(raw.type))throw Error('ไม่รู้จักประเภทเอฟเฟกต์');
   const x={type:raw.type};
   if(raw.target)x.target=cleanTarget(raw.target,'เป้าหมายของเอฟเฟกต์');
   switch(x.type){
    case 'damage':
-    x.hits=integer(raw.hits??1,1,12,'ฮิตต่อเป้าหมาย');
-    x.attackPct=percent(raw.attackPct??1,'พลังโจมตี');
-    x.defensePct=percent(raw.defensePct??0,'พลังป้องกัน');
-    x.hpPct=percent(raw.hpPct??0,'HP สูงสุด');
+    x.hits=integer(raw.hits??1,1,limits.hits,'ฮิตต่อเป้าหมาย');
+    x.attackPct=percent(raw.attackPct??1,'พลังโจมตี',limits.power);
+    x.defensePct=percent(raw.defensePct??0,'พลังป้องกัน',limits.power);
+    x.hpPct=percent(raw.hpPct??0,'HP สูงสุด',limits.power);
     break;
    case 'heal':
-    x.attackPct=percent(raw.attackPct??0,'พลังฮีลตาม ATK');
-    x.defensePct=percent(raw.defensePct??1,'พลังฮีลตาม DEF');
+    x.attackPct=percent(raw.attackPct??0,'พลังฮีลตาม ATK',limits.power);
+    x.defensePct=percent(raw.defensePct??1,'พลังฮีลตาม DEF',limits.power);
     break;
    case 'status':
     if(!g.AdvengerStatusDB.has(raw.key))throw Error('ไม่รู้จักสถานะ '+String(raw.key));
@@ -54,7 +57,7 @@
     x.chance=num(raw.chance,0,1,'โอกาสติดสถานะ');
     x.turns=integer(raw.turns??2,1,999,'ระยะเวลาสถานะ');
     if(raw.power!==undefined&&raw.power!==null&&raw.power!=='')
-     x.power=percent(raw.power,'ความแรงสถานะ');
+     x.power=percent(raw.power,'ความแรงสถานะ',limits.power);
     x.eachHit=!!raw.eachHit;
     break;
    case 'cleanse':x.count=integer(raw.count??1,1,99,'จำนวนที่ล้าง');break;
@@ -62,7 +65,7 @@
    case 'revive':
    case 'autoRevive':
     x.hpPct=percent(raw.hpPct??.4,'HP ที่ฟื้น');
-    if(x.type==='autoRevive')x.uses=integer(raw.uses??1,1,9,'จำนวนครั้ง');
+    if(x.type==='autoRevive')x.uses=integer(raw.uses??1,1,limits.uses,'จำนวนครั้ง');
     break;
    case 'guts':x.uses=integer(raw.uses??1,1,9,'จำนวนครั้ง');break;
    case 'immortality':
@@ -70,23 +73,26 @@
     x.uses=integer(raw.uses??1,1,9,'จำนวนครั้ง');
     break;
    case 'execute':
-    x.hpThresholdPct=percent(raw.hpThresholdPct??.24,'HP ที่สำเร็จโทษ');
-    x.attackLimitPct=percent(raw.attackLimitPct??1.2,'ATK ที่จำกัด');
+    x.hpThresholdPct=percent(raw.hpThresholdPct??.24,'HP ที่สำเร็จโทษ',limits.power);
+    x.attackLimitPct=percent(raw.attackLimitPct??1.2,'ATK ที่จำกัด',limits.power);
     break;
   }
   return x;
  }
  function normalize(raw,keepId=false){
   if(!plain(raw))throw Error('ข้อมูลสกิลไม่ถูกต้อง');
+  const overlimit=raw.overlimit===true;
+  const limits=overlimit?overlimitLimits:normalLimits;
   const fx=raw.effects;
-  if(!Array.isArray(fx)||!fx.length||fx.length>maxEffects)
-   throw Error('ต้องมีเอฟเฟกต์ตั้งแต่ 1 ถึง '+maxEffects+' ขั้น');
+  if(!Array.isArray(fx)||!fx.length||fx.length>limits.effects)
+   throw Error('ต้องมีเอฟเฟกต์ตั้งแต่ 1 ถึง '+limits.effects+' ขั้น'+
+    (overlimit?' (Overlimit)':''));
   const result={
-   name:name(raw.name),
+   name:name(raw.name),overlimit,
    target:cleanTarget(raw.target),
    damageType:raw.damageType==='magic'?'magic':'physical',
-   cooldownRounds:integer(raw.cooldownRounds??0,0,30,'คูลดาวน์'),
-   effects:fx.map(effect)
+   cooldownRounds:integer(raw.cooldownRounds??0,0,limits.cooldown,'คูลดาวน์'),
+   effects:fx.map(v=>effect(v,limits))
   };
   if(keepId){
    if(typeof raw.id!=='string'||!/^created-[1-9]\d{0,8}$/.test(raw.id))
@@ -226,6 +232,17 @@
   return list();
  }
  function exportData(){return clone(db)}
+ function overlimitExample(){
+  return {name:'☄️ OVERLIMIT · สายฟ้าล้างโลก',overlimit:true,
+   target:'fourEnemies',damageType:'magic',cooldownRounds:0,
+   effects:[
+    {type:'damage',hits:99999,attackPct:1000,defensePct:0,hpPct:0},
+    {type:'status',target:'fourEnemies',key:'paralysis',
+     chance:1,turns:999,eachHit:true},
+    {type:'status',target:'self',key:'attackUp',
+     power:10,turns:999,chance:1}
+   ]};
+ }
  function example(){
   return {name:'ตัวอย่าง 4 เป้าหมาย × 4 ฮิต',target:'fourEnemies',
    damageType:'physical',cooldownRounds:3,
@@ -236,9 +253,9 @@
    ]};
  }
  g.AdvengerSkillCreator=Object.freeze({
-  version:VERSION,storageKey:KEY,slots,types,maxEffects,
+  version:VERSION,storageKey:KEY,slots,types,maxEffects,normalLimits,overlimitLimits,
   load,list,get,add,update,remove,assign,equipped,equippedSource,catalog,resolve,assignments,
   assignAnimation,animationFor,animationAssignments,
-  exportData,importData,validate:normalize,example
+  exportData,importData,validate:normalize,example,overlimitExample
  });
 })(window);
