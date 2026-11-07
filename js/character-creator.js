@@ -91,6 +91,14 @@
   const serialized=JSON.stringify(normalized);
   try{g.localStorage?.setItem(KEY,serialized)}
   catch(e){throw Error('พื้นที่เก็บข้อมูลเบราว์เซอร์ไม่พอ กรุณาลดขนาดรูปภาพหรือสำรอง JSON')}
+  // Once registered, the Skill Creator assignment DB is authoritative.
+  const skillDB=g.AdvengerSkillCreator;
+  if(g.AdvengerCharacters?.get(ID)&&skillDB){
+   for(const slot of skillDB.slots){
+    const skillId=normalized.slots[slot];
+    skillDB.assign(ID,slot,skillId&&skillDB.get(skillId)?skillId:null);
+   }
+  }
   return clone(normalized);
  }
  function get(){
@@ -106,10 +114,13 @@
   const skills=g.AdvengerSkillCreator;
   if(skills){
    skills.load();
-   for(const slot of skills.slots){
-    const id=data.slots[slot];
-    if(id&&skills.get(id))skills.assign(ID,slot,id);
-    else if(!id&&skills.equipped(ID,slot))skills.assign(ID,slot,null);
+   // Apply the character's initial slot choices only once. Subsequent
+   // edits in Skill Creator stay authoritative across browser reloads.
+   if(!Object.hasOwn(skills.assignments(),ID)){
+    for(const slot of skills.slots){
+     const id=data.slots[slot];
+     skills.assign(ID,slot,id&&skills.get(id)?id:null);
+    }
    }
   }
   return record;
@@ -124,6 +135,8 @@
  }
  function exportData(){
   const character=get();
+  const active=g.AdvengerSkillCreator?.assignments()?.[ID];
+  if(character&&active)character.slots={...active};
   return {version:VERSION,character,
    skillLibrary:g.AdvengerSkillCreator?.exportData()||null};
  }
