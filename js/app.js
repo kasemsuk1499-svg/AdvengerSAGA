@@ -598,6 +598,56 @@ function renderStatCatalog(){
 }
 
 
+
+function renderLifeLab(){
+ const select=$('lifeDemoTarget');
+ if(!select)return;
+ const target=select.value;
+ select.innerHTML=state.party.map(id=>{
+  const hp=state.hp[id];
+  return '<option value="'+esc(id)+'">'+esc(UNIT[id].name)+
+   ' · '+(hp>0?hp+' HP':'KO')+'</option>';
+ }).join('');
+ select.value=state.party.includes(target)?target:state.active;
+ const id=select.value;
+ const snap=LIFE.inspect(state,'ally',id);
+ $('lifeDemoInfo').textContent=snap?(
+  UNIT[id].name+' · '+snap.hp+'/'+snap.maxHP+' HP · '+
+  (snap.immaterial?'IMMORTALITY '+snap.immortalityTurns+' รอบ · ':'')+
+  (snap.soulDeath?'SOUL DEATH · ':'')+
+  (snap.pending.guts?.uses?'GUTS '+snap.pending.guts.uses+' ครั้ง · ':'')+
+  (snap.pending.autoRevive?.uses?'REVIVE '+snap.pending.autoRevive.uses+' ครั้ง · ':'')
+ ):'';
+ for(const btn of document.querySelectorAll('[data-life-test]'))
+  btn.disabled=actionBusy||['victory','defeat'].includes(state.phase);
+}
+function testLife(kind){
+ if(actionBusy||['victory','defeat'].includes(state.phase))
+  return notice('อยู่ระหว่างคิวหรือจบการต่อสู้แล้ว');
+ const id=$('lifeDemoTarget').value;
+ if(!state.party.includes(id))return;
+ const living=state.hp[id]>0;
+ let ok=false;
+ if(kind==='damage'&&living){LIFE.hit(state,'ally',id,999999);ok=true;}
+ else if(kind==='revive'&&!living){ok=LIFE.revive(state,'ally',id,{hpPct:.4});}
+ else if(kind==='guts'&&living){ok=LIFE.grant(state,'ally',id,{type:'guts',uses:1});}
+ else if(kind==='immortality'&&living){ok=LIFE.grant(state,'ally',id,{type:'immortality',turns:2,uses:1});}
+ else if(kind==='autoRevive'&&living){ok=LIFE.grant(state,'ally',id,{type:'autoRevive',hpPct:.6,uses:1});}
+ else if(kind==='soulDeath'&&living){
+  ok=STATUS.apply(state,'ally',id,{key:'soulDeath',turns:3,chance:1,ignoreResistance:true},'foe-0');
+ }
+ else if(kind==='cleanse')ok=STATUS.cleanse(state,'ally',id,99)>0;
+ if(!ok)return notice('เงื่อนไขไม่ตรง: ตรวจ HP / ภูมิคุ้มกัน / สถานะที่มีอยู่');
+ log('🧪 LIFE LAB · '+kind+' → '+UNIT[id].name);
+ reportLifeEvents();
+ if(CORE.outcome(state))concludeBattle(CORE.outcome(state));
+ else{
+  INIT.sync(state);CORE.select(state,state.targetId);
+  arena?.focus(state.active);
+ }
+ render();resumeEnemyTurn();
+}
+
 function renderAilmentCodex(){
  const root=$('ailmentCatalog');if(!root)return;
  root.innerHTML=Object.entries(AILMENTS.groups).map(([type,label])=>
@@ -729,6 +779,7 @@ document.addEventListener('click',e=>{
  if(btn.dataset.targetEnemy){selectEnemy(btn.dataset.targetEnemy);return}
  if(btn.dataset.command){sendCommand(btn.dataset.command);return}
  if(btn.dataset.dbSkill){sendDatabaseSkill(btn.dataset.dbSkill);return}
+ if(btn.dataset.lifeTest){testLife(btn.dataset.lifeTest);return}
  if(btn.dataset.elementChoice){setElement(btn.dataset.elementChoice);return}
  if(btn.dataset.assist!==undefined){useSupport(Number(btn.dataset.assist));return}
 });
@@ -744,6 +795,7 @@ $('cancelPicker').addEventListener('click',()=>{picker=null;renderPicker()});
 $('dbHeroKit').addEventListener('change',e=>setSkillKit(e.target.value));
 $('ailmentDemoEnemy').addEventListener('click',()=>testAilment('enemy'));
 $('ailmentDemoAlly').addEventListener('click',()=>testAilment('ally'));
+$('lifeDemoTarget').addEventListener('change',renderLifeLab);
 $('encounterSelect').addEventListener('change',e=>setEncounter(e.target.value));
 $('startBattle').addEventListener('click',()=>show('battle'));
 $('battleReset').addEventListener('click',resetEncounter);
