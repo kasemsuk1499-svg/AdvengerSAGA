@@ -86,7 +86,7 @@ test('Kris Immortality restores 1 HP, ignores damage, cannot heal and expires to
 test('Rachel passive still revives once on ordinary CORE.applyStrike',()=>{
  const s=fresh();s.skillKits.saber='rachel';
  s.enemies[0].attack=999999;
- const move=CORE.strike(s,s.enemies[0],1);
+ const move=CORE.strike(s,s.enemies[0],0);
  a.equal(move.heroId,'saber');
  CORE.applyStrike(s,move);
  a.ok(s.hp.saber>0);
