@@ -6,6 +6,7 @@
  'use strict';
  const DB=g.AdvengerSkillDB;
  const STATUS=g.AdvengerStatusEngine;
+ const LIFE=g.AdvengerLifeEngine;
  const negative=new Set(g.AdvengerStatusDB.negative);
  const labels=g.AdvengerStatusDB.labels;
  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
@@ -88,10 +89,18 @@
  function selectTargets(s,actorId,skill,selectedId){
   const living=s.enemies.filter(e=>e.hp>0);
   const allies=s.party.filter(id=>s.hp[id]>0);
+  const fallen=s.party.filter(id=>s.hp[id]<=0);
+  const canRevive=skill.effects?.some(fx=>fx.type==='revive');
   switch(skill.target){
    case 'self':return [{side:'ally',id:actorId}];
-   case 'allAllies':return allies.map(id=>({side:'ally',id}));
-   case 'singleAlly':return [{side:'ally',id:allies.includes(selectedId)?selectedId:actorId}];
+   case 'allAllies':return (canRevive?[...fallen,...allies]:allies)
+    .map(id=>({side:'ally',id}));
+   case 'twoAllies':return (canRevive?[...fallen,...allies]:allies)
+    .slice(0,2).map(id=>({side:'ally',id}));
+   case 'singleAlly':return [{side:'ally',id:
+    (canRevive&&fallen.includes(selectedId))?selectedId:
+    allies.includes(selectedId)?selectedId:
+    canRevive&&fallen.length?fallen[0]:actorId}];
    case 'allEnemies':return living.map(e=>({side:'enemy',id:e.id}));
    case 'threeEnemies':return living.slice(0,3).map(e=>({side:'enemy',id:e.id}));
    case 'fourEnemies':return living.slice(0,4).map(e=>({side:'enemy',id:e.id}));
@@ -143,11 +152,11 @@
    // Each sequential effect may override the skill's main target scope.
    // e.g. hit 4 enemies, roll Paralysis per hit, then buff the caster.
    const effectTargets=fx.target?
-    selectTargets(s,actorId,{target:fx.target},selectedId):targets;
+    selectTargets(s,actorId,{target:fx.target,effects:[fx]},selectedId):targets;
    for(const t of effectTargets){
     const foe=t.side==='enemy'?s.enemies.find(e=>e.id===t.id):null;
     const current=t.side==='ally'?s.hp[t.id]:foe?.hp;
-    if(!Number.isFinite(current)||current<=0)continue;
+    if(!Number.isFinite(current)||(current<=0&&fx.type!=='revive'))continue;
     if(fx.type==='damage'){
      for(let i=0;i<Math.max(1,Math.min(12,fx.hits||1));i++){
       const damageType=skill.damageType||(DB.get(s.skillKits[actorId])?.role==='Support'?'magic':'physical');
@@ -162,7 +171,9 @@
         events.push(...STATUS.onHit(s,t.side,t.id,hit));
        }
       }else{
-       const damage=Math.min(s.hp[t.id],amount);s.hp[t.id]-=damage;
+       const damage=LIFE?LIFE.hit(s,'ally',t.id,amount):
+        Math.min(s.hp[t.id],amount);
+       if(!LIFE)s.hp[t.id]-=damage;
        events.push({kind:'damage',id:t.id,side:t.side,amount:damage,hitIndex:i+1});
        if(damage>0){
         previousDamage.push({id:t.id,side:t.side,amount:damage,hitIndex:i+1});
@@ -172,8 +183,25 @@
      }
     }else if(fx.type==='heal'&&t.side==='ally'&&STATUS.canHeal(s,t.side,t.id)){
      const heal=Math.max(0,Math.round(stats.defense*(fx.defensePct||0)+stats.attack*(fx.attackPct||0)));
-     const max=g.AdvengerTurnRules.hpMax(t.id),done=Math.min(heal,max-s.hp[t.id]);
-     s.hp[t.id]+=done;events.push({kind:'heal',id:t.id,side:t.side,amount:done});
+     const done=LIFE?LIFE.heal(s,'ally',t.id,heal):
+      Math.min(heal,g.AdvengerTurnRules.hpMax(t.id)-s.hp[t.id]);
+     if(!LIFE)s.hp[t.id]+=done;
+     events.push({kind:'heal',id:t.id,side:t.side,amount:done});
+    }else if(fx.type==='revive'){
+     const success=LIFE?.revive(s,t.side,t.id,fx)||false;
+     if(success)events.push({kind:'revive',side:t.side,id:t.id,
+      hp:LIFE.hp(s,t.side,t.id)});
+    }else if(['guts','autoRevive','immortality'].includes(fx.type)){
+     const success=LIFE?.grant(s,t.side,t.id,fx)||false;
+     if(success)events.push({kind:'grant',side:t.side,id:t.id,effect:fx.type});
+    }else if(fx.type==='execute'){
+     const currentHp=LIFE?.hp(s,t.side,t.id)??current;
+     const limit=(fx.hpThresholdPct??.24)*(LIFE?.maxHP(s,t.side,t.id)||1000);
+     const cap=(fx.attackLimitPct??1.2)*stats.attack;
+     if(currentHp>0&&currentHp<=limit&&currentHp<=cap){
+      const success=LIFE?.execute(s,t.side,t.id,fx)||false;
+      events.push({kind:'execute',side:t.side,id:t.id,success});
+     }
     }else if(fx.type==='status'){
      if(fumble&&kind==='basic')continue;
      // Sequential rule: when perHit is true, only previous landed hits
@@ -212,6 +240,7 @@
  }
  function onLethal(s,id){
   ensure(s);
+  if(LIFE)return LIFE.onLethal(s,'ally',id);
   if(s.hp[id]>0||s.skillUsed[id]||!STATUS.canRevive(s,'ally',id))return false;
   const triggers=DB.get(s.skillKits[id])?.skills.passive?.triggers||[];
   const revive=triggers.find(t=>t.event==='lethal'&&t.effect?.type==='revive');
