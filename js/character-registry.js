@@ -29,7 +29,19 @@
      if(typeof move!=='function')throw new Error('Missing '+kind+' on '+character.id);
      return move(api);
     };
-   if(typeof character.art!=='string'||!character.art.startsWith('characters/'+character.id+'/'))
+   // The single local character has either a bundled class placeholder or
+   // a small, validated raster image stored in this browser. Everyone else
+   // retains the original characters/<id>/ asset isolation.
+   const localCustom=character.id==='custom-hero'&&
+    g.AdvengerCharacterCreator?.id==='custom-hero';
+   const stockArt=localCustom&&g.AdvengerCharacters?.get(character.classId)?.art;
+   const customArtOk=localCustom&&(
+    character.art===stockArt||
+    g.AdvengerCharacterCreator.imageAllowed(character.art)
+   );
+   if(typeof character.art!=='string'&&character.art!==undefined||
+      !customArtOk&&!(typeof character.art==='string'&&
+       character.art.startsWith('characters/'+character.id+'/')))
     throw new Error('Character art must be inside its own folder: '+character.id);
    const stats=g.AdvengerStatDB?.create(character)||character.stats||null;
    const u=Object.freeze({...character,stats,perform});

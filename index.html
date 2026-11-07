@@ -165,17 +165,19 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <link rel="stylesheet" href="css/status-effects.css?v=1.3">
 <link rel="stylesheet" href="css/life-system.css?v=1.4">
 <link rel="stylesheet" href="css/skill-creator.css?v=1.5">
+<link rel="stylesheet" href="css/character-creator.css?v=1.6">
 </head>
 <body>
 <div class="shell">
 <header>
  <div class="logo"><div class="mark">✦</div><div><div class="eyebrow">4 + 2 Party System</div><div class="brand">AdvengerSAGA</div><div class="sub">Anime Combat · Optimized Battle Labs</div></div></div>
- <span class="tag">SKILL CREATOR LAB · v1.5</span>
+ <span class="tag">CHARACTER CREATOR · v1.6</span>
 </header>
 <nav aria-label="การนำทาง">
  <button class="nav-btn active" data-screen="formation">🧩 จัดทีม</button>
  <button class="nav-btn" data-screen="battle">⚔️ สนามทดสอบ</button>
  <button class="nav-btn" data-screen="creator">🧪 สร้างสกิล</button>
+ <button class="nav-btn" data-screen="character">👤 สร้างตัวละคร</button>
  <button class="nav-btn" data-screen="about">📖 ข้อมูล</button>
 </nav>
 <section id="formation" class="screen active">
@@ -307,6 +309,81 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
  </div>
 </section>
 
+
+<section id="character" class="screen" aria-label="ห้องทดลองสร้างตัวละคร">
+ <div class="hero-banner character-banner">
+  <div class="eyebrow">ADVENGERSAGA · CHARACTER CREATOR v1.6</div>
+  <h1>👤 สร้างตัวละครของเรา</h1>
+  <p>ออกแบบตัวละครใหม่ได้ 1 ตัวเต็มรูปแบบ เลือกอาชีพ ปรับสเตตัสทั้ง 30 ค่า ใส่ภาพตัวละคร และเลือกสกิลจากคลังเดิม จากนั้นนำเข้าสนามรบแบบ SPD ได้จริง</p>
+ </div>
+ <div class="character-creator-layout">
+  <div class="panel character-editor">
+   <div class="panel-head"><h2>✦ Character Workshop</h2><span class="chip">ONE ORIGINAL HERO</span></div>
+   <div class="character-fields">
+    <label>ชื่อตัวละคร
+      <input id="charLabName" maxlength="40" placeholder="เช่น Haruto Key" autocomplete="off">
+    </label>
+    <label>ชื่อภาษาไทย / ชื่อที่แสดง
+      <input id="charLabNameTh" maxlength="40" placeholder="เช่น ฮารุโตะ คีย์" autocomplete="off">
+    </label>
+    <label>อาชีพ
+      <select id="charLabClass">
+       <option value="saber">⚔️ Saber · นักดาบ</option>
+       <option value="mage">🔮 Mage · นักเวท</option>
+       <option value="tank">🛡️ Tank · ผู้พิทักษ์</option>
+       <option value="gunner">🔫 Gunner · มือปืน</option>
+      </select>
+    </label>
+    <label>คำอธิบายตัวละคร (ไม่บังคับ)
+      <textarea id="charLabDescription" rows="2" maxlength="180" placeholder="นิสัย บทบาท หรือเรื่องราวของตัวละคร"></textarea>
+    </label>
+   </div>
+   <div class="character-stat-top">
+    <div><h3>🧬 ค่าสถานะ 30 ค่า</h3><p>ค่าตั้งต้นแยกตามสาย และแก้ทุกค่าได้อิสระ</p></div>
+    <button id="charLabPreset" type="button" class="button ghost">↺ ใช้ค่าสายนี้</button>
+   </div>
+   <div id="charLabStats" class="character-stat-groups"></div>
+   <div id="charLabMessage" class="creator-feedback" aria-live="polite" role="status"></div>
+   <div class="character-actions">
+    <button id="charLabSave" type="button" class="button primary">💾 สร้าง / บันทึกตัวละคร</button>
+    <button id="charLabDelete" type="button" class="button danger">ลบตัวละครนี้</button>
+   </div>
+   <p class="small">เมื่อบันทึก เกมจะโหลดหน้าใหม่เพื่ออัปเดตตัวละครในทีม · สามารถสร้างหรือแก้ไขได้ 1 ตัวต่อเบราว์เซอร์</p>
+  </div>
+  <div class="character-side">
+   <div class="panel character-preview-panel">
+    <div class="panel-head"><h2>✦ Character Preview</h2><span class="chip" id="charLabClassLabel">SABER</span></div>
+    <div class="character-preview-stage">
+     <img id="charLabImage" src="characters/saber/art.svg" alt="ภาพตัวอย่างตัวละคร">
+    </div>
+    <div id="charLabPreviewName" class="character-preview-name">ตัวละครใหม่</div>
+    <p id="charLabPreviewRole" class="small">Saber · นักดาบ</p>
+    <div id="charLabCorePreview" class="character-core-preview"></div>
+    <label class="character-image-label" for="charLabPortrait">🖼️ ภาพตัวละคร (PNG / JPG / WebP ไม่เกิน 600 KB)</label>
+    <input id="charLabPortrait" type="file" accept="image/png,image/jpeg,image/webp">
+    <button id="charLabResetPortrait" type="button" class="button ghost">ใช้ภาพอาชีพเดิม</button>
+    <p class="small">ใช้ภาพอาชีพเป็นตัวแทนได้ หรืออัปโหลดภาพของตัวเอง โดยภาพจะเก็บในเบราว์เซอร์เท่านั้น</p>
+   </div>
+   <div class="panel">
+    <h2>⚔️ เลือกสกิลติดตัว</h2>
+    <p class="help">สกิลสร้างเองจาก Skill Creator จะมาอยู่ที่นี่ เลือกได้สูงสุด 4 ช่อง หากยังไม่มีสกิล สามารถใช้ท่าตั้งต้นของอาชีพก่อนได้</p>
+    <div id="charLabSkills" class="character-skill-slots"></div>
+    <button type="button" class="button ghost wide" data-screen="creator">🧪 ไป Skill Creator</button>
+   </div>
+   <div class="panel">
+    <h2>💾 สำรอง / นำเข้าตัวละคร</h2>
+    <p class="help">ส่งออกเป็น JSON ที่รวมข้อมูลตัวละคร รูป และคลังสกิลที่สร้างเอง เพื่อใช้ย้ายเครื่องได้</p>
+    <textarea id="charLabTransfer" rows="5" placeholder="JSON สำรองตัวละคร" spellcheck="false"></textarea>
+    <div class="character-transfer-actions">
+     <button id="charLabExport" type="button" class="button ghost">📤 ส่งออก JSON</button>
+     <button id="charLabImport" type="button" class="button ghost">📥 นำเข้า JSON</button>
+    </div>
+    <p class="small">ตัวละครนี้จะเพิ่มเป็นตัวเลือกในหน้า <b>จัดทีม</b> โดยใช้หนึ่งใน 4 ช่องตัวหลัก ไม่เพิ่มจำนวนสมาชิกในสนาม</p>
+   </div>
+  </div>
+ </div>
+</section>
+
 <section id="creator" class="screen" aria-label="แล็บสร้างสกิลตัวละคร">
  <div class="hero-banner creator-banner">
   <div class="eyebrow">ADVENGERSAGA · SKILL CREATOR v1.5</div>
@@ -430,5 +507,6 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <script src="js/life-engine.js?v=1.4"></script>
 <script src="js/skill-engine.js?v=1.5"></script>
 <script src="js/skill-creator.js?v=1.5"></script>
+<script src="js/character-creator.js?v=1.6"></script>
 <script src="js/character-loader.js?v=0.8"></script>
 </body></html>
