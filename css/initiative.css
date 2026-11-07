@@ -1,0 +1,5 @@
+/* AdvengerSAGA v1.2 — SPD initiative priority labels. */
+#battle .turn-token{min-width:102px;display:flex;flex-direction:column;gap:3px}
+#battle .turn-token small{font-size:10px;letter-spacing:.025em;color:#b0c7f6;font-weight:700}
+#battle .turn-token.current small{color:#ffe2a2}
+#battle .turn-token.done small,#battle .turn-token.ko small{opacity:.55}
