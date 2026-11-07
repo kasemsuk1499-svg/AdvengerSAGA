@@ -9,10 +9,10 @@
   constructor(stage){
    if(!stage)throw new Error('Shared arena stage not found');
    this.stage=stage;this.party=[];this.active=null;this.busy=false;
-   this.field=null;this.lastAction='READY TO ENGAGE';
+   this.field=null;this.lastAction='READY TO ENGAGE';this.enemySignature='';
    this.reduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
-  mount(party,selected){
+  mount(party,selected,enemies=[],targetId=null){
    if(this.busy)return;
    if(party.length!==4||new Set(party).size!==4)throw Error('Shared arena requires exactly four unique units');
    if(this.field){this.field.destroy();this.field=null;}
@@ -33,22 +33,53 @@
     '<div class="as-moon"></div><div class="as-ruins"></div><div class="as-ground"></div></div>'+
     '<div class="as-stage-note">BATTLE 01 / 01 · FIELD 01</div>'+
     '<div class="as-party-ground" aria-hidden="true"></div>'+actors+
-    '<div class="as-target" id="asTarget" aria-label="หุ่นฝึกเซนทิเนล">'+
-    '<span class="as-lock" aria-hidden="true">TARGET</span>'+
-    '<img src="assets/training-sentinel.svg" draggable="false" alt="หุ่นฝึกเซนทิเนล">'+
-    '<span class="as-target-name">TRAINING SENTINEL</span></div>'+
+    '<div class="as-foes" id="asFoes"></div>'+
     '<canvas class="as-fx" id="asFx" aria-hidden="true"></canvas>'+
     '<div id="asAction" class="as-action" aria-live="polite">เลือกสมาชิกแล้วกดโจมตี</div>'+
     '<div id="asCinematic" class="as-cinematic" aria-hidden="true">'+
     '<div class="as-portrait"></div><div class="as-cinematic-copy"><small>ULTIMATE TECHNIQUE</small>'+
     '<strong></strong><span></span></div></div>';
-   this.target=this.stage.querySelector('#asTarget');
+   this.enemySignature='';this.syncEnemies(enemies,targetId);
    this.field=new AdvengerEffectField(this.stage,this.stage.querySelector('#asFx'));
    for(const el of this.stage.querySelectorAll('.as-fighter')){
     const c=AdvengerCharacters.get(el.dataset.fieldUnit),img=el.querySelector('.as-sprite');
     img.addEventListener('error',()=>{if(!img.dataset.fallback&&img.getAttribute('src')!==c.fallback){img.dataset.fallback='1';img.src=c.fallback;}});
    }
    this.focus(selected);
+  }
+  syncEnemies(enemies=[],targetId=null){
+   const root=this.stage.querySelector('#asFoes');
+   if(!root)return;
+   const signature=enemies.map(e=>e.id+':'+e.kind).join('|');
+   if(signature!==this.enemySignature){
+    const count=enemies.length;
+    root.innerHTML=enemies.map((foe,i)=>'<button type="button" class="as-target" data-target-enemy="'+esc(foe.id)+
+     '" data-count="'+count+'" data-slot="'+i+'" aria-label="เลือกเป้าหมาย '+esc(foe.name)+'">'+
+     '<span class="as-lock" aria-hidden="true">TARGET</span>'+
+     '<img src="'+esc(foe.art)+'" draggable="false" alt="">'+
+     '<span class="as-target-name">'+esc(foe.name)+'</span></button>').join('');
+    this.enemySignature=signature;
+   }
+   for(const e of enemies){
+    const el=Array.from(root.querySelectorAll('.as-target')).find(n=>n.dataset.targetEnemy===e.id);
+    if(!el)continue;
+    el.classList.toggle('dead',e.hp<=0);el.disabled=e.hp<=0;
+    el.setAttribute('aria-label',e.name+' HP '+e.hp+'/'+e.maxHP+(e.hp<=0?' KO':''));
+    const mark=el.querySelector('.as-lock');if(mark)mark.textContent=e.hp<=0?'KO':'';
+   }
+   this.selectTarget(targetId);
+  }
+  selectTarget(id){
+   const nodes=Array.from(this.stage.querySelectorAll('.as-target'));
+   this.target=nodes.find(n=>n.dataset.targetEnemy===id&&!n.disabled)||
+    nodes.find(n=>!n.disabled)||nodes[0]||null;
+   for(const node of nodes){
+    const chosen=node===this.target&&!node.disabled;
+    node.classList.toggle('selected',chosen);
+    const lock=node.querySelector('.as-lock');
+    if(lock&&!node.disabled)lock.textContent=chosen?'TARGET':'';
+    node.setAttribute('aria-pressed',String(chosen));
+   }
   }
   focus(id){
    if(!this.party.includes(id))return;
@@ -97,10 +128,10 @@
    }
    await wait(this.reduced?130:480);
   }
-  async enemyAttack(id,damage,guarded=false){
+  async enemyAttack(id,damage,guarded=false,enemyName='Enemy'){
    const target=this.actor(id);
    if(!target||!this.target)return;
-   this.announce('ENEMY TURN','Training Sentinel → '+AdvengerCharacters.get(id).name);
+   this.announce('ENEMY TURN',enemyName+' → '+AdvengerCharacters.get(id).name);
    const from=this.field.point(this.target),to=this.field.point(target);
    const color=guarded?'#7dcfff':'#ff9c97';
    this.field.emit('projectile',from,to,color,this.reduced?130:480,{role:'bullet'});
