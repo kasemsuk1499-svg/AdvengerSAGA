@@ -12,3 +12,14 @@
 #battle .life-lab-grid button:disabled{cursor:not-allowed;opacity:.5}
 #battle .life-lab>.small{font-size:10px;line-height:1.6;color:#c5b7d2}
 @media(max-width:580px){#battle .life-lab-grid{grid-template-columns:1fr}}
+
+.life-dictionary{margin-top:16px}
+.life-dictionary .life-group{margin-top:12px}
+.life-dictionary .life-group h3{font-size:14px;color:#f0dbff;margin:10px 0}
+.life-dictionary .life-effect-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.life-dictionary .life-effect-card{border:1px solid #655177;border-radius:9px;background:#231e33;padding:11px}
+.life-dictionary .life-effect-card strong{font-size:12px;color:#f8e6ff}
+.life-dictionary .life-effect-card strong small{font-weight:400;font-size:10px;color:#bcacd2}
+.life-dictionary .life-effect-card p{font-size:11px;color:#c4bad4;margin:7px 0;line-height:1.6}
+.life-dictionary .life-effect-card code{font-size:10px;color:#e9c9ff;overflow-wrap:anywhere}
+@media(max-width:600px){.life-dictionary .life-effect-grid{grid-template-columns:1fr}}

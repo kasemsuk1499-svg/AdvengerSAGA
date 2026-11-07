@@ -15,7 +15,7 @@ const ELEMENTS=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).c
 const CORE=AdvengerBattleCore,ENCOUNTERS=AdvengerEncounters;
 const SKILLS=AdvengerSkillEngine,SKILL_DB=AdvengerSkillDB;
 const RULES=AdvengerTurnRules,STATS=AdvengerStatDB,INIT=AdvengerInitiative;
-const AILMENTS=AdvengerStatusDB,STATUS=AdvengerStatusEngine,LIFE=AdvengerLifeEngine;
+const AILMENTS=AdvengerStatusDB,STATUS=AdvengerStatusEngine,LIFE=AdvengerLifeEngine,LIFE_TYPES=AdvengerLifeDB;
 const $=id=>document.getElementById(id);
 const fresh=()=>{
  const party=['saber','mage','tank','gunner'];
@@ -599,6 +599,20 @@ function renderStatCatalog(){
 
 
 
+function renderLifeCodex(){
+ const root=$('lifeCatalog');
+ if(!root)return;
+ root.innerHTML=Object.entries(LIFE_TYPES.groups).map(([group,label])=>{
+  const effects=LIFE_TYPES.all().filter(x=>x.group===group);
+  return '<section class="life-group"><h3>'+esc(label)+'</h3>'+
+   '<div class="life-effect-grid">'+effects.map(effect=>
+    '<article class="life-effect-card"><strong>'+esc(effect.nameTh)+
+    ' <small>'+esc(effect.name)+'</small></strong>'+
+    '<p>'+esc(effect.description)+'</p>'+
+    '<code>'+esc(effect.effectType)+' / '+esc(effect.id)+'</code></article>'
+   ).join('')+'</div></section>';
+ }).join('');
+}
 function renderLifeLab(){
  const select=$('lifeDemoTarget');
  if(!select)return;
@@ -806,6 +820,7 @@ $('resetTeam').addEventListener('click',()=>{
 });
 renderStatCatalog();
 renderAilmentCodex();
+renderLifeCodex();
 $('labLinks').innerHTML=UNITS.map(id=>'<a class="button ghost" target="_blank" rel="noopener" href="characters/'+id+'/lab.html">'+UNIT[id].emoji+' '+UNIT[id].name+'</a>').join('');
 render();
 })();
