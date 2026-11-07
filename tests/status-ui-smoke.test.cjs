@@ -50,7 +50,7 @@ function boot({customHero=false}={}){
   'characters/tank/character.js','characters/gunner/character.js',
   'js/team-effects.js','js/turn-rules.js','js/encounter-catalog.js',
   'js/battle-core.js','js/initiative.js','js/skill-db.js',
-  'js/status-db.js','js/status-engine.js','js/life-db.js','js/life-engine.js','js/skill-engine.js','js/skill-creator.js','js/character-creator.js'
+  'js/status-db.js','js/status-engine.js','js/life-db.js','js/life-engine.js','js/skill-engine.js','js/skill-creator.js','js/character-creator.js','js/campaign.js'
  ])load(p);
  if(customHero){
   const c=g.AdvengerCharacterCreator;
@@ -77,6 +77,7 @@ function boot({customHero=false}={}){
  load('js/app.js');
  load('js/skill-creator-ui.js');
  load('js/character-creator-ui.js');
+ load('js/campaign-ui.js');
  const click=data=>listeners.click({
   target:{closest:selector=>selector==='button'?{dataset:data}:null}
  });
