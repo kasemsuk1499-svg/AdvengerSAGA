@@ -23,7 +23,7 @@
   return {attack:Math.round(char?.attack||hp*.23),defense:Math.round(char?.defense||hp*.15)};
  };
  function ensure(s){
-  if(!s.skillKits)s.skillKits={saber:'rachel',mage:'lucy',tank:null,gunner:'ellen'};
+  if(!s.skillKits)s.skillKits={}; // Opt in per character; old approved combat stays unchanged.
   if(!s.skillTimers)s.skillTimers={};
   if(!s.skillStatuses)s.skillStatuses={};
   if(!s.skillUsed)s.skillUsed={};
