@@ -62,6 +62,18 @@ test('Burn ticks twice; saving and loading does not duplicate statuses',()=>{
  S.advanceRound(reloaded);a.equal(reloaded.enemies[0].hp,hp-80);
  S.advanceRound(reloaded);a.equal(reloaded.enemies[0].hp,hp-80);
 });
+test('database Basic is separate, Lucy renews poison immunity after using it',()=>{
+ const s=fresh();for(const id of s.party)s.skillStatuses['ally/'+id]=[];
+ const old=s.enemies[0].hp;
+ const report=S.cast(s,'mage','basic','foe-0');
+ a.equal(report.ok,true);a.ok(s.enemies[0].hp<old);
+ for(const id of s.party)a.match(S.statusText(s,'ally',id),/กันพิษ/);
+});
+test('new saves have no reference kit until the player opts in',()=>{
+ const s={party:['saber'],hp:{saber:1000},enemies:C.spawn('training'),round:1};
+ S.clear(s);a.equal(Object.keys(s.skillKits).length,0);
+ a.equal(S.ready(s,'saber','skill1'),false);
+});
 test('hero-neutral catalog accepts new data-only kits',()=>{
  DB.register({id:'custom-test',name:'Original Mage',skills:{
  basic:{name:'B',target:'singleEnemy',effects:[{type:'damage',attackPct:1}]},
