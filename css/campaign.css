@@ -1,0 +1,58 @@
+/* AdvengerSAGA 2.0 · story campaign. No new renderer/animation loop. */
+.campaign-hero{background:radial-gradient(circle at 82% 35%,#4662a850,transparent 48%),linear-gradient(120deg,#172b50,#241b41);border-color:#6d709d}
+.campaign-hero:after{content:"✦";top:-70px;font-size:260px}
+.campaign-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:20px 0 16px;max-width:760px}
+.campaign-summary-grid>div{background:#0f1d36ae;border:1px solid #5b6c92;border-radius:11px;padding:10px 12px;display:grid;gap:2px}
+.campaign-summary-grid small{font-size:10px;color:#bfd0ed}
+.campaign-summary-grid strong{font-size:17px;color:#fff0c4;white-space:nowrap}
+.campaign-exp-line{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#d8e5fc;max-width:760px}
+.campaign-exp-track{height:8px;border:1px solid #536486;background:#101831;border-radius:20px;overflow:hidden;max-width:760px;margin-top:6px}
+.campaign-exp-track i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7bc0ee,#d5c1ff);transition:width .25s}
+.campaign-grid-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(285px,.85fr);gap:14px;align-items:start}
+.campaign-side{display:grid;gap:14px}
+.campaign-chapters{display:grid;gap:19px;margin-top:13px}
+.campaign-chapter-head{border-bottom:1px solid #405377;padding-bottom:10px;margin-bottom:10px}
+.campaign-chapter-head strong{display:block;font-size:16px;color:#f6e9fb}
+.campaign-chapter-head small{color:#a7bada;font-size:11px}
+.campaign-chapter-head p{font-size:12px;color:#bcc9e1;margin:5px 0 0}
+.campaign-stage-list{display:grid;gap:9px}
+.campaign-stage-button{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid #435779;background:#1b2a45;color:#edf4ff;text-align:left;padding:12px;border-radius:12px;width:100%;transition:border-color .15s,background .15s}
+.campaign-stage-button:not(:disabled):hover{background:#283b5c;border-color:#92b9eb}
+.campaign-stage-button.active{border-color:#f3d28e;box-shadow:inset 0 0 0 1px #dec17a60}
+.campaign-stage-button.locked{opacity:.58;cursor:not-allowed}
+.campaign-stage-number{background:#2e4062;color:#d0e4ff;border-radius:9px;padding:6px 3px;text-align:center;font-size:10px;font-weight:900}
+.campaign-stage-title{font-weight:850;font-size:12px;line-height:1.45}
+.campaign-stage-title small{display:block;color:#c0cae1;font-size:10px;font-weight:500;margin-top:3px}
+.campaign-stage-score{color:#ffd17b;font-size:12px;white-space:nowrap}
+.campaign-briefing h2{font-size:21px;margin:5px 0;color:#fff0c9}
+.campaign-stage-subtitle{font-size:11px;color:#c8b7f6}
+.campaign-stage-story{margin:15px 0;font-size:13px;line-height:1.9;color:#dfddec;white-space:pre-line}
+.campaign-stage-info{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.campaign-stage-info span{border:1px solid #475775;border-radius:8px;background:#0e1e35;padding:10px;color:#d7e1f4;font-size:11px;line-height:1.55}
+.campaign-objective{border-left:3px solid #d8b978;background:#3430478c;padding:8px 11px;border-radius:6px;font-size:12px;margin:13px 0}
+.campaign-briefing>.button{margin-top:9px}
+#campaignBriefingMessage{margin-top:9px;color:#cbd9f0}
+.campaign-shop-item{display:flex;align-items:center;gap:11px;border:1px solid #4d5e81;padding:11px;border-radius:10px;background:#15263e;margin-top:9px}
+.campaign-shop-item-icon{font-size:25px}
+.campaign-shop-item-copy{flex:1;min-width:0}
+.campaign-shop-item-copy strong{font-size:12px}
+.campaign-shop-item-copy small{display:block;color:#b2c5e1;font-size:10px;line-height:1.5}
+.campaign-shop-item button{background:#463c65;border:1px solid #947bad;color:#ffe8c4;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:750;white-space:nowrap}
+.campaign-battle-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #77628f;border-radius:11px;background:#231d3b;padding:12px;margin:0 0 12px}
+.campaign-battle-banner strong{display:block;font-size:15px;color:#f8e4fb}
+.campaign-battle-banner small{font-size:11px;color:#b1c3e2}
+.campaign-result{border-radius:13px;border:1px solid #b19668;background:linear-gradient(110deg,#342942,#1c3550);padding:18px;margin:0 0 13px}
+.campaign-result-title{font-weight:900;font-size:20px;color:#ffe7af}
+.campaign-result>p{color:#e9def3;line-height:1.8}
+.campaign-result-reward{font-size:13px;font-weight:800;color:#c8f2df;margin:12px 0}
+.campaign-result-actions{display:flex;gap:8px;flex-wrap:wrap}
+.campaign-battle-items{margin:12px 0;border:1px solid #688975;border-radius:11px;padding:12px;background:#132c35}
+.campaign-battle-items>strong{display:block;color:#e5f9df;font-size:13px}
+.campaign-battle-items>small{display:block;color:#add2bb;font-size:10px;margin:3px 0 9px}
+.campaign-item-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.campaign-item-buttons button{border-radius:9px;border:1px solid #5b947e;background:#21483e;color:#f3ffef;padding:10px;text-align:left;font-weight:800;font-size:11px;cursor:pointer}
+.campaign-item-buttons button small{display:block;color:#b4e0cd;font-weight:400}
+.campaign-item-buttons button:disabled{opacity:.45;cursor:not-allowed}
+#battle [hidden],#campaign [hidden]{display:none!important}
+@media(max-width:850px){.campaign-grid-layout{grid-template-columns:1fr}}
+@media(max-width:580px){.campaign-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.campaign-stage-button{grid-template-columns:39px minmax(0,1fr) auto;padding:9px;gap:7px}.campaign-stage-score{font-size:10px}.campaign-battle-banner,.campaign-result-actions{flex-direction:column;align-items:stretch}.campaign-stage-info{grid-template-columns:1fr}}
