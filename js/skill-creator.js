@@ -117,7 +117,7 @@
    const hero=g.AdvengerSkillDB.get(m[1]),skill=hero?.skills?.[m[2]];
    if(!skill)return null;
    return {id,kind:'database',name:hero.name+' · '+skill.name,
-    skill:{...clone(skill),id,
+    skill:{...clone(skill),id,sourceKind:m[2],
      cooldownRounds:g.AdvengerSkillDB.rounds(skill.cooldownSeconds||0)},
     sourceHero:m[1],sourceKind:m[2]};
   }

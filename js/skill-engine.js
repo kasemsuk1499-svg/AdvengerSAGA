@@ -141,6 +141,7 @@
   ensure(s);
   if(!skill||s.hp?.[id]<=0||
     !STATUS.canUse(s,'ally',id,slot==='basic'?'basic':'skill1')||
+    (skill.sourceKind&&!STATUS.canUse(s,'ally',id,skill.sourceKind))||
     createdRemaining(s,id,skill.id)!==0)return false;
   if(skill.requiresDebuff&&!s.party.some(hero=>s.hp[hero]>0&&
      list(s,'ally',hero).some(fx=>negative.has(fx.key))))return false;

@@ -245,7 +245,8 @@ function renderBattle(){
   const statusKind=kind==='skill'?'skill1':kind;
   const abilityReady=source&&source.kind!=='native'?
    SKILLS.readyCreated(state,id,source.skill,slotByKind[kind]):
-   STATUS.canUse(state,'ally',id,statusKind);
+   STATUS.canUse(state,'ally',id,statusKind)&&
+   (!source||source.kind!=='native'||STATUS.canUse(state,'ally',id,source.sourceKind));
   const remaining=source&&source.kind!=='native'?
    SKILLS.createdRemaining(state,id,source.id):0;
   command.disabled=!canAct||(extra&&!source)||(needsEX&&state.energy[id]<100)||
@@ -562,7 +563,8 @@ function sendCommand(kind){
  const performKind=source?.kind==='native'?source.sourceKind:kind;
  const spendEX=kind==='ultimate'||performKind==='ultimate';
  if(spendEX&&state.energy[id]<100)return notice('EX ไม่ถึง 100');
- if(!STATUS.canUse(state,'ally',id,kind==='skill'?'skill1':kind))
+ if(!STATUS.canUse(state,'ally',id,kind==='skill'?'skill1':kind)||
+   !STATUS.canUse(state,'ally',id,performKind))
   return notice('ติดสถานะ '+STATUS.statusText(state,'ally',id)+' · ใช้คำสั่งนี้ไม่ได้');
  actionBusy=true;
  const oldEnergy=state.energy[id],bonus=state.boost?1.25:1;
@@ -897,7 +899,8 @@ function sendCreatedSkill(slot,preselected=null){
    log('⚔️ '+UNIT[id].name+' · '+source.name+' · '+damage+' DMG · '+healing+' HEAL');
    reportLifeEvents();
    if(damage>0&&state.boost)state.boost=false;
-   if(slot!=='ultimate')state.energy[id]=Math.min(100,state.energy[id]+15);
+   if(slot!=='ultimate')state.energy[id]=Math.min(100,state.energy[id]+
+    (slot==='basic'?20:30));
    state.acted[id]=true;
    await finishHeroTurn();
   }catch(err){
