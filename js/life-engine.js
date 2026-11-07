@@ -62,7 +62,7 @@
       if(!fx||typeof fx!=='object')continue;
       entry.pending[type]={
        hpPct:rate(fx.hpPct??.5),healPct:rate(fx.healPct),
-       turns:maxTurns(fx.turns),uses:Math.max(0,Math.min(9,Math.floor(fx.uses||0)))
+       turns:maxTurns(fx.turns),uses:Math.max(0,Math.min(999,Math.floor(fx.uses||0)))
       };
      }
     const v=raw.immortality;
@@ -81,7 +81,7 @@
   st.pending[type]={
    hpPct:rate(effect.hpPct??.5),healPct:rate(effect.healPct),
    turns:maxTurns(effect.turns),
-   uses:Math.max(1,Math.min(9,Math.floor(effect.uses||1)))
+   uses:Math.max(1,Math.min(999,Math.floor(effect.uses||1)))
   };
   emit(s,'grant',side,id,{effect:type});
   return true;

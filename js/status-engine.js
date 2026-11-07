@@ -114,7 +114,7 @@
    a.splice(a.indexOf(prior),1);
    return true;
   }
-  const power=clamp(safe(fx.power,({burn:.8,dragonFlame:1.2,bleed:.6,poison:.06,death:.2}[fx.key]??0)),0,3);
+  const power=clamp(safe(fx.power,({burn:.8,dragonFlame:1.2,bleed:.6,poison:.06,death:.2}[fx.key]??0)),0,1000000);
   const st={key:fx.key,power,turns,sourceAttack:attackPower,
    sourceSide:from,sourceId:String(sourceId||''),stacks:1};
   if(prior){
@@ -234,7 +234,7 @@
     if(!st||!DB.has(st.key)||!Number.isFinite(st.turns)||st.turns<=0||
       !Number.isFinite(st.power)||selected.some(x=>x.key===st.key))continue;
     selected.push({key:st.key,turns:clamp(Math.round(st.turns),1,999),
-     power:clamp(st.power,0,3),sourceAttack:clamp(safe(st.sourceAttack),0,200000),
+     power:clamp(st.power,0,1000000),sourceAttack:clamp(safe(st.sourceAttack),0,200000),
      sourceSide:['enemy','ally'].includes(st.sourceSide)?st.sourceSide:'ally',
      sourceId:typeof st.sourceId==='string'?st.sourceId.slice(0,64):'',
      stacks:clamp(Math.round(safe(st.stacks,1)),1,st.key==='bleed'?5:1)});
