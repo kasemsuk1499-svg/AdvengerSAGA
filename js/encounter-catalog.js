@@ -30,7 +30,7 @@
    const attack=Math.max(1,Math.round(opt.attack||base.attack||150));
    return {id:'foe-'+index,kind:opt.characterId||opt.kind,characterId:opt.characterId||null,
     name:base.name,nameTh:base.nameTh,icon:base.icon||'◆',
-    hp:maxHP,maxHP,attack,art:base.art||sprites,boss:!!(opt.boss??base.boss)};
+    hp:maxHP,maxHP,attack,art:base.art||sprites,fallback:base.fallback||base.art||sprites,boss:!!(opt.boss??base.boss)};
   });
  }
  function spawn(id){
