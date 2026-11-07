@@ -166,7 +166,7 @@
     if(fx.type==='damage'){
      for(let i=0;i<Math.max(1,Math.min(12,fx.hits||1));i++){
       const raw=Math.max(0,Math.round(stats.attack*(fx.attackPct||0)+stats.defense*(fx.defensePct||0)));
-      const amount=adjustDamage(s,'ally',actorId,t.side,t.id,raw,skill.damageType||'physical');
+      const amount=adjustDamage(s,'ally',actorId,t.side,t.id,raw*(s.boost?1.25:1),skill.damageType||(DB.get(s.skillKits[actorId])?.role==='Support'?'magic':'physical'));
       if(t.side==='enemy'){
        const hit=g.AdvengerBattleCore.hitEnemy(s,t.id,amount);
        events.push({kind:'damage',id:t.id,side:t.side,amount:hit,hitIndex:i+1});
