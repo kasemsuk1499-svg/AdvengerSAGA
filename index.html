@@ -158,6 +158,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <link rel="stylesheet" href="css/fate-inspired.css?v=0.4">
 <link rel="stylesheet" href="css/turn-battle.css?v=0.5">
 <link rel="stylesheet" href="css/character-assets.css?v=0.8">
+<link rel="stylesheet" href="css/encounters.css?v=0.9">
 </head>
 <body>
 <div class="shell">
@@ -196,13 +197,15 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
     <button type="button" class="button ghost" data-screen="formation">🧩 จัดทีม</button>
    </div>
  </div>
+ <div class="encounter-toolbar"><label for="encounterSelect">⚔️ สนามต่อสู้</label><select id="encounterSelect" aria-label="เลือกภารกิจต่อสู้"><option value="training">ฝึกต่อสู้ · ศัตรู 1 ตัว</option><option value="skirmish">ปะทะหมู่ · ศัตรู 3 ตัว</option><option value="boss">บอส + ลูกสมุน 2 ตัว</option></select><span class="small">เปลี่ยนสนาม = เริ่มไฟต์ใหม่ (ยังคงทีมเดิม)</span></div>
  <div class="battle-layout">
   <div class="battle-main-column">
    <section class="arena-wrap" aria-label="สนามทดสอบการโจมตี">
     <div class="arena-hud">
-     <div class="hud-enemy-top"><span class="hud-tag"><span class="hud-enemy-icon">◆</span> ENEMY · TRAINING SENTINEL</span><strong id="enemyHealth">100%</strong></div>
+     <div class="hud-enemy-top"><span class="hud-tag"><span class="hud-enemy-icon">◆</span> ENEMY · <span id="enemyName">TRAINING SENTINEL</span></span><strong id="enemyHealth">100%</strong></div>
      <div class="hud-meter" role="progressbar" id="targetHpTrack" aria-label="พลังชีวิตเป้าหมาย" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="targetHpBar"></i></div>
     </div>
+    <div id="enemyTargets" class="enemy-targets" aria-label="เลือกเป้าหมายศัตรู"></div>
     <div id="teamArena" class="as-stage" aria-label="สนามต่อสู้: สมาชิกหลัก 4 คนยืนอยู่พร้อมกัน และหุ่นฝึก 1 ตัว"></div>
     <div class="arena-foot"><span class="arena-active-info"><span class="foot-active-icon">✦</span> <b id="activeName">Saber</b><span id="activeSubtitle">นักดาบ</span></span><span>ENERGY <b id="activeEnergy">100/100</b></span></div>
    </section>
@@ -247,8 +250,8 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 </section>
 <section id="about" class="screen">
  <div class="hero-banner"><div class="eyebrow">DEVELOPMENT ROADMAP</div><h1>AdvengerSAGA</h1><p>ระบบต่อสู้แสดงสมาชิกหลักทั้ง 4 คนในสนามเดียวกัน และผู้ช่วยอีก 2 ช่อง แยกข้อมูลและชุดท่าโจมตีเป็นโฟลเดอร์ของแต่ละตัวละคร พร้อมเปลี่ยนภาพเป็น PNG ในอนาคต</p></div>
- <div class="panel"><h2>สิ่งที่ใช้ได้ในรุ่นนี้</h2><p>จัดตำแหน่งสมาชิกหลัก 4 ช่อง สลับผู้ช่วย 2 ช่อง บันทึกทีมอัตโนมัติ สลับตัวละครที่ควบคุมในสนามทดลอง และใช้การช่วยเหลือแบบจำกัดจำนวนครั้ง พร้อมแชร์ค่า HP เป้าหมายและ EX ระหว่างหน้าต่างทดลองตัวละคร</p>
- <p class="help">รุ่นนี้เป็น <b>4-Character Training Arena</b> สมาชิกหลักทั้งสี่คนยืนในสนามพร้อมกัน แต่ผู้เล่นสั่งโจมตีทีละคน ส่วนผู้ช่วยยังเป็นตัวต้นแบบ และยังไม่มี AI ศัตรู / ระบบแพ้ชนะหลายฝ่าย / เซิร์ฟเวอร์เซฟ</p>
+ <div class="panel"><h2>สิ่งที่ใช้ได้ในรุ่นนี้</h2><p>จัดตำแหน่งสมาชิกหลัก 4 ช่อง สลับผู้ช่วย 2 ช่อง บันทึกทีมอัตโนมัติ สลับตัวละครที่ควบคุมในสนามทดลอง และใช้การช่วยเหลือแบบจำกัดจำนวนครั้ง พร้อมจัดการ HP/EX และการเลือกเป้าหมายศัตรูผ่านระบบกลาง</p>
+ <p class="help">รุ่นนี้เป็น <b>4-Character Training Arena</b> สมาชิกหลักทั้งสี่คนยืนในสนามพร้อมกัน แต่ผู้เล่นสั่งโจมตีทีละคน ส่วนผู้ช่วยยังเป็นตัวต้นแบบ และมีเทิร์นศัตรูแบบกำหนดเป้าหมายล่วงหน้า รองรับศัตรูหลายตัวและบอสทดลอง แต่ยังไม่มี AI เชิงกลยุทธ์ / เซิร์ฟเวอร์เซฟ</p>
  <div class="chips" id="labLinks"></div></div>
 </section>
 <footer class="footer">AdvengerSAGA · Fan-made prototype · Local save (this browser) · No external dependencies</footer>
@@ -264,5 +267,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <script src="js/team-effects.js?v=0.4"></script>
 <script src="js/shared-arena.js?v=0.8"></script>
 <script src="js/turn-rules.js?v=0.5"></script>
+<script src="js/encounter-catalog.js?v=0.9"></script>
+<script src="js/battle-core.js?v=0.9"></script>
 <script src="js/character-loader.js?v=0.8"></script>
 </body></html>
