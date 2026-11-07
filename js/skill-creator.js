@@ -99,6 +99,38 @@
  let db=empty();
  const clone=x=>JSON.parse(JSON.stringify(x));
  function validHero(id){return !!g.AdvengerCharacters?.get(id)}
+ const nativeKinds=['basic','skill','ultimate'];
+ const kitKinds=['basic','skill1','skill2'];
+ function resolve(id){
+  if(typeof id!=='string')return null;
+  const created=get(id);
+  if(created)return {id,kind:'created',name:created.name,skill:created};
+  let m=/^native:(saber|mage|tank|gunner):(basic|skill|ultimate)$/.exec(id);
+  if(m){
+   const hero=g.AdvengerCharacters?.get(m[1]),skillName=hero?.skills?.[m[2]];
+   if(!skillName)return null;
+   return {id,kind:'native',name:hero.name+' · '+skillName,
+    sourceHero:m[1],sourceKind:m[2]};
+  }
+  m=/^kit:([a-z][a-z0-9-]*):(basic|skill1|skill2)$/.exec(id);
+  if(m){
+   const hero=g.AdvengerSkillDB.get(m[1]),skill=hero?.skills?.[m[2]];
+   if(!skill)return null;
+   return {id,kind:'database',name:hero.name+' · '+skill.name,
+    skill:{...clone(skill),id,
+     cooldownRounds:g.AdvengerSkillDB.rounds(skill.cooldownSeconds||0)},
+    sourceHero:m[1],sourceKind:m[2]};
+  }
+  return null;
+ }
+ function catalog(){
+  const native=['saber','mage','tank','gunner'].flatMap(hero=>
+   nativeKinds.map(kind=>resolve('native:'+hero+':'+kind)).filter(Boolean));
+  const kit=g.AdvengerSkillDB.all().flatMap(hero=>
+   kitKinds.map(kind=>resolve('kit:'+hero.id+':'+kind)).filter(Boolean));
+  const custom=db.skills.map(skill=>resolve(skill.id));
+  return {native,kit,custom,all:[...native,...kit,...custom]};
+ }
  function load(){
   try{
    const parsed=JSON.parse(g.localStorage?.getItem(KEY)||'null');
@@ -132,12 +164,16 @@
  }
  function assign(hero,slot,id){
   if(!validHero(hero)||!slots.includes(slot))throw Error('ช่องสกิล/ตัวละครไม่ถูกต้อง');
-  if(id&&!get(id))throw Error('ต้องบันทึกสกิลลงคลังก่อนจึงจะติดตั้งได้');
+  if(id&&!resolve(id))throw Error('เลือกสกิลที่มีอยู่ในคลังก่อนจึงจะติดตั้งได้');
   const entries=db.assignments[hero]||={};
   if(id)entries[slot]=id;else delete entries[slot];
   persist();return id||null;
  }
- function equipped(hero,slot){return get(db.assignments[hero]?.[slot])}
+ function equipped(hero,slot){
+  const selection=resolve(db.assignments[hero]?.[slot]);
+  return selection?.skill||null;
+ }
+ function equippedSource(hero,slot){return resolve(db.assignments[hero]?.[slot])}
  function assignments(){return clone(db.assignments)}
  function importData(raw,persistResult=true){
   if(!plain(raw)||!Array.isArray(raw.skills)||raw.skills.length>maxSkills)
@@ -154,7 +190,10 @@
     if(!validHero(hero)||!plain(assignments))continue;
     as[hero]={};
     for(const slot of slots)
-     if(keys.has(assignments[slot]))as[hero][slot]=assignments[slot];
+     if(typeof assignments[slot]==='string'&&
+       (keys.has(assignments[slot])||resolve(assignments[slot])?.kind!=='created'))
+      if(resolve(assignments[slot])||keys.has(assignments[slot]))
+       as[hero][slot]=assignments[slot];
    }
   const max=skills.reduce((v,s)=>Math.max(v,Number(s.id.slice(8))),0);
   db={version:VERSION,nextId:Math.max(max+1,1),skills,assignments:as};
@@ -173,7 +212,7 @@
  }
  g.AdvengerSkillCreator=Object.freeze({
   version:VERSION,storageKey:KEY,slots,types,maxEffects,
-  load,list,get,add,update,remove,assign,equipped,assignments,
+  load,list,get,add,update,remove,assign,equipped,equippedSource,catalog,resolve,assignments,
   exportData,importData,validate:normalize,example
  });
 })(window);
