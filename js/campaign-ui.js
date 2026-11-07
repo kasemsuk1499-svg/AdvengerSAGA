@@ -14,7 +14,7 @@
   $('campaignLevel').textContent='LV '+lvl.level;
   $('campaignGold').textContent=p.gold.toLocaleString()+' G';
   $('campaignProgress').textContent=p.completed+' / '+M.stages.length;
-  $('campaignBonus').textContent='ATK +'+Math.round(p.attackBonus*100)+'%';
+  $('campaignBonus').textContent='DMG +'+Math.round(p.attackBonus*100)+'%';
   $('campaignXpLabel').textContent=lvl.needed?
    lvl.progress+' / '+lvl.needed+' XP':'LV MAX';
   $('campaignXpBar').style.width=lvl.needed?
