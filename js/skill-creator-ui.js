@@ -163,9 +163,23 @@
  }
  function renderEquip(){
   const id=$('skillLabHero').value,slot=$('skillLabSlot').value;
-  const assigned=C.equipped(id,slot);
-  text('skillLabEquipped',assigned?'ติดตั้งอยู่: '+assigned.name+' · '+assigned.effects.length+
-   ' ขั้น':'ช่องนี้ยังไม่มีสกิลที่สร้างเอง');
+  const assigned=C.equippedSource(id,slot);
+  text('skillLabEquipped',assigned?'ติดตั้งอยู่: '+assigned.name:
+   'ช่องนี้ใช้ท่าเดิมของตัวละคร');
+ }
+ function renderEquipCatalog(){
+  const select=$('skillLabEquipSource');
+  if(!select)return;
+  const previous=select.value;
+  const catalog=C.catalog();
+  select.innerHTML='<option value="">— เลือกจากสกิลที่มีอยู่ —</option>'+
+   [['native','⚔️ สกิลอาชีพเดิม'],['kit','📖 สกิลฐานข้อมูล Seven Knights'],
+    ['custom','🧪 สกิลที่สร้างเอง']].map(([key,title])=>
+     '<optgroup label="'+title+'">'+
+     catalog[key].map(skill=>'<option value="'+esc(skill.id)+'">'+
+     esc(skill.name)+'</option>').join('')+'</optgroup>'
+    ).join('');
+  select.value=catalog.all.some(x=>x.id===previous)?previous:'';
  }
  function renderBase(){
   $('skillLabName').value=draft.name||'';
@@ -174,7 +188,7 @@
   $('skillLabCooldown').value=draft.cooldownRounds??'';
  }
  function render(){
-  renderList();renderBase();renderEffects();renderEquip();
+  renderList();renderBase();renderEffects();renderEquipCatalog();renderEquip();
  }
  function selectSkill(id){
   const chosen=id?C.get(id):null;
@@ -188,14 +202,17 @@
    const result=currentId?C.update(currentId,draft):C.add(draft);
    currentId=result.id;draft=result;
    render();
+   $('skillLabEquipSource').value=result.id;
    message('✅ บันทึก '+result.name+' ลงคลังแล้ว ('+result.effects.length+' ขั้น)');
   }catch(e){message('⚠️ '+e.message,true)}
  }
  function equip(){
   try{
-   if(!currentId)throw Error('กดบันทึกสกิลก่อนติดตั้ง');
-   C.assign($('skillLabHero').value,$('skillLabSlot').value,currentId);
-   renderEquip();message('✅ ติดตั้ง '+draft.name+' สำเร็จ · เข้าไปทดลองในสนามได้เลย');
+   const selection=$('skillLabEquipSource')?.value||currentId;
+   if(!selection)throw Error('เลือกสกิลจากคลัง หรือกดบันทึกสกิลใหม่ก่อน');
+   C.assign($('skillLabHero').value,$('skillLabSlot').value,selection);
+   renderEquip();message('✅ ติดตั้ง '+C.resolve(selection).name+
+    ' แทนสกิลเดิมในช่องนี้แล้ว');
   }catch(e){message('⚠️ '+e.message,true)}
  }
  function bind(){

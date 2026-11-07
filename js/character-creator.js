@@ -54,8 +54,8 @@
    for(const key of g.AdvengerSkillCreator.slots){
     const id=raw.slots[key];
     if(id==null||id==='')continue;
-    if(!/^created-[1-9]\d{0,8}$/.test(id))
-     throw Error('รหัสสกิลในช่อง '+key+' ไม่ถูกต้อง');
+    if(!g.AdvengerSkillCreator.resolve(id))
+     throw Error('ไม่พบสกิลที่เลือกสำหรับช่อง '+key);
     // Missing skills may be imported later; they will not be installed
     // unless present in the local, validated Skill Creator library.
     slots[key]=id;
@@ -96,7 +96,7 @@
   if(g.AdvengerCharacters?.get(ID)&&skillDB){
    for(const slot of skillDB.slots){
     const skillId=normalized.slots[slot];
-    skillDB.assign(ID,slot,skillId&&skillDB.get(skillId)?skillId:null);
+    skillDB.assign(ID,slot,skillId&&skillDB.resolve(skillId)?skillId:null);
    }
   }
   return clone(normalized);
@@ -119,7 +119,7 @@
    if(!Object.hasOwn(skills.assignments(),ID)){
     for(const slot of skills.slots){
      const id=data.slots[slot];
-     skills.assign(ID,slot,id&&skills.get(id)?id:null);
+     skills.assign(ID,slot,id&&skills.resolve(id)?id:null);
     }
    }
   }

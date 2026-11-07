@@ -60,7 +60,7 @@
   }).join('');
  }
  function renderSkills(){
-  const list=S.list();
+  const library=S.catalog();
   const active=S.assignments()?.[C.id];
   if(active&&saved){
    // The actual equipment DB is authoritative after the first creation.
@@ -74,10 +74,16 @@
   $('charLabSkills').innerHTML=S.slots.map(slot=>
    '<label>'+esc(labels[slot])+
    '<select data-char-slot="'+esc(slot)+'">'+
-   '<option value="">ใช้ท่าตั้งต้น / ไม่ติดตั้ง</option>'+
-   list.map(skill=>'<option value="'+esc(skill.id)+'"'+
-    (draft.slots[slot]===skill.id?' selected':'')+'>'+
-    esc(skill.name)+'</option>').join('')+'</select></label>'
+   '<option value="">ใช้ท่าเดิมของตัวละคร / ไม่ติดตั้ง</option>'+
+   [
+    ['native','⚔️ ท่าต้นฉบับจาก 4 อาชีพ'],
+    ['kit','📖 สกิล Seven Knights ที่มีในคลัง'],
+    ['custom','🧪 สกิลที่สร้างเอง']
+   ].map(([group,title])=>'<optgroup label="'+esc(title)+'">'+
+    library[group].map(skill=>'<option value="'+esc(skill.id)+'"'+
+     (draft.slots[slot]===skill.id?' selected':'')+'>'+
+     esc(skill.name)+'</option>').join('')+'</optgroup>').join('')+
+    '</select></label>'
   ).join('');
  }
  function updateBase(){
