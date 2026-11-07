@@ -143,6 +143,65 @@ test('custom basic works under Silence, while created active and Ultimate are lo
  assert.equal(S.readyCreated(state,'saber',skill,'skill1'),false);
  assert.equal(S.readyCreated(state,'saber',skill,'ultimate'),false);
 });
+test('loadout catalog can equip existing class and reference Seven Knights skills',()=>{
+ const {C}=boot();C.load();
+ const catalog=C.catalog();
+ assert.equal(catalog.native.length,12);
+ assert.equal(catalog.kit.length,15);
+ assert.equal(catalog.custom.length,0);
+ const orig=C.resolve('native:saber:skill');
+ assert.equal(orig.kind,'native');
+ assert.equal(orig.sourceHero,'saber');
+ assert.equal(orig.sourceKind,'skill');
+ assert.match(orig.name,/Elemental Triple/);
+ const reference=C.resolve('kit:rachel:skill1');
+ assert.equal(reference.kind,'database');
+ assert.equal(reference.skill.cooldownRounds,3);
+ assert.equal(reference.skill.effects[0].hits,2);
+ C.assign('mage','basic',orig.id);
+ C.assign('tank','skill2',reference.id);
+ assert.equal(C.equippedSource('mage','basic').sourceHero,'saber');
+ assert.equal(C.equippedSource('tank','skill2').skill.name,'Blazing Strike');
+ assert.throws(()=>C.assign('saber','skill1','kit:fake:skill2'));
+ assert.throws(()=>C.assign('saber','skill1','native:fake:ultimate'));
+ C.assign('mage','basic',null);
+ assert.equal(C.equippedSource('mage','basic'),null);
+});
+test('existing loadouts persist through JSON backup and reload with no created skills',()=>{
+ const storage=new Map();let {C}=boot(storage);C.load();
+ C.assign('saber','basic','native:mage:basic');
+ C.assign('saber','skill1','kit:kris:skill1');
+ const backup=C.exportData();
+ assert.equal(backup.skills.length,0);
+ C.importData(backup);
+ assert.equal(C.equippedSource('saber','basic').sourceHero,'mage');
+ let other=boot(storage);other.C.load();
+ assert.equal(other.C.equippedSource('saber','skill1').sourceHero,'kris');
+ other.C.assign('saber','skill1',null);
+ assert.equal(other.C.equippedSource('saber','skill1'),null);
+});
+test('equipped Seven Knights active skill uses original effects and real per-skill cooldown',()=>{
+ const {g,C,S}=boot();C.load();
+ C.assign('saber','skill1','kit:kris:skill1');
+ const source=C.equippedSource('saber','skill1');
+ const state=setup(g);
+ assert.equal(S.readyCreated(state,'saber',source.skill,'skill1'),true);
+ const report=S.cast(state,'saber','skill1','foe-0',source.skill);
+ assert.equal(report.ok,true);
+ assert.ok(report.events.some(e=>e.kind==='damage'));
+ assert.equal(S.createdRemaining(state,'saber',source.id),2);
+ assert.equal(S.readyCreated(state,'saber',source.skill,'skill1'),false);
+});
+test('silence cannot be circumvented by placing an existing active kit in Basic',()=>{
+ const {g,C,S}=boot();C.load();
+ const reference=C.resolve('kit:kris:skill1').skill;
+ const basic=C.resolve('kit:lucy:basic').skill;
+ const state=setup(g);
+ g.AdvengerStatusEngine.apply(state,'ally','saber',{
+  key:'silence',chance:1,turns:2},'foe-0');
+ assert.equal(S.readyCreated(state,'saber',reference,'basic'),false);
+ assert.equal(S.readyCreated(state,'saber',basic,'basic'),true);
+});
 test('browser mounts Skill Creator before app, and full UI loads after app',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const src=[...html.matchAll(/<script src="([^"]+)"/g)].map(x=>x[1].split('?')[0]);
