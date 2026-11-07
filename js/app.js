@@ -240,7 +240,8 @@ function renderBattle(){
    '><i aria-hidden="true"></i>'+label+'</button>';
  }).join('');
  $('battleLog').innerHTML=state.logs.slice().reverse().map(line=>'<div class="logline">'+esc(line)+'</div>').join('');
- $('fullDemo').href='characters/'+id+'/lab.html';
+ $('fullDemo').href='characters/'+(AdvengerCharacters.get(id)?.createdInLab?
+   AdvengerCharacters.get(id).classId:id)+'/lab.html';
  if(frameReady){arena?.syncEnemies(state.enemies,state.targetId);
   arena?.status(state.hp,RULES.maxHP(state.party),state.acted,state.guarded,state.phase,state.active);}
  renderSkillDatabase(canAct);
@@ -888,6 +889,7 @@ $('resetTeam').addEventListener('click',()=>{
 renderStatCatalog();
 renderAilmentCodex();
 renderLifeCodex();
-$('labLinks').innerHTML=UNITS.map(id=>'<a class="button ghost" target="_blank" rel="noopener" href="characters/'+id+'/lab.html">'+UNIT[id].emoji+' '+UNIT[id].name+'</a>').join('');
+$('labLinks').innerHTML=UNITS.filter(id=>!AdvengerCharacters.get(id)?.createdInLab)
+ .map(id=>'<a class="button ghost" target="_blank" rel="noopener" href="characters/'+id+'/lab.html">'+UNIT[id].emoji+' '+UNIT[id].name+'</a>').join('');
 render();
 })();
