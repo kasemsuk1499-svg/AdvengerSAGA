@@ -137,10 +137,10 @@
  function createdRemaining(s,id,skillId){
   return Math.max(0,(s.createdSkillTimers?.[id]?.[skillId]||0)-s.round);
  }
- function readyCreated(s,id,skill){
+ function readyCreated(s,id,skill,slot='skill1'){
   ensure(s);
   return !!skill&&s.hp?.[id]>0&&
-   STATUS.canUse(s,'ally',id,'skill1')&&
+   STATUS.canUse(s,'ally',id,slot==='basic'?'basic':'skill1')&&
    createdRemaining(s,id,skill.id)===0;
  }
  function adjustDamage(s,fromSide,fromId,toSide,toId,amount,damageType='physical'){
@@ -159,7 +159,7 @@
   return Math.max(0,Math.round(x));
  }
  function cast(s,actorId,kind,selectedId,createdSkill=null){
-  if(createdSkill?!readyCreated(s,actorId,createdSkill):!ready(s,actorId,kind))
+  if(createdSkill?!readyCreated(s,actorId,createdSkill,kind):!ready(s,actorId,kind))
    return {ok:false,reason:'cooldown / condition'};
   const skill=createdSkill||DB.skill(s.skillKits[actorId],kind);
   const targets=selectTargets(s,actorId,skill,selectedId);
