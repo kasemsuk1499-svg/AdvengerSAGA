@@ -12,7 +12,7 @@ This fan-made feature models selected factual skill parameters from Seven Knight
 
 ## In-game workflow
 
-Open the arena, choose one of the four player heroes, expand **SEVEN KNIGHTS · ฐานข้อมูลสกิล**, select a reference kit, then choose DB Basic, Skill 1, or Skill 2. Each command consumes that hero's action. Kits can be equipped by any playable hero without replacing its original approved Basic/Skill/Ultimate choreography. Changing kits starts a fresh encounter to reset cooldowns and passives while preserving team formation.
+Open the arena, choose one of the four player heroes, expand **SEVEN KNIGHTS · ฐานข้อมูลสกิล**, select a reference kit, then choose DB Basic, Skill 1, or Skill 2. Each command consumes that hero's action. Kits can be equipped by any playable hero without replacing its original approved Basic/Skill/Ultimate choreography. Changing kits starts a fresh encounter to reset cooldowns and passives while preserving team formation. **All reference kits are initially unequipped** to preserve prior approved combat behavior.
 
 Active cooldowns are stored as source **seconds**, but this turn-based game maps **30 seconds to 1 round (rounded up)**, e.g. 84s -> 3 rounds and 95s -> 4 rounds. This conversion and all combat formulas are AdvengerSAGA design choices and are **not** claimed to reproduce the original game's combat math. Data describes targeting, hit counts, chance, duration, and effect type. Damage, Weakness Hit, poison/burn damage-over-time, and mitigation are adapted for this engine.
 
