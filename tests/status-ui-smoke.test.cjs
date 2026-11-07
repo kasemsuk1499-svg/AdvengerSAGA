@@ -37,7 +37,7 @@ function boot({customHero=false}={}){
  const store=new Map(),localStorage={
   getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)
  };
- const attacks=[],nativeMoves=[];
+ const attacks=[],nativeMoves=[],databaseMoves=[];
  const g={document,localStorage,setTimeout:()=>0,console};
  g.window=g;vm.createContext(g);
  const load=p=>new vm.Script(fs.readFileSync(path.join(root,p),'utf8'),{filename:p}).runInContext(g);
@@ -75,7 +75,16 @@ function boot({customHero=false}={}){
    hit(g.AdvengerCampaignBridge?.state()?.mode==='campaign'?5000:50);
    return true;
   }
-  async playDatabaseSkill(){return true}
+  async playReanimated(id,kind,element,onDamage,sourceHeroId,animationId){
+   nativeMoves.push({id,kind,sourceHeroId,animationId,visualOnly:true});
+   const original=await g.AdvengerAnimations.capture(sourceHeroId||id,kind);
+   for(const hit of original)onDamage(hit.amount,kind,hit.critical);
+   return true;
+  }
+  async playDatabaseSkill(id,skill,report,animationId,element){
+   databaseMoves.push({id,skillName:skill.name,animationId,element,report});
+   return true;
+  }
   async enemyAttack(id,damage,guarded,name){attacks.push({id,damage,name})}
  };
  load('js/app.js');
@@ -85,8 +94,57 @@ function boot({customHero=false}={}){
  const click=data=>{const event={target:{closest:selector=>selector==='button'?{dataset:data}:null}};
   for(const listener of listeners.click||[])listener(event);
  };
- return {g,nodes,click,listeners,attacks,nativeMoves};
+ return {g,nodes,click,listeners,attacks,nativeMoves,databaseMoves};
 }
+test('Character Creator changes innate element and chooses animations for four skill slots',()=>{
+ const app=boot();
+ a.match(app.nodes.get('charLabElement').innerHTML,/ธาตุ/);
+ a.match(app.nodes.get('charLabSkills').innerHTML,/data-char-animation="basic"/);
+ app.nodes.get('charLabName').value='Element Hero';
+ app.nodes.get('charLabNameTh').value='ฮีโร่ไฟ';
+ app.nodes.get('charLabElement').events.change({target:{value:'fire'}});
+ app.nodes.get('charLabSkills').events.change({
+  target:{dataset:{charAnimation:'skill1'},value:'mage:ultimate'}
+ });
+ app.nodes.get('charLabSave').events.click();
+ const stored=app.g.AdvengerCharacterCreator.get();
+ a.equal(stored.name,'Element Hero');
+ a.equal(stored.element,'fire');
+ a.equal(stored.animations.skill1,'mage:ultimate');
+});
+test('Skill Creator Lab can set visual choreography without installing a new skill',()=>{
+ const app=boot();const C=app.g.AdvengerSkillCreator;
+ a.match(app.nodes.get('skillLabAnimation').innerHTML,/Saber/);
+ app.nodes.get('skillLabHero').value='gunner';
+ app.nodes.get('skillLabSlot').value='basic';
+ app.nodes.get('skillLabAnimation').value='tank:ultimate';
+ app.nodes.get('skillLabAnimationSave').events.click();
+ a.equal(C.animationFor('gunner','basic').id,'tank:ultimate');
+ a.equal(C.equippedSource('gunner','basic'),null);
+});
+test('equipped native animation preset keeps the original action while replacing VFX',async()=>{
+ const app=boot();const C=app.g.AdvengerSkillCreator;
+ C.assignAnimation('gunner','basic','mage:ultimate');
+ app.click({screen:'battle'});app.click({command:'basic'});
+ await new Promise(resolve=>setImmediate(resolve));
+ a.equal(app.nativeMoves.length,1);
+ a.equal(app.nativeMoves[0].kind,'basic');
+ a.equal(app.nativeMoves[0].animationId,'mage:ultimate');
+ const saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(saved.acted.gunner,true);
+ a.ok(saved.enemies[0].hp<saved.enemies[0].maxHP);
+});
+test('equipped Seven Knights skill uses selected animation and preserves source cooldown',async()=>{
+ const app=boot();const C=app.g.AdvengerSkillCreator;
+ C.assign('gunner','skill1','kit:rachel:skill1');
+ C.assignAnimation('gunner','skill1','saber:ultimate');
+ app.click({screen:'battle'});app.click({command:'skill'});
+ await new Promise(resolve=>setImmediate(resolve));
+ a.equal(app.databaseMoves.length,1);
+ a.equal(app.databaseMoves[0].animationId,'saber:ultimate');
+ const saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(saved.createdSkillTimers.gunner['kit:rachel:skill1'],4);
+});
 test('campaign starts from hub, hides cheat labs, saves in-progress mission and resumes',()=>{
  const app=boot();
  a.match(app.nodes.get('campaignChapters').innerHTML,/เสียงเรียกจากรอยแยก/);
