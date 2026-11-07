@@ -51,6 +51,8 @@
  }
  function restore(s,saved){
   ensure(s);
+  if(!saved)return s;
+  s.skillTimers={};s.skillStatuses={};s.skillUsed={};
   if(saved?.skillKits&&typeof saved.skillKits==='object'){
    for(const id of Object.keys(saved.skillKits)){
     if(g.AdvengerCharacters?.get(id))
