@@ -1,4 +1,4 @@
-# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.2)
+# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.3)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,16 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v1.3 — Seven Knights–inspired Status Skill System / ระบบสถานะผิดปกติ
+
+- **17 reusable ailments** catalogued in `js/status-db.js` and executed by `js/status-engine.js`: Burn, Dragon Flame, Bleed, Poison, Death, Stun, Paralysis, Shock, Freeze, Petrify, Sleep, Fear, Blind, Silence, Confusion, Heal Block and Soul Death.
+- Effects resolve in array order; `eachHit:true` rolls an ailment independently for each **landed** hit in the preceding damage step. `target:'self'` on a final effect permits a self ATK buff after hitting the enemy (no retroactive boost). `fourEnemies` supports up to 4 targets in the skill engine; current battlefield encounters still cap at 3.
+- CC blocks its target's pending **SPD initiative action**, decrementing one duration per missed action; Silence prevents active/ultimate skills, while basic and guard remain available.
+- DoT, status reactions, cleanse, poison/CC immunity, deterministic chance using EFFECT_HIT / EFFECT_RESIST, 5-stack Bleed, and local status save restore are integrated into existing battles.
+- The new **STATUS LAB** in the battle panel can apply a chosen ailment for testing without consuming a turn. All 17 statuses are visible in **ข้อมูล**.
+- The core class FX and 30-stat database are preserved. Advanced Seven Knights–specific mechanics and full critical/block calculations are intentionally **not yet complete**.
+- Full semantics and adaptation notes: [Status Effect System](docs/STATUS_EFFECTS.md). New status engine unit tests are run by GitHub Actions.
 
 ## v1.2 — Speed-based initiative / ลำดับคิว SPD
 
