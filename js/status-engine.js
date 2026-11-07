@@ -60,8 +60,9 @@
   if(!DB.isNegative(fx.key))return base;
   if(fx.ignoreResistance)return base;
   const from=stats(s,srcSide,srcId),to=stats(s,toSide,toId);
+  const effectResist=has(s,toSide,toId,'fear')?0:safe(to.EFFECT_RESIST);
   const rate=base+safe(from.EFFECT_HIT)+safe(from.STATUS_BOOST)-
-    safe(to.EFFECT_RESIST)-(DB.isControl(fx.key)?safe(to.CC_RESIST):0);
+    effectResist-(DB.isControl(fx.key)?safe(to.CC_RESIST):0);
   return clamp(rate,0,1);
  }
  function damage(s,side,id,raw){
@@ -137,6 +138,9 @@
   if(has(s,side,id,'silence')&&['skill','skill1','skill2','ultimate','awakening'].includes(kind))
    return false;
   return true;
+ }
+ function effectiveBlockRate(s,side,id){
+  return has(s,side,id,'paralysis')?0:safe(stats(s,side,id).BLOCK_RATE);
  }
  function isFumble(s,side,id,kind){
   return ['basic','counter','followup'].includes(kind)&&
@@ -240,7 +244,7 @@
  }
  g.AdvengerStatusEngine=Object.freeze({
   version:1,ensure,list,find,has,value,stats,maxHP,probability,apply,
-  cleanse,remove,canUse,isFumble,canHeal,canRevive,consumeControl,
+  cleanse,remove,canUse,isFumble,effectiveBlockRate,canHeal,canRevive,consumeControl,
   onHit,tick,restore,statusText
  });
 })(window);

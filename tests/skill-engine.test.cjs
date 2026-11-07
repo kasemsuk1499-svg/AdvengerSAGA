@@ -10,7 +10,8 @@ g.AdvengerCharacters={get:id=>{
 }};
 vm.createContext(g);
 const load=file=>new vm.Script(fs.readFileSync(path.join(root,file),'utf8'),{filename:file}).runInContext(g);
-['js/encounter-catalog.js','js/battle-core.js','js/turn-rules.js','js/skill-db.js','js/skill-engine.js'].forEach(load);
+['js/encounter-catalog.js','js/battle-core.js','js/turn-rules.js','js/skill-db.js',
+ 'js/status-db.js','js/status-engine.js','js/skill-engine.js'].forEach(load);
 const DB=g.AdvengerSkillDB,S=g.AdvengerSkillEngine,C=g.AdvengerBattleCore;
 function fresh(){const s={party:['saber','mage','tank','gunner'],round:1,
  enemies:C.spawn('skirmish'),hp:{saber:1000,mage:800,tank:1500,gunner:900},

@@ -31,7 +31,7 @@
  const catalogue=Object.freeze(Object.fromEntries(rows.map(([id,nameTh,name,category,description])=>
   [id,Object.freeze({id,name,nameTh,category,description,source})])));
  const extras=[
-  ['attackDown','ATK↓',true],['defenseDown','DEF↓',true],
+  ['attackDown','ATK↓',true],['attackUp','ATK↑',false],['defenseDown','DEF↓',true],
   ['physicalVulnerability','รับกายภาพเพิ่ม',true],['damageReductionDown','ต้านทานลด',true],
   ['defenseUp','DEF↑',false],['physicalDamageUp','กายภาพ↑',false],
   ['weaknessBoost','โจมตีจุดอ่อน↑',false],['poisonImmunity','ป้องกันพิษ',false],

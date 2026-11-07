@@ -119,6 +119,7 @@
   let x=Math.max(0,Number(amount)||0);
   if(value(s,toSide,toId,'magicImmunity')&&damageType==='magic')return 0;
   x*=1-value(s,fromSide,fromId,'attackDown');
+  x*=1+value(s,fromSide,fromId,'attackUp');
   const weakness=value(s,fromSide,fromId,'weaknessBoost');
   if(weakness>0&&rand(s)<weakness)x*=1.30;
   if(damageType==='physical')x*=1+value(s,fromSide,fromId,'physicalDamageUp');
@@ -139,7 +140,11 @@
   const fumble=STATUS.isFumble(s,'ally',actorId,kind);
   for(const fx of skill.effects){
    if(fx.type==='damage')previousDamage=[];
-   for(const t of targets){
+   // Each sequential effect may override the skill's main target scope.
+   // e.g. hit 4 enemies, roll Paralysis per hit, then buff the caster.
+   const effectTargets=fx.target?
+    selectTargets(s,actorId,{target:fx.target},selectedId):targets;
+   for(const t of effectTargets){
     const foe=t.side==='enemy'?s.enemies.find(e=>e.id===t.id):null;
     const current=t.side==='ally'?s.hp[t.id]:foe?.hp;
     if(!Number.isFinite(current)||current<=0)continue;
@@ -206,6 +211,7 @@
    cooldownRounds:DB.rounds(skill.cooldownSeconds||0)};
  }
  function onLethal(s,id){
+  ensure(s);
   if(s.hp[id]>0||s.skillUsed[id]||!STATUS.canRevive(s,'ally',id))return false;
   const triggers=DB.get(s.skillKits[id])?.skills.passive?.triggers||[];
   const revive=triggers.find(t=>t.event==='lethal'&&t.effect?.type==='revive');
