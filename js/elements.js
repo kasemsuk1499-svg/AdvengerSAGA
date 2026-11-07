@@ -10,7 +10,7 @@
   ['fire','ไฟ','🔥','#ff9866',['nature','ice']],
   ['wind','ลม','🌪️','#7bf1c3',['earth']],
   ['lightning','สายฟ้า','⚡','#fce58b',['water']],
-  ['void','ความมืด','🌑','#bf92ff',['arcane']],
+  ['void','ความมืด','🌑','#bf92ff',['kinetic']],
   ['arcane','เวทมนตร์','🔮','#ba9cff',['void']],
   ['ice','น้ำแข็ง','❄️','#8de8ff',['wind']],
   ['storm','พายุ','⛈️','#f4da86',['water']],
