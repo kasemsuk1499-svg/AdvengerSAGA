@@ -1,0 +1,35 @@
+/* AdvengerSAGA v0.9 — multi-enemy selection and encounter UI. */
+#battle .encounter-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+#battle .encounter-toolbar label{font-size:11px;font-weight:900;color:#e9d5ad}
+#battle #encounterSelect{min-height:36px;max-width:100%;border:1px solid #708ab2;border-radius:7px;color:#f5f6ff;background:#172844;padding:6px 10px;font:inherit;font-size:12px}
+#battle .enemy-targets{display:flex;gap:6px;flex-wrap:wrap;padding:7px 10px;background:#0d1a35;border-bottom:1px solid #61769c6a}
+#battle .enemy-target-button{min-width:0;flex:1 1 135px;display:flex;flex-direction:column;gap:2px;text-align:left;background:#1a2a47;color:#dbe9ff;border:1px solid #4b6d91;border-radius:7px;padding:5px 8px;cursor:pointer}
+#battle .enemy-target-button strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#battle .enemy-target-button small{font-size:10px;color:#b1c6df;font-variant-numeric:tabular-nums}
+#battle .enemy-target-button.selected{border-color:#ffdd99;background:#3b3044;box-shadow:inset 0 0 0 1px #ffcf8c60}
+#battle .enemy-target-button:disabled{opacity:.48;cursor:not-allowed}
+#battle .enemy-target-button.boss strong{color:#ffd4a2}
+#battle .as-target{pointer-events:auto;cursor:pointer;background:transparent;border:0;color:inherit;padding:0}
+#battle .as-target.selected{filter:drop-shadow(0 0 10px #ffe4a980)}
+#battle .as-target.selected .as-lock{color:#ffdc87}
+#battle .as-target.dead{filter:grayscale(1) brightness(.42);pointer-events:none}
+#battle .as-target[data-count="2"]{width:15%;height:47%;bottom:17%}
+#battle .as-target[data-count="2"][data-slot="0"]{left:1.5%}
+#battle .as-target[data-count="2"][data-slot="1"]{left:18%}
+#battle .as-target[data-count="3"]{width:12%;height:43%;bottom:17%}
+#battle .as-target[data-count="3"][data-slot="0"]{left:0%}
+#battle .as-target[data-count="3"][data-slot="1"]{left:11%}
+#battle .as-target[data-count="3"][data-slot="2"]{left:22%}
+#battle .as-target[data-count="3"] .as-target-name{font-size:7.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#battle .turn-order{display:flex;flex-wrap:wrap}
+#battle .turn-token{flex:1 1 68px}
+@media(max-width:580px){
+ #battle .enemy-targets{padding:5px;gap:4px}
+ #battle .enemy-target-button{flex:1 1 85px;padding:4px}
+ #battle .enemy-target-button strong{font-size:9px}
+ #battle .enemy-target-button small{font-size:8px}
+ #battle .as-target[data-count="3"]{width:12%;height:41%;bottom:19%}
+ #battle .as-target[data-count="3"] .as-target-name{font-size:6.2px;padding:1px}
+ #battle .as-target[data-count="2"]{height:44%;bottom:19%}
+ #battle .turn-token{flex-basis:51px}
+}
