@@ -297,6 +297,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
     <div class="combat-command-grid">
       <button type="button" class="combat-command basic" data-command="basic"><span class="command-seal">I</span><span class="combat-command-icon">⚔️</span><span class="command-type">STANDARD</span><strong>BASIC</strong><small id="basicLabel">โจมตีปกติ</small><em>J</em></button>
       <button type="button" class="combat-command skill" data-command="skill"><span class="command-seal">II</span><span class="combat-command-icon">✦</span><span class="command-type">SPECIAL</span><strong>SKILL</strong><small id="skillLabel">สกิลประจำอาชีพ</small><em>K</em></button>
+      <button type="button" class="combat-command skill2" data-command="skill2" id="equippedSkill2Command" hidden><span class="command-seal">IV</span><span class="combat-command-icon">✧</span><span class="command-type">EQUIPPED</span><strong>SKILL 2</strong><small id="skill2Label">สกิลที่ติดตั้ง</small><em>4</em></button>
       <button type="button" class="combat-command ultimate" data-command="ultimate"><span class="command-seal">III</span><span class="combat-command-icon">✶</span><span class="command-type">LIMIT BREAK</span><strong>ULTIMATE</strong><small id="ultimateLabel">ใช้ EX 100</small><em>L</em></button>
     </div>
     <div class="turn-utility"><button type="button" class="guard-command" id="guardCommand" data-command="guard">🛡️ ป้องกัน / ผ่านเทิร์น</button><small>รับความเสียหายลดลง 50% เมื่อถูกโจมตีรอบนี้ · EX +15</small></div>
@@ -333,10 +334,10 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
       </div>
       <p class="small">ทดลองได้กับสมาชิกทีมหลัก รวมตัวละคร KO · ถ้ามี Soul Death การชุบชีวิตจะถูกปฏิเสธ · ค่าทดลองไม่ใช่ค่าที่บังคับใช้กับทุกสกิล</p>
     </details>
-    <details class="created-skill-panel" id="createdSkillPanel" open>
-      <summary>🧪 MY CREATED SKILLS <span class="small">สกิลที่ติดตั้งจาก Skill Creator Lab</span></summary>
+    <details class="created-skill-panel" id="createdSkillPanel">
+      <summary>⚔️ LOADOUT <span class="small">สกิลที่ติดตั้งจะใช้แทนปุ่มเดิม ไม่ได้เพิ่มคำสั่งซ้ำ</span></summary>
       <div id="createdBattleSkills" class="created-battle-skills"></div>
-      <button type="button" class="button ghost" data-screen="creator">+ ไปสร้าง / ติดตั้งสกิล</button>
+      <button type="button" class="button ghost" data-screen="creator">+ เลือกสกิลเดิม / สร้างใหม่ / ติดตั้ง</button>
     </details>
     <details class="ailment-lab" id="ailmentPanel">
       <summary>🧪 STATUS LAB · ทดสอบสถานะผิดปกติ <span class="small">ไม่ใช้เทิร์น · เฉพาะสนามทดลอง</span></summary>
@@ -431,7 +432,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
    </div>
    <div class="panel">
     <h2>⚔️ เลือกสกิลติดตัว</h2>
-    <p class="help">สกิลสร้างเองจาก Skill Creator จะมาอยู่ที่นี่ เลือกได้สูงสุด 4 ช่อง หากยังไม่มีสกิล สามารถใช้ท่าตั้งต้นของอาชีพก่อนได้</p>
+    <p class="help">เลือกแทนสกิลเดิมได้จากสกิลอาชีพ สกิล Seven Knights ที่อยู่ในคลัง หรือสกิลสร้างเอง · ช่องที่ไม่ติดตั้งจะกลับไปใช้ท่าเดิมของตัวละคร</p>
     <div id="charLabSkills" class="character-skill-slots"></div>
     <button type="button" class="button ghost wide" data-screen="creator">🧪 ไป Skill Creator</button>
    </div>
@@ -503,6 +504,9 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
      <option value="skill2">Skill 2 · สกิล 2</option>
      <option value="ultimate">Ultimate · อัลติเมท (EX 100)</option>
     </select>
+    <label class="creator-label" for="skillLabEquipSource">สกิลที่จะใช้แทนช่องนี้</label>
+    <select id="skillLabEquipSource"><option value="">— เลือกสกิลจากคลัง —</option></select>
+    <p class="help">เลือกได้ทั้งสกิลเดิมจาก 4 อาชีพ, สกิล Seven Knights ที่มีในคลัง และสกิลที่สร้างเอง เมื่อกดติดตั้ง ปุ่มหลักในสนามจะเปลี่ยนเป็นสกิลนี้ทันที</p>
     <div id="skillLabEquipped" class="creator-equipped">ยังไม่มีสกิลติดตั้ง</div>
     <div class="creator-equip-actions">
      <button id="skillLabEquip" class="button primary" type="button">✓ ติดตั้งสกิลนี้</button>
