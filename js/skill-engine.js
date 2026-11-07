@@ -27,11 +27,12 @@
   if(!s.skillTimers)s.skillTimers={};
   if(!s.skillStatuses)s.skillStatuses={};
   if(!s.skillUsed)s.skillUsed={};
+  if(!s.createdSkillTimers)s.createdSkillTimers={};
   if(!Number.isInteger(s.skillRng)||s.skillRng<=0)s.skillRng=7831701;
   return s;
  }
  function clear(s){
-  ensure(s);s.skillTimers={};s.skillStatuses={};s.skillUsed={};s.skillRng=7831701;
+  ensure(s);s.skillTimers={};s.skillStatuses={};s.skillUsed={};s.createdSkillTimers={};s.skillRng=7831701;
   // Kit selection is persistent. Effects are local to each encounter.
   for(const id of s.party){
    const passive=DB.get(s.skillKits[id])?.skills.passive;
@@ -52,7 +53,16 @@
  function restore(s,saved){
   ensure(s);
   if(!saved)return s;
-  s.skillTimers={};s.skillStatuses={};s.skillUsed={};
+  s.skillTimers={};s.skillStatuses={};s.skillUsed={};s.createdSkillTimers={};
+  if(saved?.createdSkillTimers&&typeof saved.createdSkillTimers==='object')
+   for(const id of s.party){
+    const slots=saved.createdSkillTimers[id];if(!slots||typeof slots!=='object')continue;
+    s.createdSkillTimers[id]={};
+    for(const [skillId,expiry] of Object.entries(slots)){
+     if(/^created-[1-9]\d{0,8}$/.test(skillId)&&Number.isFinite(expiry))
+      s.createdSkillTimers[id][skillId]=clamp(Math.round(expiry),0,999);
+    }
+   }
   if(saved?.skillKits&&typeof saved.skillKits==='object'){
    for(const id of Object.keys(saved.skillKits)){
     if(g.AdvengerCharacters?.get(id))
@@ -124,6 +134,15 @@
  function remaining(s,id,kind){
   return Math.max(0,(s.skillTimers?.[id]?.[kind]||0)-s.round);
  }
+ function createdRemaining(s,id,skillId){
+  return Math.max(0,(s.createdSkillTimers?.[id]?.[skillId]||0)-s.round);
+ }
+ function readyCreated(s,id,skill){
+  ensure(s);
+  return !!skill&&s.hp?.[id]>0&&
+   STATUS.canUse(s,'ally',id,'skill1')&&
+   createdRemaining(s,id,skill.id)===0;
+ }
  function adjustDamage(s,fromSide,fromId,toSide,toId,amount,damageType='physical'){
   ensure(s);
   let x=Math.max(0,Number(amount)||0);
@@ -139,9 +158,10 @@
   x*=1-value(s,toSide,toId,'defenseUp')*.5;
   return Math.max(0,Math.round(x));
  }
- function cast(s,actorId,kind,selectedId){
-  if(!ready(s,actorId,kind))return {ok:false,reason:'cooldown / condition'};
-  const skill=DB.skill(s.skillKits[actorId],kind);
+ function cast(s,actorId,kind,selectedId,createdSkill=null){
+  if(createdSkill?!readyCreated(s,actorId,createdSkill):!ready(s,actorId,kind))
+   return {ok:false,reason:'cooldown / condition'};
+  const skill=createdSkill||DB.skill(s.skillKits[actorId],kind);
   const targets=selectTargets(s,actorId,skill,selectedId);
   if(!targets.length)return {ok:false,reason:'no valid target'};
   const stats=heroStats(actorId);
@@ -226,7 +246,7 @@
     }
    }
   }
-  if(kind==='basic'&&!fumble){
+  if(kind==='basic'&&!fumble&&!createdSkill){
    for(const trigger of DB.get(s.skillKits[actorId])?.skills.passive?.triggers||[]){
     if(trigger.event!=='basicUsed'||trigger.effect?.type!=='status')continue;
     const affected=trigger.target==='allAllies'?s.party:[actorId];
@@ -236,9 +256,17 @@
     }
    }
   }
-  (s.skillTimers[actorId]||=(Object.create(null)))[kind]=s.round+DB.rounds(skill.cooldownSeconds||0);
-  return {ok:true,skill,hero:DB.get(s.skillKits[actorId]),targets,events,
-   cooldownRounds:DB.rounds(skill.cooldownSeconds||0)};
+  if(createdSkill){
+   (s.createdSkillTimers[actorId]||=(Object.create(null)))[skill.id]=
+    s.round+Math.max(0,Math.round(skill.cooldownRounds||0));
+  }else{
+   (s.skillTimers[actorId]||=(Object.create(null)))[kind]=
+    s.round+DB.rounds(skill.cooldownSeconds||0);
+  }
+  return {ok:true,skill,hero:createdSkill?
+   {id:'created',name:'SKILL LAB',role:'Custom'}:DB.get(s.skillKits[actorId]),
+   targets,events,
+   cooldownRounds:createdSkill?skill.cooldownRounds:DB.rounds(skill.cooldownSeconds||0)};
  }
  function onLethal(s,id){
   ensure(s);
@@ -253,7 +281,7 @@
  function advanceRound(s){return STATUS.tick(s)}
  function statusText(s,side,id){return STATUS.statusText(s,side,id)}
  g.AdvengerSkillEngine=Object.freeze({
-  ensure,clear,restore,heroStats,ready,remaining,selectTargets,cast,
+  ensure,clear,restore,heroStats,ready,remaining,readyCreated,createdRemaining,selectTargets,cast,
   addStatus,cleanse,adjustDamage,onLethal,advanceRound,statusText,
   negative:Object.freeze(Array.from(negative))
  });
