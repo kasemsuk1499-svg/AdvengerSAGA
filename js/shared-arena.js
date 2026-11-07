@@ -233,10 +233,11 @@
     a.finished.then(()=>el.remove()).catch(()=>el.remove());
    }else setTimeout(()=>el.remove(),600);
   }
-  async play(id,kind,element,onDamage){
+  async play(id,kind,element,onDamage,sourceHeroId=null){
    if(this.busy||!this.party.includes(id))return false;
-   const character=AdvengerCharacters.get(id);
-   if(!character||!['basic','skill','ultimate'].includes(kind))return false;
+   const owner=AdvengerCharacters.get(id);
+   const character=AdvengerCharacters.get(sourceHeroId||id);
+   if(!owner||!character||!['basic','skill','ultimate'].includes(kind))return false;
    this.focus(id);this.busy=true;
    this.stage.classList.add('as-busy');
    const color=character.colors.find(([name])=>name===element)?.[2]||character.accent;
@@ -268,7 +269,7 @@
    };
    try{
     await character.perform(api,kind);
-    this.announce('ACTION COMPLETE',character.name+' · '+strikes+' HITS');
+    this.announce('ACTION COMPLETE',owner.name+' · '+strikes+' HITS');
     return true;
    }catch(e){
     console.error('Character ability failed',id,kind,e);

@@ -139,9 +139,12 @@
  }
  function readyCreated(s,id,skill,slot='skill1'){
   ensure(s);
-  return !!skill&&s.hp?.[id]>0&&
-   STATUS.canUse(s,'ally',id,slot==='basic'?'basic':'skill1')&&
-   createdRemaining(s,id,skill.id)===0;
+  if(!skill||s.hp?.[id]<=0||
+    !STATUS.canUse(s,'ally',id,slot==='basic'?'basic':'skill1')||
+    createdRemaining(s,id,skill.id)!==0)return false;
+  if(skill.requiresDebuff&&!s.party.some(hero=>s.hp[hero]>0&&
+     list(s,'ally',hero).some(fx=>negative.has(fx.key))))return false;
+  return true;
  }
  function adjustDamage(s,fromSide,fromId,toSide,toId,amount,damageType='physical'){
   ensure(s);
