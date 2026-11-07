@@ -36,6 +36,6 @@ for(const hero of records){
 const out=path.resolve(process.argv[3]||path.join(__dirname,'..','js','skill-imports.js'));
 const clean=JSON.stringify(records,null,1).replace(/</g,'\\u003c');
 const content='/* Generated from a user-reviewed skill database export; sources are attached to records. */\n'+
- '(function(){\n const records='+clean+';\n for(const hero of records)window.AdvengerSkillDB.register(hero);\n})();\n';
+ '(function(){\n const records='+clean+';\n for(const hero of records)window.AdvengerSkillDB.upsert(hero);\n})();\n';
 fs.writeFileSync(out,content,'utf8');
 console.log('Imported '+records.length+' records to '+out);
