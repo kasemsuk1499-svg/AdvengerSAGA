@@ -45,3 +45,15 @@
 .created-battle-empty{font-size:11px;color:#aabdd7;grid-column:1/-1;line-height:1.6}
 @media(max-width:860px){.skill-creator-layout{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:490px){.creator-fields,.creator-step-inputs,.created-battle-skills{grid-template-columns:1fr}.creator-picker>*{width:100%}.creator-footer-actions .button{flex:1}.creator-step-top{align-items:flex-start}}
+
+/* Four-foe lab layout: preserve enemy hit targets without colliding with our team. */
+#battle .as-target[data-count="4"]{width:8.5%;height:41%;bottom:17%;top:auto}
+#battle .as-target[data-count="4"][data-slot="0"]{left:0%}
+#battle .as-target[data-count="4"][data-slot="1"]{left:8%}
+#battle .as-target[data-count="4"][data-slot="2"]{left:16%}
+#battle .as-target[data-count="4"][data-slot="3"]{left:24%}
+#battle .as-target[data-count="4"] .as-target-name{font-size:6.6px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px){
+ #battle .as-target[data-count="4"]{height:38%;bottom:19%;width:9%}
+ #battle .as-target[data-count="4"] .as-target-name{font-size:5.5px}
+}
