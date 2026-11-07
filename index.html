@@ -167,12 +167,13 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <link rel="stylesheet" href="css/skill-creator.css?v=1.5">
 <link rel="stylesheet" href="css/character-creator.css?v=1.6">
 <link rel="stylesheet" href="css/campaign.css?v=2.0">
+<link rel="stylesheet" href="css/animation-element.css?v=2.2">
 </head>
 <body>
 <div class="shell">
 <header>
  <div class="logo"><div class="mark">✦</div><div><div class="eyebrow">4 + 2 Party System</div><div class="brand">AdvengerSAGA</div><div class="sub">Story RPG · Turn-Based Adventure</div></div></div>
- <span class="tag">CHRONICLE CAMPAIGN · v2.0</span>
+ <span class="tag">ANIMATION + ELEMENT · v2.2</span>
 </header>
 <nav aria-label="การนำทาง">
  <button class="nav-btn active" data-screen="campaign">🏰 ผจญภัย</button>
@@ -400,6 +401,10 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
        <option value="gunner">🔫 Gunner · มือปืน</option>
       </select>
     </label>
+    <label>🌈 ธาตุประจำตัว
+      <select id="charLabElement" aria-label="เลือกธาตุประจำตัวละคร"></select>
+      <small id="charLabElementDescription">ธาตุประจำตัวมีผลต่อความได้เปรียบในการโจมตี และสีเอฟเฟกต์</small>
+    </label>
     <label>คำอธิบายตัวละคร (ไม่บังคับ)
       <textarea id="charLabDescription" rows="2" maxlength="180" placeholder="นิสัย บทบาท หรือเรื่องราวของตัวละคร"></textarea>
     </label>
@@ -434,6 +439,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
     <h2>⚔️ เลือกสกิลติดตัว</h2>
     <p class="help">เลือกแทนสกิลเดิมได้จากสกิลอาชีพ สกิล Seven Knights ที่อยู่ในคลัง หรือสกิลสร้างเอง · ช่องที่ไม่ติดตั้งจะกลับไปใช้ท่าเดิมของตัวละคร</p>
     <div id="charLabSkills" class="character-skill-slots"></div>
+    <p class="help">🎬 ในแต่ละช่อง เลือกแอนิเมชันจากท่า Saber / Mage / Tank / Gunner ได้อิสระ โดยไม่เปลี่ยนความแรงของสกิลหรือจำนวนฮิต</p>
     <button type="button" class="button ghost wide" data-screen="creator">🧪 ไป Skill Creator</button>
    </div>
    <div class="panel">
@@ -507,6 +513,12 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
     <label class="creator-label" for="skillLabEquipSource">สกิลที่จะใช้แทนช่องนี้</label>
     <select id="skillLabEquipSource"><option value="">— เลือกสกิลจากคลัง —</option></select>
     <p class="help">เลือกได้ทั้งสกิลเดิมจาก 4 อาชีพ, สกิล Seven Knights ที่มีในคลัง และสกิลที่สร้างเอง เมื่อกดติดตั้ง ปุ่มหลักในสนามจะเปลี่ยนเป็นสกิลนี้ทันที</p>
+    <label class="creator-label" for="skillLabAnimation">🎬 แอนิเมชันที่ใช้แสดงท่าสกิล</label>
+    <select id="skillLabAnimation" aria-label="เลือกแอนิเมชันสำหรับช่องสกิล">
+     <option value="">อัตโนมัติ · ใช้แอนิเมชันเดิมของสกิล</option>
+    </select>
+    <p class="help">เลือกจาก 12 แอนิเมชันที่มีอยู่แล้ว (4 อาชีพ × 3 ท่า) เปลี่ยนเฉพาะภาพและท่าทาง ไม่เปลี่ยนผลสกิล จำนวนฮิต ความแรง หรือ EX</p>
+    <button id="skillLabAnimationSave" type="button" class="button ghost">🎬 บันทึกแอนิเมชันให้ช่องนี้</button>
     <div id="skillLabEquipped" class="creator-equipped">ยังไม่มีสกิลติดตั้ง</div>
     <div class="creator-equip-actions">
      <button id="skillLabEquip" class="button primary" type="button">✓ ติดตั้งสกิลนี้</button>
