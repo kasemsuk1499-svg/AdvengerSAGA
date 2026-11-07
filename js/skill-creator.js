@@ -67,7 +67,7 @@
     x.hpPct=percent(raw.hpPct??.4,'HP ที่ฟื้น');
     if(x.type==='autoRevive')x.uses=integer(raw.uses??1,1,limits.uses,'จำนวนครั้ง');
     break;
-   case 'guts':x.uses=integer(raw.uses??1,1,9,'จำนวนครั้ง');break;
+   case 'guts':x.uses=integer(raw.uses??1,1,limits.uses,'จำนวนครั้ง');break;
    case 'immortality':
     x.turns=integer(raw.turns??2,1,999,'เวลาอมตะ');
     x.uses=integer(raw.uses??1,1,9,'จำนวนครั้ง');
