@@ -24,6 +24,7 @@
  }
  const blank=()=>({pending:{},used:{},immortality:null});
  function init(s){
+  s.skillUsed||={};
   if(!s.lifeRuntime||typeof s.lifeRuntime!=='object')
    s.lifeRuntime={version:1,ally:{},enemy:{}};
   for(const side of ['ally','enemy']){
