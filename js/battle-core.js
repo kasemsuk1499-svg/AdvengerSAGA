@@ -68,7 +68,7 @@
   select(state,state.targetId);
  }
  g.AdvengerBattleCore=Object.freeze({
-  version:3,spawn,restore,living,livingParty,select,target,hitEnemy,
+  version:4,spawn,restore,living,livingParty,select,target,hitEnemy,
   nextEnemy,strike,applyStrike,outcome,nextRound
  });
 })(window);

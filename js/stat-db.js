@@ -72,7 +72,7 @@
    P_ATK:asNumber(entity.attack,Math.round(maxHP*.23)),
    M_ATK:asNumber(entity.magicAttack,asNumber(entity.attack,Math.round(maxHP*.23))),
    DEF:asNumber(entity.defense,Math.round(maxHP*.15)),
-   SPD:asNumber(entity.speed,100)
+   SPD:asNumber(entity.speed,asNumber(g.AdvengerClasses?.[entity.classId]?.defaultSPD,100))
   };
   const out={};
   for(const {id,unit,defaultValue} of records){

@@ -161,12 +161,13 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <link rel="stylesheet" href="css/encounters.css?v=0.9">
 <link rel="stylesheet" href="css/skill-system.css?v=1.0">
 <link rel="stylesheet" href="css/stats.css?v=1.1">
+<link rel="stylesheet" href="css/initiative.css?v=1.2">
 </head>
 <body>
 <div class="shell">
 <header>
  <div class="logo"><div class="mark">✦</div><div><div class="eyebrow">4 + 2 Party System</div><div class="brand">AdvengerSAGA</div><div class="sub">Anime Combat · Optimized Battle Labs</div></div></div>
- <span class="tag">SKILL ENGINE · v1.0</span>
+ <span class="tag">SPD INITIATIVE · v1.2</span>
 </header>
 <nav aria-label="การนำทาง">
  <button class="nav-btn active" data-screen="formation">🧩 จัดทีม</button>
@@ -193,7 +194,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <section id="battle" class="screen" aria-label="สนามต่อสู้ AdvengerSAGA">
  <div class="battle-heading">
    <div><div class="eyebrow">ADVENGERSAGA · BATTLE COMMAND</div>
-   <h1 class="battle-title">⚔️ ADVENGER BATTLE</h1><p class="small">สนามแบบแถวเดียว 4 คน · สลับเทิร์นฝ่ายเรา/ศัตรู · ผู้ช่วย 2 คน</p></div>
+   <h1 class="battle-title">⚔️ ADVENGER BATTLE</h1><p class="small">สนามแบบแถวเดียว 4 คน · เรียงคำสั่งตาม SPD ของฝ่ายเราและศัตรู · ผู้ช่วย 2 คน</p></div>
    <div class="battle-heading-actions">
     <button type="button" id="battleReset" class="button ghost">↻ เริ่มไฟต์ใหม่</button>
     <button type="button" class="button ghost" data-screen="formation">🧩 จัดทีม</button>
@@ -214,11 +215,11 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
    <section class="turn-board" aria-label="ลำดับเทิร์นต่อสู้">
     <div class="turn-head"><span class="turn-heading" id="roundLabel">ROUND 1 · ลำดับเทิร์น</span><span class="turn-phase" id="turnPhase">ฝ่ายเรา</span></div>
     <div class="turn-order" id="turnOrder" aria-live="polite"></div>
-    <div class="turn-info" id="turnInfo">เลือกตัวที่ยังไม่ออกท่าได้คนละ 1 ครั้ง ก่อนศัตรูโจมตี</div>
+    <div class="turn-info" id="turnInfo">SPD สูงออกก่อน · ฝ่ายเราและศัตรูสลับตามคิว</div>
    </section>
    <section class="panel party-console" aria-label="เลือกสมาชิกลงสนาม">
      <div class="panel-head"><h2>✧ PARTY STATUS</h2><span class="chip">MAIN · 4/4</span></div>
-     <p class="small" style="margin:0 0 10px">ตัวละหนึ่งคำสั่งต่อรอบ · ตัวที่ใช้แล้วจะรอรอบถัดไป</p>
+     <p class="small" style="margin:0 0 10px">SPD สูงออกก่อน · ทุกตัวได้รับหนึ่งคำสั่งต่อรอบ · ต้องรอคิวของตัวเอง</p>
      <div id="battleRoster" class="battle-roster"></div>
    </section>
    <section class="combat-console panel" aria-label="คำสั่งโจมตี">
@@ -291,6 +292,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <script src="js/turn-rules.js?v=0.5"></script>
 <script src="js/encounter-catalog.js?v=0.9"></script>
 <script src="js/battle-core.js?v=0.9"></script>
+<script src="js/initiative.js?v=1.2"></script>
 <script src="js/skill-db.js?v=1.0"></script>
 <script src="js/skill-imports.js?v=1.0"></script>
 <script src="js/skill-engine.js?v=1.0"></script>

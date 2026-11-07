@@ -107,7 +107,7 @@
     const token=n.querySelector('.as-marker');
     if(token)token.textContent=fallen?'KO':phase==='enemy'?'WAIT':
       done?'DONE':id===activeId&&phase==='player'?'NEXT':'';
-    n.disabled=fallen||done||phase!=='player';
+    n.disabled=fallen||done||phase!=='player'||id!==activeId;
     n.setAttribute('aria-label',AdvengerCharacters.get(id).name+' HP '+amount+'/'+max+
       (fallen?' ถูกน็อก':done?' ใช้เทิร์นแล้ว':' พร้อมใช้เทิร์น'));
    }
