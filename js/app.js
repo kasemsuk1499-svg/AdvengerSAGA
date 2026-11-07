@@ -233,15 +233,30 @@ function renderBattle(){
   state.phase==='enemy'?'ENEMY TURN':state.phase.toUpperCase();
  indicator.classList.toggle('busy',!canAct);
  indicator.classList.toggle('enemy',state.phase==='enemy');
+ const slotByKind={basic:'basic',skill:'skill1',skill2:'skill2',ultimate:'ultimate'};
+ const loadout=Object.fromEntries(CREATOR.slots.map(slot=>
+  [slot,CREATOR.equippedSource(id,slot)]));
  for(const command of document.querySelectorAll('[data-command]')){
-  const kind=command.dataset.command;
-  command.disabled=!canAct||(kind==='ultimate'&&state.energy[id]<100)||
-   !STATUS.canUse(state,'ally',id,kind);
-  command.title=kind==='ultimate'&&state.energy[id]<100?'EX 100 จึงใช้ท่าไม้ตายได้':'';
+  const kind=command.dataset.command,source=loadout[slotByKind[kind]];
+  const extra=kind==='skill2';
+  if(extra)command.hidden=!source;
+  const needsEX=kind==='ultimate'||(source?.kind==='native'&&
+   source.sourceKind==='ultimate');
+  const statusKind=kind==='skill'?'skill1':kind;
+  const abilityReady=source&&source.kind!=='native'?
+   SKILLS.readyCreated(state,id,source.skill,slotByKind[kind]):
+   STATUS.canUse(state,'ally',id,statusKind);
+  const remaining=source&&source.kind!=='native'?
+   SKILLS.createdRemaining(state,id,source.id):0;
+  command.disabled=!canAct||(extra&&!source)||(needsEX&&state.energy[id]<100)||
+   !abilityReady;
+  command.title=remaining>0?'คูลดาวน์อีก '+remaining+' รอบ':
+   needsEX&&state.energy[id]<100?'ต้องมี EX 100':'';
  }
- $('basicLabel').textContent=MOVES[id].basic;
- $('skillLabel').textContent=MOVES[id].skill;
- $('ultimateLabel').textContent=state.energy[id]<100?'EX '+state.energy[id]+'/100':MOVES[id].ultimate;
+ $('basicLabel').textContent=loadout.basic?.name||MOVES[id].basic;
+ $('skillLabel').textContent=loadout.skill1?.name||MOVES[id].skill;
+ $('skill2Label').textContent=loadout.skill2?.name||'ไม่ได้ติดตั้ง';
+ $('ultimateLabel').textContent=loadout.ultimate?.name||MOVES[id].ultimate;
  $('elementChoices').innerHTML=ELEMENTS[id].map(([key,label,color])=>{
   const selected=state.elements[id]===key;
   return '<button type="button" class="element-choice'+(selected?' active':'')+'" data-element-choice="'+key+
@@ -534,20 +549,26 @@ function resumeEnemyTurn(){
 }
 
 function sendCommand(kind){
- if(view!=='battle'||!['basic','skill','ultimate','guard'].includes(kind))return;
+ if(view!=='battle'||!['basic','skill','skill2','ultimate','guard'].includes(kind))return;
  if(!frameReady)return notice('สนามยังไม่พร้อม');
  if(actionBusy||state.phase!=='player')return;
  const id=state.active,c=AdvengerCharacters.get(id);
  if(!c||INIT.current(state)?.side!=='ally'||INIT.current(state)?.id!==id||
   state.hp[id]<=0||state.acted[id]||!CORE.living(state).length)return;
- if(kind==='ultimate'&&state.energy[id]<100)return notice('EX ไม่ถึง 100');
- if(!STATUS.canUse(state,'ally',id,kind))
+ const slot={basic:'basic',skill:'skill1',skill2:'skill2',ultimate:'ultimate'}[kind];
+ const source=slot?CREATOR.equippedSource(id,slot):null;
+ if(kind==='skill2'&&!source)return;
+ if(source&&source.kind!=='native')return sendCreatedSkill(slot,source);
+ const performKind=source?.kind==='native'?source.sourceKind:kind;
+ const spendEX=kind==='ultimate'||performKind==='ultimate';
+ if(spendEX&&state.energy[id]<100)return notice('EX ไม่ถึง 100');
+ if(!STATUS.canUse(state,'ally',id,kind==='skill'?'skill1':kind))
   return notice('ติดสถานะ '+STATUS.statusText(state,'ally',id)+' · ใช้คำสั่งนี้ไม่ได้');
  actionBusy=true;
  const oldEnergy=state.energy[id],bonus=state.boost?1.25:1;
  const attackTarget=state.targetId;
  let hits=0,damageDone=0;
- if(kind==='ultimate')state.energy[id]=0;
+ if(spendEX)state.energy[id]=0;
  renderBattle();arena.energy(state.energy); // provisional EX is only persisted after the move completes
  const takeDamage=raw=>{
   const scaled=SKILLS.adjustDamage(state,'ally',id,'enemy',attackTarget,raw,'physical');
@@ -579,15 +600,18 @@ function sendCommand(kind){
     state.energy[id]=Math.min(100,state.energy[id]+15);
     log('🛡️ '+c.name+' ป้องกัน · รับดาเมจลด 50% ใน Enemy Phase · EX +15');
    }else{
-    const success=await arena.play(id,kind,state.elements[id],takeDamage);
+    const success=await arena.play(id,performKind,state.elements[id],takeDamage,
+     source?.kind==='native'?source.sourceHero:null);
     if(!success){
-     if(kind==='ultimate')state.energy[id]=oldEnergy;
+     if(spendEX)state.energy[id]=oldEnergy;
      log('⚠️ '+c.name+' ไม่สามารถใช้ '+kind+' ได้ โปรดลองใหม่');
      return;
     }
-    if(kind!=='ultimate')state.energy[id]=Math.min(100,state.energy[id]+(kind==='skill'?30:20));
+    if(!spendEX)state.energy[id]=Math.min(100,state.energy[id]+
+     (performKind==='skill'?30:20));
     if(state.boost&&hits)state.boost=false;
-    log(c.icon+' '+c.name+' · '+kind.toUpperCase()+' · '+hits+' HIT · '+damageDone+
+    log(c.icon+' '+c.name+' · '+(source?.name||kind.toUpperCase())+
+      ' · '+hits+' HIT · '+damageDone+
       ' DMG'+(bonus>1?' [BOOST]':''));
    }
    state.acted[id]=true;
@@ -827,27 +851,27 @@ function renderSkillDatabase(canAct){
 }
 
 const CREATED_SLOT_LABELS={basic:'BASIC',skill1:'SKILL 1',skill2:'SKILL 2',ultimate:'ULTIMATE'};
-function renderCreatedBattleSkills(canAct){
+function renderCreatedBattleSkills(){
  const root=$('createdBattleSkills');if(!root)return;
  const id=state.active;
- const equipped=CREATOR.slots.map(slot=>({slot,skill:CREATOR.equipped(id,slot)}))
-  .filter(x=>!!x.skill);
- root.innerHTML=equipped.length?equipped.map(({slot,skill})=>{
-  const remaining=SKILLS.createdRemaining(state,id,skill.id);
-  const enough=slot!=='ultimate'||state.energy[id]>=100;
-  const ready=canAct&&enough&&SKILLS.readyCreated(state,id,skill,slot);
-  const note=remaining>0?'CD '+remaining+' รอบ':
-   !enough?'ต้องมี EX 100':'พร้อม · '+skill.effects.length+' ขั้น';
-  return '<button type="button" data-created-skill="'+esc(slot)+'" '+
-   (ready?'':'disabled')+'><strong>'+esc(CREATED_SLOT_LABELS[slot])+
-   ' · '+esc(skill.name)+'</strong><small>'+esc(note)+'</small></button>';
- }).join(''):'<p class="created-battle-empty">ยังไม่ได้ติดตั้งสกิลที่สร้างเอง · ไปที่แท็บ สร้างสกิล เพื่อออกแบบและติดตั้งให้ตัวละครได้ค่ะ</p>';
+ const equipped=CREATOR.slots.map(slot=>({slot,source:CREATOR.equippedSource(id,slot)}));
+ root.innerHTML=equipped.map(({slot,source})=>{
+  const remaining=source&&source.kind!=='native'?
+   SKILLS.createdRemaining(state,id,source.id):0;
+  const fallback=slot==='skill1'?MOVES[id].skill:
+   slot==='basic'?MOVES[id].basic:
+   slot==='ultimate'?MOVES[id].ultimate:'—';
+  return '<div class="created-battle-empty"><strong>'+CREATED_SLOT_LABELS[slot]+
+   '</strong> · '+esc(source?.name||fallback)+
+   (remaining?' · CD '+remaining+' รอบ':'')+'</div>';
+ }).join('');
 }
-function sendCreatedSkill(slot){
+function sendCreatedSkill(slot,preselected=null){
  if(view!=='battle'||actionBusy||!frameReady||state.phase!=='player'||
   !CREATOR.slots.includes(slot))return;
- const id=state.active,queued=INIT.current(state),skill=CREATOR.equipped(id,slot);
- if(!skill||queued?.side!=='ally'||queued.id!==id||state.hp[id]<=0||
+ const id=state.active,queued=INIT.current(state);
+ const source=preselected||CREATOR.equippedSource(id,slot),skill=source?.skill;
+ if(!skill||source.kind==='native'||queued?.side!=='ally'||queued.id!==id||state.hp[id]<=0||
   state.acted[id]||!CORE.living(state).length)return;
  if(slot==='ultimate'&&state.energy[id]<100)
   return notice('EX ไม่ถึง 100 สำหรับ Ultimate');
@@ -870,7 +894,7 @@ function sendCreatedSkill(slot){
     .reduce((v,e)=>v+(e.amount||0),0);
    const healing=report.events.filter(e=>e.kind==='heal')
     .reduce((v,e)=>v+(e.amount||0),0);
-   log('🧪 '+UNIT[id].name+' · '+skill.name+' · '+damage+' DMG · '+healing+' HEAL');
+   log('⚔️ '+UNIT[id].name+' · '+source.name+' · '+damage+' DMG · '+healing+' HEAL');
    reportLifeEvents();
    if(damage>0&&state.boost)state.boost=false;
    if(slot!=='ultimate')state.energy[id]=Math.min(100,state.energy[id]+15);
