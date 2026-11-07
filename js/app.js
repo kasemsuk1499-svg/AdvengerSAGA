@@ -515,7 +515,9 @@ function sendDatabaseSkill(kind){
  // The engine is pure data-driven: effects resolve once, the shared field only animates results.
  const report=SKILLS.cast(state,id,kind,state.targetId);
  if(!report.ok){actionBusy=false;return notice('ใช้สกิลไม่ได้: '+report.reason)}
- renderBattle();store();
+ // In-flight hits are only in memory until the actor's turn has committed.
+ // Reloading mid-animation rolls back this provisional action cleanly.
+ renderBattle();
  (async()=>{
   try{
    await arena.playDatabaseSkill(id,report.skill,report);
