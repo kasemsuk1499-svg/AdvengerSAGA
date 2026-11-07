@@ -194,6 +194,16 @@
     }
    }
   }
+  if(kind==='basic'){
+   for(const trigger of DB.get(s.skillKits[actorId])?.skills.passive?.triggers||[]){
+    if(trigger.event!=='basicUsed'||trigger.effect?.type!=='status')continue;
+    const affected=trigger.target==='allAllies'?s.party:[actorId];
+    for(const id of affected){
+     if(s.hp[id]>0&&addStatus(s,'ally',id,trigger.effect,actorId))
+      events.push({kind:'status',id,side:'ally',key:trigger.effect.key});
+    }
+   }
+  }
   (s.skillTimers[actorId]||=(Object.create(null)))[kind]=s.round+DB.rounds(skill.cooldownSeconds||0);
   return {ok:true,skill,hero:DB.get(s.skillKits[actorId]),targets,events,
    cooldownRounds:DB.rounds(skill.cooldownSeconds||0)};
