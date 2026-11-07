@@ -69,3 +69,24 @@
 @media(max-width:660px){
  #battle .combat-command-grid:has([data-command="skill2"]:not([hidden])){grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+
+/* v2.3 — deliberate Overlimit power mode, keeping inputs native/lightweight. */
+.overlimit-switch{display:flex;align-items:center;gap:13px;cursor:pointer;
+ border:1px solid #b2709e;border-radius:12px;margin:18px 0 8px;padding:15px;
+ background:linear-gradient(115deg,#4f243e,#271e4b);color:#fff1f7}
+.overlimit-switch input{width:23px!important;height:23px;flex:none;accent-color:#ee659f;cursor:pointer}
+.overlimit-switch span{display:grid;gap:5px}
+.overlimit-switch strong{font-size:14px;font-weight:900;color:#ffe4fa}
+.overlimit-switch small{font-size:11px;color:#f3cae4;line-height:1.6}
+.overlimit-switch:has(input:checked){border-color:#ffb6d5;
+ box-shadow:0 0 0 2px #b2478940,0 0 23px #b5305d27}
+.overlimit-info{font-size:12px;color:#edbdda;margin-bottom:8px;font-weight:700}
+.creator-picker .overlimit-example{border:1px solid #dc91b9;color:#ffe6f7}
+.creator-step-overlimit{border-color:#8f5679;background:linear-gradient(135deg,#322039,#182739)}
+.creator-step-overlimit .creator-step-top strong{color:#ffe5eb}
+@media(max-width:510px){
+ .overlimit-switch{padding:12px;gap:9px}
+ .overlimit-switch strong{font-size:12px}
+ .overlimit-switch small{font-size:10px}
+}
