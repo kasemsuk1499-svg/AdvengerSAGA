@@ -21,7 +21,7 @@ function boot(storage=new Map()){
   'js/turn-rules.js','js/encounter-catalog.js','js/battle-core.js',
   'js/initiative.js','js/skill-db.js','js/status-db.js',
   'js/status-engine.js','js/life-db.js','js/life-engine.js',
-  'js/skill-engine.js','js/skill-creator.js'
+  'js/skill-engine.js','js/hit-display.js','js/skill-creator.js'
  ])load(p);
  return {g,load,storage,C:g.AdvengerSkillCreator,S:g.AdvengerSkillEngine};
 }
@@ -292,6 +292,40 @@ test('Overlimit records survive export/import and include large powers and extra
  const recovered=setup(restored.g);
  restored.g.AdvengerLifeEngine.restore(recovered,JSON.parse(JSON.stringify(state)).lifeRuntime);
  assert.equal(recovered.lifeRuntime.ally.mage.pending.guts.uses,999);
+});
+test('real Overlimit engine feeds the display 120 exact individual 3-DMG hit numbers',()=>{
+ const {g,C,S}=boot();C.load();
+ const skill=C.add({name:'Real 120',overlimit:true,
+  target:'singleEnemy',damageType:'physical',cooldownRounds:0,
+  effects:[{type:'damage',hits:120,attackPct:.01}]});
+ const state=setup(g);state.enemies[0].maxHP=100000;state.enemies[0].hp=100000;
+ const report=S.cast(state,'saber','skill1','foe-0',skill);
+ assert.equal(report.ok,true);
+ const damage=report.events.filter(e=>e.kind==='damage');
+ assert.equal(damage.length,1);
+ assert.equal(damage[0].landedHits,120);
+ assert.equal(damage[0].packets.length,1);
+ const timeline=g.AdvengerHitDisplay.plan(report);
+ assert.equal(timeline.shownHits,120);
+ assert.equal(timeline.landedHits,120);
+ assert.equal(timeline.configuredHits,120);
+ assert.ok(timeline.frames.every(x=>x.kind!=='damage'||x.amount===3));
+ assert.equal(state.enemies[0].hp,100000-120*3);
+});
+test('real enemy early-KO reports 2 landed hits and distinct final partial hit numbers',()=>{
+ const {g,C,S}=boot();C.load();
+ const skill=C.add({name:'Real 100',overlimit:true,
+  target:'singleEnemy',damageType:'physical',cooldownRounds:0,
+  effects:[{type:'damage',hits:100,attackPct:.04}]});
+ const state=setup(g);state.enemies[0].maxHP=15;state.enemies[0].hp=15;
+ const report=S.cast(state,'saber','skill1','foe-0',skill);
+ assert.equal(report.ok,true);
+ const timeline=g.AdvengerHitDisplay.plan(report);
+ assert.equal(timeline.configuredHits,100);
+ assert.equal(timeline.landedHits,2);
+ assert.deepEqual(Array.from(timeline.frames,x=>x.amount),[10,5]);
+ assert.equal(timeline.frames[1].hitNumber,2);
+ assert.equal(state.enemies[0].hp,0);
 });
 test('browser mounts Skill Creator before app, and full UI loads after app',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
