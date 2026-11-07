@@ -608,8 +608,12 @@ function sendCommand(kind){
     state.energy[id]=Math.min(100,state.energy[id]+15);
     log('🛡️ '+c.name+' ป้องกัน · รับดาเมจลด 50% ใน Enemy Phase · EX +15');
    }else{
-    const success=await arena.play(id,performKind,state.elements[id],takeDamage,
-     source?.kind==='native'?source.sourceHero:null);
+    const sourceHero=source?.kind==='native'?source.sourceHero:null;
+    const animation=slot?CREATOR.animationFor(id,slot):null;
+    const success=animation&&arena.playReanimated?
+     await arena.playReanimated(id,performKind,state.elements[id],
+      takeDamage,sourceHero,animation.id):
+     await arena.play(id,performKind,state.elements[id],takeDamage,sourceHero);
     if(!success){
      if(spendEX)state.energy[id]=oldEnergy;
      log('⚠️ '+c.name+' ไม่สามารถใช้ '+kind+' ได้ โปรดลองใหม่');
@@ -871,9 +875,11 @@ function renderCreatedBattleSkills(){
   const fallback=slot==='skill1'?MOVES[id].skill:
    slot==='basic'?MOVES[id].basic:
    slot==='ultimate'?MOVES[id].ultimate:'—';
+  const animation=CREATOR.animationFor(id,slot);
   return '<div class="created-battle-empty"><strong>'+CREATED_SLOT_LABELS[slot]+
    '</strong> · '+esc(source?.name||fallback)+
-   (remaining?' · CD '+remaining+' รอบ':'')+'</div>';
+   (remaining?' · CD '+remaining+' รอบ':'')+
+   (animation?' · 🎬 '+esc(animation.name):'')+'</div>';
  }).join('');
 }
 function sendCreatedSkill(slot,preselected=null){
@@ -899,7 +905,8 @@ function sendCreatedSkill(slot,preselected=null){
  renderBattle();
  (async()=>{
   try{
-   await arena.playDatabaseSkill(id,report.skill,report);
+   await arena.playDatabaseSkill(id,report.skill,report,
+    CREATOR.animationFor(id,slot)?.id||null,state.elements[id]);
    const damage=report.events.filter(e=>e.kind==='damage')
     .reduce((v,e)=>v+(e.amount||0),0);
    const healing=report.events.filter(e=>e.kind==='heal')
@@ -948,7 +955,7 @@ function sendDatabaseSkill(kind){
  renderBattle();
  (async()=>{
   try{
-   await arena.playDatabaseSkill(id,report.skill,report);
+   await arena.playDatabaseSkill(id,report.skill,report,null,state.elements[id]);
    const damage=report.events.filter(e=>e.kind==='damage').reduce((v,e)=>v+e.amount,0);
    const healing=report.events.filter(e=>e.kind==='heal').reduce((v,e)=>v+e.amount,0);
    log('📖 '+UNIT[id].name+' · '+report.skill.name+' · '+damage+' DMG · '+healing+' HEAL');
