@@ -46,6 +46,18 @@
   }
   if(stats.MAX_HP<1)throw Error('MAX_HP ต้องไม่น้อยกว่า 1');
   const base=classHero(classId);
+  const element=raw.element??g.AdvengerElements.defaultForClass(classId);
+  if(!g.AdvengerElements.has(element))throw Error('ธาตุตัวละครไม่อยู่ในรายการที่รองรับ');
+  const animations={};
+  if(raw.animations!==undefined){
+   if(!plain(raw.animations))throw Error('รูปแบบแอนิเมชันไม่ถูกต้อง');
+   for(const slot of g.AdvengerSkillCreator.slots){
+    const id=raw.animations[slot];
+    if(id==null||id==='')continue;
+    if(!g.AdvengerAnimations.has(id))throw Error('แอนิเมชัน '+slot+' ไม่ถูกต้อง');
+    animations[slot]=id;
+   }
+  }
   const portrait=raw.portrait==null||raw.portrait===''?null:raw.portrait;
   if(portrait&&!imageAllowed(portrait))throw Error('รูปภาพต้องเป็น PNG, JPG หรือ WebP ขนาดไม่เกิน 600 KB');
   const slots={};
@@ -68,15 +80,15 @@
    version:VERSION,id:ID,
    name:checkedName(raw.name,'ชื่อตัวละคร',40),
    nameTh:checkedName(raw.nameTh||raw.name,'ชื่อที่แสดง',40),
-   classId,description:String(raw.description??'').trim().slice(0,180),
-   portrait,stats,slots,
+   classId,element,description:String(raw.description??'').trim().slice(0,180),
+   portrait,stats,slots,animations,
    icon:base.icon,accent:base.accent
   };
  }
  function asCharacter(data){
   const base=classHero(data.classId);
   return {
-   id:ID,classId:data.classId,name:data.name,nameTh:data.nameTh,
+   id:ID,classId:data.classId,element:data.element,name:data.name,nameTh:data.nameTh,
    role:g.AdvengerClasses[data.classId].label,icon:base.icon,accent:base.accent,
    art:data.portrait||classArt(data.classId),fallback:classArt(data.classId),
    maxHP:data.stats.MAX_HP,stats:clone(data.stats),
@@ -85,7 +97,8 @@
     skill:'Skill · '+data.name,
     ultimate:'Ultimate · '+data.name
    },
-   colors:clone(base.colors),defaultElement:base.defaultElement,maxEnergy:100,
+   colors:g.AdvengerElements.all().map(e=>[e.id,e.name,e.color]),
+   defaultElement:data.element,maxEnergy:100,
    description:data.description,createdInLab:true
   };
  }
@@ -100,6 +113,7 @@
    for(const slot of skillDB.slots){
     const skillId=normalized.slots[slot];
     skillDB.assign(ID,slot,skillId&&skillDB.resolve(skillId)?skillId:null);
+    skillDB.assignAnimation(ID,slot,normalized.animations[slot]||null);
    }
   }
   return clone(normalized);
@@ -125,6 +139,10 @@
      skills.assign(ID,slot,id&&skills.resolve(id)?id:null);
     }
    }
+   if(!Object.hasOwn(skills.animationAssignments(),ID)){
+    for(const slot of skills.slots)
+     skills.assignAnimation(ID,slot,data.animations[slot]||null);
+   }
   }
   return record;
  }
@@ -132,14 +150,16 @@
   g.localStorage?.removeItem(KEY);
   const skills=g.AdvengerSkillCreator;
   if(skills&&g.AdvengerCharacters?.get(ID)){
-   for(const slot of skills.slots)skills.assign(ID,slot,null);
+   for(const slot of skills.slots){skills.assign(ID,slot,null);skills.assignAnimation(ID,slot,null)}
   }
   return true;
  }
  function exportData(){
   const character=get();
   const active=g.AdvengerSkillCreator?.assignments()?.[ID];
+  const animations=g.AdvengerSkillCreator?.animationAssignments()?.[ID];
   if(character&&active)character.slots={...active};
+  if(character&&animations)character.animations={...animations};
   return {version:VERSION,character,
    skillLibrary:g.AdvengerSkillCreator?.exportData()||null};
  }
