@@ -83,6 +83,38 @@ function boot({customHero=false}={}){
  };
  return {g,nodes,click,listeners,attacks};
 }
+test('campaign starts from hub, hides cheat labs, saves in-progress mission and resumes',()=>{
+ const app=boot();
+ a.match(app.nodes.get('campaignChapters').innerHTML,/เสียงเรียกจากรอยแยก/);
+ a.equal(app.nodes.get('campaignResume').hidden,true);
+ app.nodes.get('campaignLaunch').events.click();
+ let saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(saved.mode,'campaign');
+ a.equal(saved.campaignStage,'story-01');
+ a.equal(saved.enemies.length,1);
+ a.equal(saved.enemies[0].maxHP,1300);
+ a.equal(app.nodes.get('lifePanel').hidden,true);
+ a.equal(app.nodes.get('ailmentPanel').hidden,true);
+ a.equal(app.nodes.get('encounterToolbar').hidden,true);
+ a.equal(app.nodes.get('campaignBattleItems').hidden,false);
+ app.click({screen:'campaign'});
+ a.equal(app.nodes.get('campaignResume').hidden,false);
+ app.nodes.get('campaignResume').events.click();
+ saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(saved.campaignStage,'story-01');
+ a.equal(saved.mode,'campaign');
+});
+test('campaign item shop unlocks purchases only after earning gold',()=>{
+ const app=boot();
+ const M=app.g.AdvengerCampaign;
+ a.equal(M.stats().gold,0);
+ M.complete('story-01',4,2);
+ app.click({screen:'campaign'});
+ app.click({campaignBuy:'potion'});
+ a.equal(M.stats().gold,20);
+ a.equal(M.stats().inventory.potion,2);
+ a.match(app.nodes.get('campaignShopItems').innerHTML,/มี 2/);
+});
 test('saved custom hero appears in party picker, swaps into team and takes SPD priority',()=>{
  const app=boot({customHero:true});
  a.match(app.nodes.get('charLabStats').innerHTML,/MAX_HP/);
