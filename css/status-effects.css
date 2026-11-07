@@ -1,0 +1,22 @@
+/* AdvengerSAGA v1.3 — data-driven status trainer and status encyclopedia.
+   No extra Canvas or animation loop. */
+#battle .ailment-lab{margin-top:10px;border:1px solid #5a527e;border-radius:12px;background:linear-gradient(145deg,#231b38,#152438);padding:12px;}
+#battle .ailment-lab summary{cursor:pointer;color:#dcd0ff;font-weight:800;font-size:12px}
+#battle .ailment-lab summary .small{font-weight:400;color:#b1a9d8;font-size:10px}
+#battle .ailment-lab-controls{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;align-items:center;margin:12px 0 10px}
+#battle .ailment-lab-controls label{font-size:11px;color:#c6c0e8}
+#battle .ailment-lab-controls select{width:100%;background:#111e32;color:#f4ecff;border:1px solid #65618d;border-radius:8px;padding:8px;min-width:0}
+#battle .ailment-lab-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:9px 0 7px}
+#battle .ailment-lab-buttons button{border-radius:9px;border:1px solid #8c79b6;color:#f1e5ff;background:#3a3357;padding:10px 7px;cursor:pointer;font-weight:700;font-size:11px}
+#battle .ailment-lab-buttons button:disabled{opacity:.5;cursor:not-allowed}
+#battle .ailment-lab .small{font-size:10px;color:#bcb2db;line-height:1.6}
+.ailment-dictionary{margin-top:16px}
+.ailment-dictionary .ailment-group{margin-top:13px}
+.ailment-dictionary .ailment-group h3{font-size:14px;color:#f3ddff;margin-bottom:9px}
+.ailment-dictionary .ailment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ailment-dictionary .ailment-card{border:1px solid #61527f;border-radius:10px;padding:11px;background:#1d1d34}
+.ailment-dictionary .ailment-card strong{font-size:12px;color:#f4e8ff}
+.ailment-dictionary .ailment-card strong small{font-weight:400;font-size:10px;color:#c7bde0}
+.ailment-dictionary .ailment-card p{font-size:11px;line-height:1.6;color:#c1c4df;margin:6px 0}
+.ailment-dictionary .ailment-card code{font-size:10px;color:#d2b8ff;overflow-wrap:anywhere}
+@media(max-width:600px){#battle .ailment-lab-buttons,.ailment-dictionary .ailment-grid{grid-template-columns:1fr}}
