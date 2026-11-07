@@ -1,0 +1,47 @@
+/* AdvengerSAGA v1.5 — Skill Creator Lab. Small native controls; no Canvas animations. */
+.creator-banner{margin-bottom:16px}
+.skill-creator-layout{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(300px,1fr);gap:16px;align-items:start}
+.skill-creator-layout .panel{padding:18px}
+.creator-side{display:grid;gap:16px}
+.creator-picker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:15px 0}
+.creator-picker label{font-size:12px;font-weight:700;color:#c7d7ee}
+.creator-picker select{flex:1;min-width:160px}
+.skill-creator-layout :is(input,select,textarea){box-sizing:border-box;background:#0e1b2e;color:#f5f4ff;border:1px solid #5f6d88;border-radius:8px;padding:10px;max-width:100%;font:inherit;font-size:12px}
+.skill-creator-layout :is(input,select,textarea):focus{border-color:#bb9fff;outline:2px solid #997ce855;outline-offset:1px}
+.creator-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.creator-fields label,.creator-step-card label{display:grid;gap:6px;font-size:11px;font-weight:700;color:#bbcee9}
+.creator-fields input,.creator-fields select,.creator-side select{width:100%;min-width:0}
+.creator-step-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 12px}
+.creator-step-header h3{margin:0;color:#f7edff;font-size:15px}
+.creator-step-header p{font-size:11px;color:#b9c9df;margin:5px 0 0}
+.creator-step-list{display:grid;gap:10px}
+.creator-step-card{border:1px solid #62577f;border-radius:12px;padding:13px;background:linear-gradient(135deg,#21253e,#182739)}
+.creator-step-top{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap}
+.creator-step-top strong{color:#eacfff;font-size:13px}
+.creator-step-top .creator-step-tools{display:flex;gap:5px;flex-wrap:wrap}
+.creator-step-tools button{font-size:11px;padding:6px 9px;border:1px solid #63567d;border-radius:7px;background:#2e2d49;color:#efe6ff;cursor:pointer}
+.creator-step-tools button:disabled{opacity:.4;cursor:not-allowed}
+.creator-step-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.creator-step-card .creator-check{display:flex;align-items:center;gap:7px}
+.creator-step-card .creator-check input{width:auto}
+.creator-step-note{font-size:10px;color:#afbede;line-height:1.5;margin:9px 0 0}
+.creator-feedback{font-size:12px;min-height:24px;margin:12px 0;padding:5px;color:#d1f6db}
+.creator-feedback.error{color:#ffbac1}
+.creator-footer-actions,.creator-equip-actions,.creator-transfer-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.creator-label{display:block;font-size:12px;color:#b9cce9;font-weight:700;margin-top:14px;margin-bottom:7px}
+.creator-equipped{margin-top:12px;border-radius:8px;padding:12px;border:1px solid #4d5d7b;background:#15263b;font-size:12px;color:#d7e4fb;line-height:1.5}
+.creator-side h3{font-size:13px;margin:17px 0 8px}
+.creator-json{white-space:pre-wrap;overflow:auto;max-height:290px;border:1px solid #526482;background:#0b182b;color:#b8e7ff;padding:12px;border-radius:8px;font-size:10px;line-height:1.5}
+#skillLabTransfer{width:100%;min-height:110px;resize:vertical;line-height:1.5}
+.creator-side #skillLabBattle{margin-top:14px}
+.created-skill-panel{margin-top:10px;border:1px solid #5a7298;border-radius:11px;padding:11px 13px;background:#15263a}
+.created-skill-panel>summary{cursor:pointer;font-weight:800;font-size:12px;color:#d9ecff}
+.created-skill-panel summary .small{color:#9eb5d1;font-size:10px;font-weight:400}
+.created-battle-skills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.created-battle-skills button{cursor:pointer;border-radius:9px;border:1px solid #6889b4;color:#eff6ff;background:#233d5a;padding:10px;min-height:58px;text-align:left}
+.created-battle-skills button strong{display:block;font-size:11px}
+.created-battle-skills button small{display:block;color:#adc7e4;font-size:10px;margin-top:4px}
+.created-battle-skills button:disabled{opacity:.5;cursor:not-allowed}
+.created-battle-empty{font-size:11px;color:#aabdd7;grid-column:1/-1;line-height:1.6}
+@media(max-width:860px){.skill-creator-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:490px){.creator-fields,.creator-step-inputs,.created-battle-skills{grid-template-columns:1fr}.creator-picker>*{width:100%}.creator-footer-actions .button{flex:1}.creator-step-top{align-items:flex-start}}
