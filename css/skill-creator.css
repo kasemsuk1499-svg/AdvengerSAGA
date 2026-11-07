@@ -57,3 +57,15 @@
  #battle .as-target[data-count="4"]{height:38%;bottom:19%;width:9%}
  #battle .as-target[data-count="4"] .as-target-name{font-size:5.5px}
 }
+
+/* Equipped skills replace the existing command cards; no duplicated action strip. */
+#battle .combat-command-grid:has([data-command="skill2"]:not([hidden])){grid-template-columns:repeat(4,minmax(0,1fr))}
+#battle .combat-command[data-command="skill2"]{border-color:#9e85bc;background:linear-gradient(145deg,#41325e,#203b50)}
+#battle .combat-command[hidden]{display:none!important}
+#battle .created-battle-skills{grid-template-columns:1fr}
+#battle .created-battle-empty{padding:7px 4px;border-bottom:1px solid #425672}
+#battle .created-battle-empty strong{color:#f1d9ff}
+#skillLabEquipSource{width:100%;margin:4px 0 8px}
+@media(max-width:660px){
+ #battle .combat-command-grid:has([data-command="skill2"]:not([hidden])){grid-template-columns:repeat(2,minmax(0,1fr))}
+}

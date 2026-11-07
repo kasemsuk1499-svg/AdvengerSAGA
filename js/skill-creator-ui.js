@@ -194,7 +194,9 @@
   const chosen=id?C.get(id):null;
   currentId=chosen?.id||null;
   draft=chosen||makeEmpty();
-  render();message(currentId?'กำลังแก้ไขสกิล '+draft.name:'พร้อมสร้างสกิลใหม่');
+  render();
+  if(currentId)$('skillLabEquipSource').value=currentId;
+  message(currentId?'กำลังแก้ไขสกิล '+draft.name:'พร้อมสร้างสกิลใหม่');
  }
  function save(){
   try{
