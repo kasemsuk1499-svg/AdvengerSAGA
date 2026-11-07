@@ -478,7 +478,7 @@ function renderSkillDatabase(canAct){
  $('dbPassiveInfo').textContent=kit?
   '✧ PASSIVE: '+kit.skills.passive.name+' · ใช้เมื่อเข้าไฟต์และเมื่อเข้าเงื่อนไข':
   'เลือกตัวละครอ้างอิงเพื่อเปิดใช้ Active Skill 1, Active Skill 2 และ Passive ในระบบกลาง';
- $('dbSkillButtons').innerHTML=kit?['skill1','skill2'].map((kind,i)=>{
+ $('dbSkillButtons').innerHTML=kit?['basic','skill1','skill2'].map((kind,i)=>{
   const skill=kit.skills[kind],remaining=SKILLS.remaining(state,id,kind);
   const available=canAct&&SKILLS.ready(state,id,kind);
   const text=remaining>0?'CD '+remaining+' รอบ':skill.requiresDebuff&&!SKILLS.ready(state,id,kind)?
@@ -489,7 +489,7 @@ function renderSkillDatabase(canAct){
    '<small>'+esc(text)+' · '+esc(skill.target)+'</small></button>';
  }).join(''):'';
  const source=$('dbSource');
- source.hidden=!kit;
+ source.hidden=!kit?.source;
  if(kit){source.href=kit.source;source.textContent='อ้างอิงชุดสกิล: '+kit.name;}
  const foe=CORE.target(state);
  const ally=SKILLS.statusText(state,'ally',id);
