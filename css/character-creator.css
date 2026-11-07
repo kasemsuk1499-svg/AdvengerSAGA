@@ -1,0 +1,42 @@
+/* AdvengerSAGA v1.6 — ONE original character workshop.
+   Single lightweight avatar, data-only stats and native controls. */
+.character-banner{border-color:#8062ab;background:linear-gradient(125deg,#30234f,#162e4b)}
+.character-creator-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(290px,1fr);gap:16px;align-items:start}
+.character-creator-layout .panel{padding:18px}
+.character-side{display:grid;gap:16px;min-width:0}
+.character-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.character-fields label,.character-skill-slots label{display:grid;gap:6px;color:#c2d5f1;font-size:12px;font-weight:700}
+.character-fields label:last-child{grid-column:1/-1}
+.character-creator-layout :is(input,select,textarea){box-sizing:border-box;font:inherit;font-size:12px;color:#f3f4ff;background:#0f1c31;border:1px solid #5e6a8a;border-radius:9px;padding:10px;max-width:100%;width:100%}
+.character-creator-layout :is(input,select,textarea):focus-visible{outline:2px solid #a58dff;outline-offset:1px}
+.character-creator-layout input[type=file]{padding:8px;font-size:11px}
+.character-stat-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 10px}
+.character-stat-top h3{font-size:16px;margin:0;color:#f2e6ff}
+.character-stat-top p{font-size:11px;color:#bdcce4;margin:4px 0 0}
+.character-stat-groups{display:grid;gap:9px}
+.character-stat-group{border:1px solid #4d567a;border-radius:10px;background:#18243d;overflow:hidden}
+.character-stat-group summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 12px;cursor:pointer;color:#e7ecff;font-size:13px;font-weight:800}
+.character-stat-group summary small{color:#b4c7dd;font-size:11px;font-weight:500}
+.character-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:12px}
+.character-stat-grid>label{padding:10px;border:1px solid #3c4d70;border-radius:9px;display:grid;gap:3px;background:#15213a}
+.character-stat-grid label span{font-size:11px;color:#ebefff;font-weight:750}
+.character-stat-grid label small{font-size:10px;color:#9fb7dc}
+.character-stat-entry{position:relative;margin-top:5px}
+.character-stat-entry input{padding-right:25px}
+.character-stat-entry em{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:12px;color:#afc4e2;pointer-events:none;font-style:normal}
+.character-actions,.character-transfer-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.character-preview-stage{display:flex;align-items:center;justify-content:center;height:285px;max-height:40vh;overflow:hidden;border-radius:13px;background:radial-gradient(circle at 50% 37%,#748bcb46,transparent 68%),linear-gradient(180deg,#26345a,#101c31);border:1px solid #576687}
+.character-preview-stage img{height:100%;width:100%;object-fit:contain;object-position:center bottom}
+.character-preview-name{margin-top:12px;font-size:21px;font-weight:850;text-align:center;color:#f4e6ff;overflow-wrap:anywhere}
+.character-preview-panel #charLabPreviewRole{text-align:center;font-size:12px;margin:4px 0 13px}
+.character-core-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:13px}
+.character-core-preview>div{border:1px solid #4b5677;border-radius:8px;padding:7px 10px;background:#131f37;display:flex;justify-content:space-between;gap:9px;align-items:center}
+.character-core-preview small{font-size:10px;color:#b8c4df}
+.character-core-preview strong{font-size:12px;color:#f1dcaf;white-space:nowrap}
+.character-image-label{display:block;font-size:11px;color:#d3d6f7;font-weight:700;margin:8px 0}
+#charLabResetPortrait{margin:9px 0}
+.character-skill-slots{display:grid;gap:12px;margin:16px 0}
+.character-skill-slots select{margin-top:1px}
+#charLabTransfer{min-height:135px;resize:vertical;white-space:pre-wrap;font-size:10px;line-height:1.5}
+@media(max-width:880px){.character-creator-layout{grid-template-columns:1fr}.character-preview-stage{height:250px;max-height:none}}
+@media(max-width:510px){.character-fields,.character-stat-grid{grid-template-columns:1fr}.character-creator-layout .panel{padding:14px}.character-actions .button{flex:1}.character-banner{padding:18px}}
