@@ -65,3 +65,7 @@ Data is persisted automatically in the current browser under `AdvengerSAGA_SKILL
 - The UI's browser visual and mobile performance must still be checked manually; node regression and DOM smoke tests are not real-device QA.
 
 Run verification with `node --test tests/*.test.cjs`.
+
+## v2.2 animation overrides
+
+Choose a character and skill slot, then select **🎬 แอนิเมชันที่ใช้แสดงท่าสกิล** from the 12 approved original moves and press **บันทึกแอนิเมชันให้ช่องนี้**. This changes VFX choreography only, not the actual skill. See [Animation & Element System](ANIMATION_ELEMENT_SYSTEM.md).

@@ -1,4 +1,4 @@
-# AdvengerSAGA — Chronicle RPG Campaign + Skill Loadouts (v2.1)
+# AdvengerSAGA — Chronicle RPG Campaign + Skill Loadouts (v2.2)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,15 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v2.2 — Animation Selector + Character Elements / เลือกภาพท่าสกิลและธาตุตัวละคร
+
+- **🎬 Choose the animation independently for every skill slot:** In Character Creator and Skill Creator, select from all **12 already-approved class moves** (Saber/Mage/Tank/Gunner × Basic/Skill/Ultimate) or choose **Automatic**. The chosen choreography replaces the skill's visual performance without changing its true **damage, hit count, targeting, effects, cooldown, EX or SPD turn**.
+- **🌈 One editable original hero can select its innate element** from 12 compatible FX palettes: Water, Fire, Wind, Lightning, Void, Arcane, Ice, Storm, Nature, Earth, Metal and Kinetic. Each enemy type also has an innate element.
+- The original **provisional element-matchup rule** gives **+15% damage when advantageous** and **−10% when countered**. Other pairings remain neutral. The battle element-color picker is still *cosmetic* and cannot switch innate damage affinity during a turn.
+- Original characters, existing Seven Knights source skills and custom skills all share the selected-animation integration; it reuses the same lightweight 2D FX code. No new animation loops, special heavy particle rendering or 3D engine was introduced.
+- Animation assignments and the custom character's element are preserved in browser saves and the existing JSON exports. Older records migrate with their original class default element and Automatic animation.
+- See [Animation & Element System](docs/ANIMATION_ELEMENT_SYSTEM.md) for exact choices, directional matchups, architecture and current limits.
 
 ## v2.1 — Equip Existing Skills as Replacements / เปลี่ยนท่าเดิมเป็นสกิลที่เลือก
 

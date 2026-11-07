@@ -52,3 +52,7 @@ The 30-field dictionary comes from `AdvengerStatDB.all()`. Numeric rates are ent
 - Automated tests cover validation, persistent reload, real battle rules and headless formation selection. Actual browser/mobile visual review is still recommended.
 
 Run the regression suite using `node --test tests/*.test.cjs`.
+
+## v2.2 elements and skill animation options
+
+The **🌈 ธาตุประจำตัว** selector now allows all 12 elemental affinities (stored as the character's permanent innate element, independent of the older cosmetic battle color picker). Every skill slot has a separate **🎬 animation** selection from 12 approved original class moves, or Automatic. Save and reload to apply. Both are included in JSON backup. See [Animation & Element System](ANIMATION_ELEMENT_SYSTEM.md).
