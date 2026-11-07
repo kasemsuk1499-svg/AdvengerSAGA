@@ -82,7 +82,7 @@ test('app boots cleanly and auto-selects highest-SPD Gunner',()=>{
 test('app applying Paralysis to active ally automatically advances to next SPD actor',async()=>{
  const app=boot();app.click({screen:'battle'});
  app.nodes.get('ailmentDemoKind').value='paralysis';
- app.nodes.get('ailmentDemoTurns').value='2';
+ app.g.document.getElementById('ailmentDemoTurns').value='2';
  app.click({}); // ignored click, no changes
  // Dispatch via DOM button listener registered by app.js
  app.nodes.get('ailmentDemoAlly').events.click();
