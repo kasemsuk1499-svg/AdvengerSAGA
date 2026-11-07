@@ -1,4 +1,4 @@
-# AdvengerSAGA — Chronicle RPG Campaign + Skill Loadouts (v2.3)
+# AdvengerSAGA — Chronicle RPG Campaign + Skill Loadouts (v2.4)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -9,11 +9,18 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
 
+## v2.4 — HIT-BY-HIT Damage Display / แสดงดาเมจแยกตามฮิต ⚔️
+
+- Fixed a Skill Creator regression where even ordinary high-event-count attacks could collapse all damage numbers on one target into a **single combined number**. Normal 4×4 and 100-hit combos now display **each individual landed hit and its own damage value** in sequence.
+- A lightweight **HIT counter** shows **landed / programmed hits**. If 100 hits were configured but the target was KO after two, the UI truthfully displays **2 / 100 HIT** instead of inventing damage on the remaining 98.
+- Overlimit remains performance-safe: the Skill Engine preserves per-hit damage distributions in compact lethal/Guts packets, the display shows up to **120 real individual hit values** as selected frames, and the HIT counter progresses to the **true total landed hit count** (for example, 1,000,000 / 1,000,000 if the enemy actually survives all hits). Rendering remains bounded and does not instantiate a million floating sprites.
+- Updated floating damage-number animations, small-screen styling and automated regression for four targets, 100 hits, real early KO and million-hit playbacks. Existing character animation, status RNG, cooldown, SPD and EX behavior is unchanged.
+
 ## v2.3 — OVERLIMIT SKILL CREATOR / ปลดเพดานพลังสกิล 😈
 
 - **Overlimit Mode** in Skill Creator lets you author god-tier abilities: up to **128 ordered effects**, **1,000,000 programmed damage hits per target per step**, **100,000,000% ATK/DEF/HP coefficient**, **999 Guts/auto-revive/immortality charges**, and **0–999 cooldown rounds**. Older normal skills still retain their original validated limits.
 - Editable **☄️ สกิลล้างโลก** template: 99,999 hits across four targets, 999-turn Paralysis and massive self ATK buff. Still saved to the existing per-hero Basic/Skill 1/Skill 2/Ultimate loadouts; original animations, elements and campaign rules remain.
-- **Performance-protected processing:** 32-hit-and-under moves preserve per-hit semantics. Huge Overlimit attacks are resolved in compact lethal-boundary damage batches, status probabilities use fast capped outcome sampling, and the renderer displays aggregated impacts rather than one effect per hit. Normal skills' approved animations are unchanged.
+- **Performance-protected processing:** 32-hit-and-under moves preserve per-hit semantics. Huge Overlimit attacks are resolved in compact lethal-boundary damage batches, status probabilities use fast capped outcome sampling, and the renderer now displays individual hit numbers with a bounded sampled HIT timeline instead of one million FX objects. Normal skills' approved animations are unchanged.
 - **The cap is intentionally huge but finite** to prevent browser hangs and unstable saves. This is an original superpowered design sandbox, not a claim of exact Seven Knights formulas or truly infinite simulation. Status immunities, SPD, EX and life protections still apply.
 - **No cloud sync:** the mode flag, coefficients and effects persist in the existing local browser Skill Creator storage and JSON export/import. See [Overlimit Skills v2.3](docs/OVERLIMIT_SKILLS.md) for usage, exact caps and batching behavior.
 

@@ -69,3 +69,7 @@ Run verification with `node --test tests/*.test.cjs`.
 ## v2.2 animation overrides
 
 Choose a character and skill slot, then select **🎬 แอนิเมชันที่ใช้แสดงท่าสกิล** from the 12 approved original moves and press **บันทึกแอนิเมชันให้ช่องนี้**. This changes VFX choreography only, not the actual skill. See [Animation & Element System](ANIMATION_ELEMENT_SYSTEM.md).
+
+## v2.4 — Hit-by-hit damage numbers
+
+A saved skill now displays one **floating damage number for every successfully landed hit** in normal-sized combos, even when the whole skill generates more than 48 combat events. A **HIT landed / programmed** counter differentiates real hits from those that did not land because the enemy had already been KO'd. Overlimit with more than 120 landed hits samples up to 120 accurate per-hit number frames and advances the counter toward the full landed count, while preserving the exact battle state and lightweight FX. See [Overlimit Skills](OVERLIMIT_SKILLS.md).
