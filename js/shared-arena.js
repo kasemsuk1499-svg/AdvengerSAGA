@@ -341,7 +341,27 @@
      }
      await wait(this.reduced?85:330);
     }
-    for(const evt of report.events){
+    // A god-tier skill can produce thousands of logical events. Render
+    // at most a handful of COMBINED per-target hits; the Skill Engine has
+    // already applied every underlying gameplay consequence exactly once.
+    let visibleEvents=report.events;
+    if(report.events.length>48){
+     const grouped=new Map(),other=new Map();
+     for(const evt of report.events){
+      const key=evt.side+'/'+evt.id+'/'+evt.kind;
+      if(evt.kind==='damage'||evt.kind==='heal'){
+       if(!grouped.has(key))grouped.set(key,{...evt,amount:0,compact:true});
+       grouped.get(key).amount=Math.min(Number.MAX_SAFE_INTEGER,
+        grouped.get(key).amount+Math.max(0,evt.amount||0));
+      }else if(other.size<16&&!other.has(key)){
+       other.set(key,evt);
+      }
+     }
+     visibleEvents=[...grouped.values(),...other.values()].slice(0,24);
+     this.announce('☄️ OVERLIMIT · '+report.events.length+' EFFECTS',
+      'รวมภาพการโจมตีเพื่อประหยัดประสิทธิภาพ');
+    }
+    for(const evt of visibleEvents){
      const node=evt.side==='ally'?this.actor(evt.id):
       Array.from(this.stage.querySelectorAll('[data-target-enemy]')).find(n=>n.dataset.targetEnemy===evt.id);
      if(!node)continue;
