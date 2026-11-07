@@ -385,7 +385,7 @@ function sendCommand(kind){
    log('⚠️ เกิดข้อผิดพลาดระหว่างเทิร์น: '+String(err.message||err));
    // Recover from interrupted enemy animation without locking the player.
    if(state.phase==='enemy'){
-    state.round=Math.min(999,state.round+1);
+    state.round=Math.min(999,state.round+1);state.enemyCursor=0;
     state.acted=RULES.counters(state.party);state.guarded=RULES.counters(state.party);
     state.phase='player';
     state.active=RULES.available(state.party,state.hp,state.acted)[0]||id;
