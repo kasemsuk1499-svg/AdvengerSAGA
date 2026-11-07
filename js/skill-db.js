@@ -14,7 +14,7 @@
    skills:{
     basic:{name:'Normal Attack',target:'singleEnemy',effects:[damage(1),status('burn',.2,2,.40)]},
     skill1:{name:'Blazing Strike',cooldownSeconds:84,target:'singleEnemy',
-     effects:[damage(1.02,2),status('attackDown',.22,5),status('damageReduction',.17,5),status('burn',.2,3,.8)],
+     effects:[damage(1.02,2),status('attackDown',.22,5),status('damageReductionDown',.17,5),status('burn',.2,3,.8)],
      enhancements:[{type:'damagePct',value:1.22}]},
     skill2:{name:'Phoenix Strike',cooldownSeconds:84,target:'threeEnemies',
      effects:[status('defenseDown',.29,3),status('physicalVulnerability',.22,3),damage(1.60)],
