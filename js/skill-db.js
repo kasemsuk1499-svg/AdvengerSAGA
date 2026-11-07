@@ -50,9 +50,10 @@
  ];
  const VALID_TARGETS=new Set(['self','singleEnemy','threeEnemies','allEnemies','allAllies','singleAlly']);
  const VALID_TYPES=new Set(['damage','heal','status','cleanse','reduceBuffDuration','revive']);
- function register(entry){
-  if(!entry||typeof entry.id!=='string'||!/^[a-z][a-z0-9-]*$/.test(entry.id)||all.has(entry.id))
+ function register(entry,replace=false){
+  if(!entry||typeof entry.id!=='string'||!/^[a-z][a-z0-9-]*$/.test(entry.id)||(!replace&&all.has(entry.id)))
    throw new Error('Invalid or duplicate skill database hero');
+  if(entry.source&&(!/^https:\/\//.test(entry.source)))throw new Error('Source URL must be HTTPS');
   if(!entry.skills||!entry.skills.skill1||!entry.skills.skill2||!entry.skills.passive)throw new Error('Missing core skill records');
   for(const key of ['basic','skill1','skill2']){
    const skill=entry.skills[key];if(!skill)continue;
@@ -65,7 +66,7 @@
  }
  for(const hero of heroRecords)register(hero);
  g.AdvengerSkillDB=Object.freeze({
-  version:'1.0',register,get:id=>all.get(id)||null,
+  version:'1.0',register,upsert:entry=>register(entry,true),get:id=>all.get(id)||null,
   skill:(id,key)=>all.get(id)?.skills?.[key]||null,
   all:()=>Array.from(all.values()),
   targetTypes:Object.freeze(Array.from(VALID_TARGETS)),
