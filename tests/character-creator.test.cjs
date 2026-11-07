@@ -13,7 +13,7 @@ function boot(storage=new Map()){
  g.window=g;vm.createContext(g);
  const load=p=>new vm.Script(fs.readFileSync(path.join(root,p),'utf8'),{filename:p}).runInContext(g);
  for(const p of [
-  'classes/catalog.js','js/class-animation-registry.js',
+  'classes/catalog.js','js/class-animation-registry.js','js/elements.js','js/animation-catalog.js',
   'classes/saber/animations.js','classes/mage/animations.js',
   'classes/tank/animations.js','classes/gunner/animations.js',
   'js/stat-db.js','js/character-registry.js',

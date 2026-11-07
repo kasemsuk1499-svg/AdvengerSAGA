@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'..');
 const g={};g.window=g;vm.createContext(g);
 const load=f=>new vm.Script(fs.readFileSync(path.join(root,f),'utf8'),{filename:f}).runInContext(g);
 [
- 'classes/catalog.js','js/class-animation-registry.js',
+ 'classes/catalog.js','js/class-animation-registry.js','js/elements.js','js/animation-catalog.js',
  'classes/saber/animations.js','classes/mage/animations.js',
  'classes/tank/animations.js','classes/gunner/animations.js',
  'js/stat-db.js','js/character-registry.js',
