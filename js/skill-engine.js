@@ -166,7 +166,30 @@
    x*=1+g.AdvengerCampaign.attackBonus();
   // Uses innate character / authored enemy affinity, NOT mutable FX colors.
   x*=g.AdvengerElements?.damageMultiplier(s,fromSide,fromId,toSide,toId)??1;
-  return Math.max(0,Math.round(x));
+  return Math.max(0,Math.min(Number.MAX_SAFE_INTEGER,Math.round(x)));
+ }
+ // Overlimit follows the same underlying damage/life rules, but stores only
+ // one visual damage event per target for huge hit counts.
+ const SAFE_MAX=Number.MAX_SAFE_INTEGER;
+ const safeAmount=n=>Number.isFinite(n)?Math.max(0,Math.min(SAFE_MAX,Math.round(n))):SAFE_MAX;
+ function burstStatus(s,fx,actorId,side,id,totalHits){
+  if(totalHits<1)return 0;
+  const p=STATUS.probability(s,side,id,fx,'ally',actorId);
+  if(!(p>0))return 0;
+  // Most statuses refresh (not infinitely stack). Bleed stacks up to 5;
+  // death triggers on its 2nd application. Use inverse-geometric sampling
+  // to implement arbitrarily large counts in at most five successful rolls.
+  const max=fx.key==='bleed'?5:fx.key==='death'?2:1;
+  let count=0,attempted=0;
+  const certain={...fx,chance:1,ignoreResistance:true};
+  while(count<max&&attempted<totalHits){
+   const gap=p>=1?0:Math.floor(Math.log1p(-rand(s))/Math.log1p(-p));
+   if(!Number.isFinite(gap)||gap>=totalHits-attempted)break;
+   attempted+=gap+1;
+   if(!STATUS.apply(s,side,id,certain,actorId))break;
+   count++;
+  }
+  return count;
  }
  function cast(s,actorId,kind,selectedId,createdSkill=null){
   if(createdSkill?!readyCreated(s,actorId,createdSkill,kind):!ready(s,actorId,kind))
@@ -189,29 +212,63 @@
     const current=t.side==='ally'?s.hp[t.id]:foe?.hp;
     if(!Number.isFinite(current)||(current<=0&&fx.type!=='revive'))continue;
     if(fx.type==='damage'){
-     for(let i=0;i<Math.max(1,Math.min(12,fx.hits||1));i++){
-      const damageType=skill.damageType||(DB.get(s.skillKits[actorId])?.role==='Support'?'magic':'physical');
-      const attackStat=damageType==='magic'?stats.magicAttack:stats.attack;
-      const raw=Math.max(0,Math.round(attackStat*(fx.attackPct||0)+
-       stats.defense*(fx.defensePct||0)+stats.maxHP*(fx.hpPct||0)));
-      const amount=adjustDamage(s,'ally',actorId,t.side,t.id,raw*(s.boost?1.25:1)*(fumble?.8:1),damageType);
-      if(t.side==='enemy'){
-       const hit=g.AdvengerBattleCore.hitEnemy(s,t.id,amount);
-       events.push({kind:'damage',id:t.id,side:t.side,amount:hit,hitIndex:i+1});
-       if(hit>0){
-        previousDamage.push({id:t.id,side:t.side,amount:hit,hitIndex:i+1});
-        events.push(...STATUS.onHit(s,t.side,t.id,hit));
-       }
-      }else{
-       const damage=LIFE?LIFE.hit(s,'ally',t.id,amount):
-        Math.min(s.hp[t.id],amount);
-       if(!LIFE)s.hp[t.id]-=damage;
-       events.push({kind:'damage',id:t.id,side:t.side,amount:damage,hitIndex:i+1});
-       if(damage>0){
-        previousDamage.push({id:t.id,side:t.side,amount:damage,hitIndex:i+1});
-        events.push(...STATUS.onHit(s,t.side,t.id,damage));
+     const hits=createdSkill?.overlimit?
+      Math.max(1,Math.min(1000000,Math.round(fx.hits||1))):
+      Math.max(1,Math.min(12,fx.hits||1));
+     const damageType=skill.damageType||
+      (DB.get(s.skillKits[actorId])?.role==='Support'?'magic':'physical');
+     const attackStat=damageType==='magic'?stats.magicAttack:stats.attack;
+     const raw=safeAmount(attackStat*(fx.attackPct||0)+
+      stats.defense*(fx.defensePct||0)+stats.maxHP*(fx.hpPct||0));
+     const doDamage=(amount)=>{
+      if(t.side==='enemy')return g.AdvengerBattleCore.hitEnemy(s,t.id,amount);
+      const dealt=LIFE?LIFE.hit(s,'ally',t.id,amount):
+       Math.min(s.hp[t.id],amount);
+      if(!LIFE)s.hp[t.id]-=dealt;
+      return dealt;
+     };
+     if(hits<=32){
+      // Existing skill and normal 4x4 per-hit rules stay unchanged.
+      for(let i=0;i<hits;i++){
+       const amount=adjustDamage(s,'ally',actorId,t.side,t.id,
+        raw*(s.boost?1.25:1)*(fumble?.8:1),damageType);
+       const dealt=doDamage(amount);
+       events.push({kind:'damage',id:t.id,side:t.side,amount:dealt,hitIndex:i+1});
+       if(dealt>0){
+        previousDamage.push({id:t.id,side:t.side,amount:dealt,hitIndex:i+1});
+        events.push(...STATUS.onHit(s,t.side,t.id,dealt));
        }
       }
+     }else{
+      // Huge hits: resolve to lethal boundaries, never execute a million
+      // DOM events or per-hit JS loops. A Guts/Auto-Revive can still
+      // consume multiple protection charges across lethal boundaries.
+      const summary={kind:'damage',id:t.id,side:t.side,amount:0,
+       hits,compact:true,hitIndex:1};
+      events.push(summary);
+      const previous={id:t.id,side:t.side,amount:0,hitIndex:1,hitCount:0};
+      let left=hits;
+      while(left>0){
+       const hpNow=t.side==='enemy'?
+        (s.enemies.find(e=>e.id===t.id)?.hp||0):(s.hp[t.id]||0);
+       if(hpNow<=0)break;
+       const unit=adjustDamage(s,'ally',actorId,t.side,t.id,
+        raw*(s.boost?1.25:1)*(fumble?.8:1),damageType);
+       if(!unit)break;
+       const amountPerHit=safeAmount(unit);
+       if(!amountPerHit)break;
+       const toLethal=Math.max(1,Math.ceil(hpNow/amountPerHit));
+       const packet=Math.min(left,toLethal);
+       const dealt=doDamage(safeAmount(amountPerHit*packet));
+       if(dealt<=0)break; // immunity/immortality: no hit landed
+       summary.amount+=dealt;
+       previous.amount+=dealt;previous.hitCount+=packet;
+       if(events.length<512)events.push(...STATUS.onHit(s,t.side,t.id,dealt));
+       else STATUS.onHit(s,t.side,t.id,dealt);
+       left-=packet;
+      }
+      if(previous.hitCount)previousDamage.push(previous);
+      summary.landedHits=previous.hitCount;
      }
     }else if(fx.type==='heal'&&t.side==='ally'&&STATUS.canHeal(s,t.side,t.id)){
      const heal=Math.max(0,Math.round(stats.defense*(fx.defensePct||0)+stats.attack*(fx.attackPct||0)));
@@ -240,9 +297,18 @@
      // can roll the subsequent status effect (one independent roll each).
      const rolls=fx.eachHit?previousDamage.filter(hit=>hit.side===t.side&&hit.id===t.id):[null];
      for(const hit of rolls){
-      if(addStatus(s,t.side,t.id,fx,actorId))
-       events.push({kind:'status',id:t.id,side:t.side,key:fx.key,
-        hitIndex:hit?.hitIndex||null});
+      if(hit?.hitCount>32){
+       const successes=burstStatus(s,fx,actorId,t.side,t.id,hit.hitCount);
+       if(successes)events.push({kind:'status',id:t.id,side:t.side,
+        key:fx.key,hitIndex:1,procs:successes,compact:true});
+      }else{
+       const attempts=hit?.hitCount||1;
+       for(let n=0;n<attempts;n++){
+        if(addStatus(s,t.side,t.id,fx,actorId))
+         events.push({kind:'status',id:t.id,side:t.side,key:fx.key,
+          hitIndex:hit?.hitIndex?hit.hitIndex+n:null});
+       }
+      }
      }
     }else if(fx.type==='cleanse'){
      const count=cleanse(s,t.side,t.id,fx.count||1);
