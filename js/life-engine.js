@@ -114,9 +114,10 @@
   if(!isValidSide(side)||!active(s,side,id)||hp(s,side,id)>0)return false;
   const st=stateOf(s,side,id);
   if(ignorePrevention)return false;
+  // Souldeath disables revival/immortality, but Guts is prevention of
+  // KO rather than revival and therefore resolves first.
   const sealed=g.AdvengerStatusEngine?.has(s,side,id,'soulDeath');
-  if(sealed){emit(s,'soulDeath',side,id);return false;}
-  const priorities=['guts','immortality','autoRevive'];
+  const priorities=sealed?['guts']:['guts','immortality','autoRevive'];
   for(const type of priorities){
    const pending=st.pending[type];
    if(!pending||pending.uses<1)continue;
@@ -125,11 +126,12 @@
   }
   const p=passive(s,side,id);
   const used=side==='ally'?!!s.skillUsed?.[id]:!!st.used.passive;
-  if(p&&!used){
+  if(p&&!used&&(!sealed||p.type==='guts')){
    if(side==='ally')s.skillUsed[id]=true;else st.used.passive=true;
    const mode=p.type==='revive'?'autoRevive':p.type;
    return engage(s,side,id,p,mode);
   }
+  if(sealed)emit(s,'soulDeath',side,id);
   emit(s,'ko',side,id);return false;
  }
  function hit(s,side,id,raw,options={}){
@@ -147,6 +149,14 @@
   setHP(s,side,id,before-damage);
   if(hp(s,side,id)<=0)resolve(s,side,id,options);
   return damage;
+ }
+ function heal(s,side,id,raw){
+  if(!isValidSide(side)||!active(s,side,id)||hp(s,side,id)<=0)return 0;
+  if(activeImmortality(s,side,id))return 0;
+  if(g.AdvengerStatusEngine?.canHeal&&!g.AdvengerStatusEngine.canHeal(s,side,id))return 0;
+  const before=hp(s,side,id);
+  setHP(s,side,id,before+Math.max(0,Math.round(Number.isFinite(raw)?raw:0)));
+  return hp(s,side,id)-before;
  }
  function execute(s,side,id,options={}){
   if(!isValidSide(side)||!active(s,side,id)||hp(s,side,id)<=0)return false;
@@ -199,7 +209,7 @@
  }
  g.AdvengerLifeEngine=Object.freeze({
   version:1,init,reset,restore,stateOf,grant,hit,execute,revive,
-  onLethal:resolve,activeImmortality,finishRound,drain,inspect,
+  onLethal:resolve,activeImmortality,finishRound,drain,inspect,heal,
   maxHP,hp,setHP
  });
 })(window);
