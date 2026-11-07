@@ -164,8 +164,11 @@
  function renderEquip(){
   const id=$('skillLabHero').value,slot=$('skillLabSlot').value;
   const assigned=C.equippedSource(id,slot);
-  text('skillLabEquipped',assigned?'ติดตั้งอยู่: '+assigned.name:
-   'ช่องนี้ใช้ท่าเดิมของตัวละคร');
+  const animation=C.animationFor(id,slot);
+  $('skillLabAnimation').value=animation?.id||'';
+  text('skillLabEquipped',(assigned?'สกิล: '+assigned.name:
+   'สกิล: ท่าเดิมของตัวละคร')+
+   ' · ภาพท่า: '+(animation?.name||'อัตโนมัติ'));
  }
  function renderEquipCatalog(){
   const select=$('skillLabEquipSource');
@@ -213,6 +216,8 @@
    const selection=$('skillLabEquipSource')?.value||currentId;
    if(!selection)throw Error('เลือกสกิลจากคลัง หรือกดบันทึกสกิลใหม่ก่อน');
    C.assign($('skillLabHero').value,$('skillLabSlot').value,selection);
+   C.assignAnimation($('skillLabHero').value,$('skillLabSlot').value,
+    $('skillLabAnimation').value||null);
    renderEquip();message('✅ ติดตั้ง '+C.resolve(selection).name+
     ' แทนสกิลเดิมในช่องนี้แล้ว');
   }catch(e){message('⚠️ '+e.message,true)}
@@ -238,6 +243,14 @@
   $('skillLabList').addEventListener('change',e=>selectSkill(e.target.value));
   $('skillLabHero').addEventListener('change',renderEquip);
   $('skillLabSlot').addEventListener('change',renderEquip);
+  $('skillLabAnimationSave').addEventListener('click',()=>{
+   try{
+    C.assignAnimation($('skillLabHero').value,$('skillLabSlot').value,
+     $('skillLabAnimation').value||null);
+    renderEquip();
+    message('✅ บันทึกแอนิเมชันแล้ว · สกิลเดิมและค่าดาเมจไม่เปลี่ยน');
+   }catch(e){message('⚠️ '+e.message,true)}
+  });
   $('skillLabAdd').addEventListener('click',()=>{
    if(draft.effects.length>=C.maxEffects)return message('สูงสุด '+C.maxEffects+' ขั้น',true);
    draft.effects.push(defaultFx('damage'));renderEffects();
@@ -280,6 +293,10 @@
  }
  function init(){
   C.load();
+  $('skillLabAnimation').innerHTML='<option value="">อัตโนมัติ · ใช้ภาพท่าเดิม</option>'+
+   g.AdvengerAnimations.all().map(animation=>
+    '<option value="'+esc(animation.id)+'">'+esc(animation.name)+'</option>'
+   ).join('');
   $('skillLabTarget').innerHTML=chooseTarget('singleEnemy',false);
   $('skillLabHero').innerHTML=g.AdvengerCharacters.all().map(x=>
    '<option value="'+esc(x.id)+'">'+esc(x.nameTh||x.name)+'</option>').join('');
