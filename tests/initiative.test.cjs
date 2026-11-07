@@ -118,7 +118,7 @@ test('bosses use custom SPD overrides; KO and guard remain part of shared battle
  s.enemies=[boss];I.begin(s);
  a.equal(I.current(s).id,'foe-0');
  a.equal(boss.stats.SPD,180);
- s.guarded.gunner=true;
+ s.guarded.saber=true;
  const move=C.strike(s,boss,0);
  a.equal(move.guarded,true);a.equal(move.damage,148);
 });

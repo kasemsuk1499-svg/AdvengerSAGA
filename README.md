@@ -1,4 +1,4 @@
-# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.1)
+# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.2)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,16 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v1.2 — Speed-based initiative / ลำดับคิว SPD
+
+- SPD now selects the **next acting unit across both teams**, not just who acts first on the player side. **One action per living ally/enemy/boss per round**, in descending SPD. Normal attack, Skill, Ultimate, Guard and database skills all spend the active unit's action.
+- Approved prototype class speeds: **Gunner 120, Saber 110, Mage 100, Tank 75**. Enemies have initial SPD too (Scout 125, Wisp 115, Sentinel 95, Overlord 90, Guardian 70). Individual character/enemy `stats.SPD` overrides work; the prototypes' HP/attack/defense and class animations are preserved.
+- Equal SPD: allies first, then ally formation slot; enemies are ordered by encounter slot. The speed ranking is fixed at the **start of each round** (future speed buffs will be applied when a new round starts).
+- Interactive **Turn Order** now shows every ally and enemy in actual SPD sequence and marks NEXT/DONE/KO; players cannot skip ahead to another ally. Enemy turns run automatically when their queued turn arrives.
+- Round-based status effects tick and cooldown progression advance **once after the last remaining actor finishes**, not after every enemy.
+- Mid-round browser saves store used initiative slots. Old version-2/3 saves are migrated while preserving team, remaining HP/EX, enemy health, statuses and spent turns where possible.
+- [SPD Initiative rules and examples](docs/SPEED_INITIATIVE.md). Node regression tests include speed ordering, ties, early enemy actions, KO skips, single-action constraints and mid-round save migration.
 
 ## v1.1 — Universal Stat Database
 
