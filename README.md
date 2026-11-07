@@ -12,7 +12,7 @@ Repository **Settings → Pages → Build and deployment → Source: Deploy from
 ## v1.0 — Central Seven Knights Re:BIRTH–referenced Skill System
 
 - **Playable reference kits:** Rachel, Lucy, and Ellen, with a curated subset of sourced factual skill names, percentages, hit counts, target scope and cooldowns. This is not the whole Seven Knights database.
-- **Two layers stay independent:** The original approved class/individual Basic, Skill and Ultimate animations are untouched; the new **DB Basic / Active 1 / Active 2** buttons apply data-driven skills with shared arena FX.
+- **Two layers stay independent:** The original approved class/individual Basic, Skill and Ultimate animations are untouched; the new **DB Basic / Active 1 / Active 2** buttons apply data-driven skills with shared arena FX. Kits start unequipped, so existing combat balance is unchanged until the player opts in.
 - **Turn integration:** Skill cast consumes one hero action, uses target selection, round-based cooldowns, status and passive triggers. Burning damage, buffs/debuffs, healing, cleanse, magic immunity, weakness bonuses and single-use revive are supported in the adapted rules.
 - **Cooldown adaptation:** 30 seconds of source cooldown = 1 AdvengerSAGA round (ceiling). Numeric damage and effect probability are adapted to this game; they are not the original combat simulation.
 - **Extendable:** Load more reviewed source records with `node scripts/import-skill-db.cjs verified.json` to generate `js/skill-imports.js`, without changing the battle engine.
