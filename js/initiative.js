@@ -65,7 +65,10 @@
   state.initiativeOrder=entries;
   state.initiativeDone=Array.from(new Set(done));
   for(const id of state.party||[])state.acted[id]=state.initiativeDone.includes('ally:'+id);
-  if(!['victory','defeat'].includes(state.phase))sync(state);
+  if(!['victory','defeat'].includes(state.phase)){
+   // A save at a completed-round boundary must advance automatically.
+   if(!sync(state))state.phase='enemy';
+  }
   return current(state);
  }
  g.AdvengerInitiative=Object.freeze({

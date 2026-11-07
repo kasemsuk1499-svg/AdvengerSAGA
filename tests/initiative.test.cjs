@@ -112,6 +112,13 @@ test('migrating previous enemy-phase saves does not double-attack earlier enemie
  a.equal(s.initiativeDone.filter(x=>x.startsWith('ally:')).length,4);
  a.equal(next.id,'foe-2','completed enemy-0 is not repeated');
 });
+test('a completed round loaded from a snapshot automatically requests round rollover',()=>{
+ const s=make('training');
+ const done=keys(s);
+ const result=I.restore(s,{battleVersion:4,phase:'player',initiativeDone:done});
+ a.equal(result,null);
+ a.equal(s.phase,'enemy','auto-resume handoff to the next round');
+});
 test('bosses use custom SPD overrides; KO and guard remain part of shared battle rules',()=>{
  const s=make();
  const boss=g.AdvengerEncounters.instantiate([{kind:'overlord',stats:{SPD:180}}])[0];
