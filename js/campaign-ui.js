@@ -51,6 +51,13 @@
   $('campaignLaunch').disabled=!M.unlocked(stage.id)||BR.isBusy();
   $('campaignLaunch').textContent=p.cleared[stage.id]?
    '↻ เล่นด่านนี้ซ้ำ':'⚔️ เริ่มภารกิจ';
+  const battle=BR.state();
+  const resumable=battle.mode==='campaign'&&M.stage(battle.campaignStage)&&
+   ['player','enemy'].includes(battle.phase)&&!battle.campaignRewarded;
+  $('campaignResume').hidden=!resumable;
+  if(resumable)
+   $('campaignResume').textContent='↩ กลับสู่ภารกิจที่ค้าง: '+
+    M.stage(battle.campaignStage).title;
   $('campaignBriefingMessage').textContent=
    p.completed===M.stages.length?
     '🏆 จบบทที่ 1 แล้ว · เล่นซ้ำเพื่อเพิ่มดาวได้':
@@ -129,6 +136,7 @@
  }
  document.addEventListener('click',click);
  $('campaignLaunch').addEventListener('click',()=>BR.start(selected));
+ $('campaignResume').addEventListener('click',()=>BR.show('battle'));
  render();
  g.AdvengerCampaignUI=Object.freeze({render,select});
 })(window);

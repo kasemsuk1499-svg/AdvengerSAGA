@@ -944,7 +944,6 @@ document.addEventListener('error',event=>{
 document.addEventListener('click',e=>{
  const btn=e.target.closest('button');if(!btn)return;
  if(btn.dataset.screen){
-  if(btn.dataset.screen==='battle'&&isCampaignBattle()){enterTraining();return}
   show(btn.dataset.screen);return;
  }
  if(btn.dataset.mainSlot!==undefined){picker={type:'main',index:Number(btn.dataset.mainSlot)};renderPicker();return}
