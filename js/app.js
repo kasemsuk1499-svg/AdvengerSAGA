@@ -275,34 +275,44 @@ function ensureArena(force=false){
 }
 async function enemyPhase(){
  state.phase='enemy';renderBattle();store();
- const targets=RULES.alive(state.party,state.hp);
- if(!targets.length){state.phase='defeat';return}
- const victim=RULES.target(state.party,state.hp,state.round);
- const guarded=!!state.guarded[victim];
- const damage=Math.min(state.hp[victim],RULES.enemyDamage(state.round,guarded));
- await arena.enemyAttack(victim,damage,guarded);
- state.hp[victim]=Math.max(0,state.hp[victim]-damage);
- log('🔴 Training Sentinel → '+UNIT[victim].name+' −'+damage+' HP'+(guarded?' [GUARD]':''));
+ const attacking=CORE.living(state).slice();
+ for(let i=0;i<attacking.length;i++){
+  const foe=attacking[i];
+  if(!CORE.livingParty(state).length)break;
+  const move=CORE.strike(state,foe,i);
+  if(!move)continue;
+  arena.selectTarget(foe.id);
+  await arena.enemyAttack(move.heroId,move.damage,move.guarded,foe.name);
+  const dealt=CORE.applyStrike(state,move);
+  log('🔴 '+foe.name+' → '+UNIT[move.heroId].name+' −'+dealt+' HP'+(move.guarded?' [GUARD]':''));
+  renderBattle();store();
+ }
  state.guarded=RULES.counters(state.party);
- if(!RULES.alive(state.party,state.hp).length){
+ const result=CORE.outcome(state);
+ if(result==='defeat'){
   state.phase='defeat';log('💀 DEFEAT · ทีมหลักทั้งหมด HP เป็นศูนย์');
   arena.announce('DEFEAT','เริ่มไฟต์ใหม่เพื่อท้าทายอีกครั้ง');
   return;
  }
- state.round=Math.min(999,state.round+1);
- state.phase='player';
- state.acted=RULES.counters(state.party);
- state.active=RULES.available(state.party,state.hp,state.acted)[0];
- arena.focus(state.active);
+ if(result==='victory'){
+  state.phase='victory';log('🏆 VICTORY · ชนะใน ROUND '+state.round);
+  arena.announce('VICTORY','ALL ENEMIES DEFEATED');
+  return;
+ }
+ CORE.nextRound(state);arena.focus(state.active);
+ arena.syncEnemies(state.enemies,state.targetId);
  log('🔵 ROUND '+state.round+' · ฝ่ายเราเริ่มออกคำสั่ง');
  arena.announce('ROUND '+state.round,'YOUR TURN');
 }
 async function finishHeroTurn(){
- if(state.enemyPct<=0){
+ if(CORE.outcome(state)==='victory'){
   state.phase='victory';log('🏆 VICTORY · ชนะใน ROUND '+state.round);
-  arena.announce('VICTORY','TRAINING SENTINEL DEFEATED');
+  arena.syncEnemies(state.enemies,state.targetId);
+  arena.announce('VICTORY','ALL ENEMIES DEFEATED');
   return;
  }
+ CORE.select(state,state.targetId);
+ arena.syncEnemies(state.enemies,state.targetId);
  const remaining=RULES.available(state.party,state.hp,state.acted);
  if(remaining.length){
   state.active=remaining[0];arena.focus(state.active);
@@ -315,20 +325,25 @@ function sendCommand(kind){
  if(!frameReady)return notice('สนามยังไม่พร้อม');
  if(actionBusy||state.phase!=='player')return;
  const id=state.active,c=AdvengerCharacters.get(id);
- if(!c||state.hp[id]<=0||state.acted[id]||state.enemyPct<=0)return;
+ if(!c||state.hp[id]<=0||state.acted[id]||!CORE.living(state).length)return;
  if(kind==='ultimate'&&state.energy[id]<100)return notice('EX ไม่ถึง 100');
  actionBusy=true;
  const oldEnergy=state.energy[id],bonus=state.boost?1.25:1;
+ const attackTarget=state.targetId;
  let hits=0,damageDone=0;
  if(kind==='ultimate')state.energy[id]=0;
  renderBattle();arena.energy(state.energy);store();
  const takeDamage=raw=>{
-  const old=Math.round(state.enemyPct*MAX_DUMMY_HP);
-  const dealt=Math.min(old,Math.max(0,Math.round(raw*bonus)));
-  state.enemyPct=(old-dealt)/MAX_DUMMY_HP;hits++;damageDone+=dealt;
-  $('enemyHealth').textContent=Math.round(state.enemyPct*100)+'%';
-  $('targetHpBar').style.width=state.enemyPct*100+'%';
-  $('targetHpTrack').setAttribute('aria-valuenow',String(Math.round(state.enemyPct*100)));
+  const dealt=CORE.hitEnemy(state,attackTarget,raw,bonus);
+  hits++;damageDone+=dealt;
+  const foe=state.enemies.find(e=>e.id===attackTarget);
+  if(foe){
+   $('enemyHealth').textContent=foe.hp+'/'+foe.maxHP;
+   $('targetHpBar').style.width=(foe.hp/foe.maxHP*100)+'%';
+   $('targetHpTrack').setAttribute('aria-valuenow',String(Math.round(foe.hp/foe.maxHP*100)));
+   const label=Array.from($('enemyTargets').querySelectorAll('[data-target-pick]')).find(b=>b.dataset.targetPick===attackTarget)?.querySelector('small');
+   if(label)label.textContent=foe.hp+'/'+foe.maxHP+' HP';
+  }
   return dealt;
  };
  (async()=>{
@@ -383,7 +398,7 @@ function deploy(id){
 function useSupport(index){
  if(actionBusy||state.phase!=='player')return notice('ใช้ผู้ช่วยได้เฉพาะเทิร์นฝ่ายเรา');
  if(state.hp[state.active]<=0||state.acted[state.active])return notice('ต้องเลือกตัวที่ยังออกคำสั่งได้');
- if(state.used[index]||state.enemyPct<=0)return;
+ if(state.used[index]||!CORE.living(state).length)return;
  const id=state.assist[index];
  if(id==='battery'){
   if(state.energy[state.active]>=100)return notice('EX เต็มแล้ว');
@@ -399,12 +414,28 @@ function resetEncounter(){
  if(actionBusy)return notice('รอให้แอนิเมชันจบก่อน');
  const newRound=RULES.initial(state.party);
  Object.assign(state,newRound);
- state.active=state.party[0];
- state.enemyPct=1;state.used=[false,false];state.boost=false;
+ state.battleVersion=CORE.version;state.active=state.party[0];
+ state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);
+ state.used=[false,false];state.boost=false;
  state.energy=Object.fromEntries(UNITS.map(id=>[id,100]));
- arena?.reset();arena?.focus(state.active);arena?.energy(state.energy);
+ arena?.reset();arena?.syncEnemies(state.enemies,state.targetId);
+ arena?.focus(state.active);arena?.energy(state.energy);
  log('↻ เริ่มต่อสู้ใหม่ · ROUND 1 · ฟื้น HP/EX และผู้ช่วยทั้งหมด');
  render();
+}
+function selectEnemy(id){
+ if(actionBusy||state.phase!=='player')return;
+ if(!CORE.living(state).some(e=>e.id===id))return;
+ CORE.select(state,id);arena?.selectTarget(state.targetId);render();
+}
+function setEncounter(id){
+ if(actionBusy||!ENCOUNTERS.get(id)){
+  notice('รอให้แอนิเมชันจบก่อนเปลี่ยนสนาม');
+  $('encounterSelect').value=state.encounterId;return;
+ }
+ if(state.encounterId===id)return;
+ state.encounterId=id;resetEncounter();
+ log('⚔️ เลือกสนาม '+ENCOUNTERS.get(id).nameTh);render();
 }
 // Portraits and cut-ins may point to PNG files not uploaded yet.
 // Use the unit's generic SVG placeholder instead of rendering a broken image.
@@ -424,6 +455,8 @@ document.addEventListener('click',e=>{
  if(btn.dataset.pick&&picker){choose(picker.type,picker.index,btn.dataset.pick);return}
  if(btn.dataset.deploy){deploy(btn.dataset.deploy);return}
  if(btn.dataset.fieldUnit){deploy(btn.dataset.fieldUnit);return}
+ if(btn.dataset.targetPick){selectEnemy(btn.dataset.targetPick);return}
+ if(btn.dataset.targetEnemy){selectEnemy(btn.dataset.targetEnemy);return}
  if(btn.dataset.command){sendCommand(btn.dataset.command);return}
  if(btn.dataset.elementChoice){setElement(btn.dataset.elementChoice);return}
  if(btn.dataset.assist!==undefined){useSupport(Number(btn.dataset.assist));return}
@@ -437,6 +470,7 @@ document.addEventListener('keydown',e=>{
  }else if(key==='r'){e.preventDefault();resetEncounter()}
 });
 $('cancelPicker').addEventListener('click',()=>{picker=null;renderPicker()});
+$('encounterSelect').addEventListener('change',e=>setEncounter(e.target.value));
 $('startBattle').addEventListener('click',()=>show('battle'));
 $('battleReset').addEventListener('click',resetEncounter);
 $('resetTeam').addEventListener('click',()=>{
