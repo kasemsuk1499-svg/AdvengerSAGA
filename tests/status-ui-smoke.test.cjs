@@ -96,6 +96,22 @@ function boot({customHero=false}={}){
  };
  return {g,nodes,click,listeners,attacks,nativeMoves,databaseMoves};
 }
+test('Overlimit UI generates and saves a powerful 99,999-hit template with no forced chance defaults',()=>{
+ const app=boot();
+ const UI=app.nodes;
+ const btn=UI.get('skillLabOverlimitExample');
+ assert.equal(typeof btn.events.click,'function');
+ btn.events.click();
+ assert.equal(UI.get('skillLabOverlimit').checked,true);
+ assert.match(UI.get('skillLabEffects').innerHTML,/max="1000000"/);
+ assert.match(UI.get('skillLabOverlimitInfo').textContent,/OVERLIMIT ACTIVE/);
+ assert.match(UI.get('skillLabName').value,/OVERLIMIT/);
+ UI.get('skillLabSave').events.click();
+ const skills=app.g.AdvengerSkillCreator.list();
+ assert.equal(skills.length,1);
+ assert.equal(skills[0].overlimit,true);
+ assert.equal(skills[0].effects[0].hits,99999);
+});
 test('Character Creator changes innate element and chooses animations for four skill slots',()=>{
  const app=boot();
  a.match(app.nodes.get('charLabElement').innerHTML,/value="fire"/);
