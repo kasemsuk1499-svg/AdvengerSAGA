@@ -40,7 +40,7 @@
     speed:opt.speed??opt.stats?.SPD??base.stats?.SPD??base.speed??100,
     stats:{...(base.stats||{}),...(opt.stats||{}),MAX_HP:maxHP,P_ATK:attack}})||null;
    const element=opt.element??base.element??base.defaultElement??null;
-   if(element&&!g.AdvengerElements.has(element))throw Error('Unknown enemy element '+element);
+   if(element&&g.AdvengerElements&&!g.AdvengerElements.has(element))throw Error('Unknown enemy element '+element);
    return {id:'foe-'+index,kind:opt.characterId||opt.kind,characterId:opt.characterId||null,
     element,name:base.name,nameTh:base.nameTh,icon:base.icon||'◆',
     hp:maxHP,maxHP,attack,stats,art:base.art||sprites,fallback:base.fallback||base.art||sprites,
