@@ -1,4 +1,4 @@
-# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.3)
+# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.4)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,15 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v1.4 — Death, Guts, Immortality & Revival / ความตายและการคืนชีพ
+
+- **9 reusable life-effect definitions** in `js/life-db.js`: Death, Death Immunity, Soul Death, Revive, Auto Revive, Guts, Immortality, Execution and Damage Immunity. All use original turn-based code, adapted from verified Seven Knights Re:BIRTH references.
+- The central `js/life-engine.js` now handles lethal damage for **allies, enemies and bosses**, including attacks, multi-hits, 7K-inspired Death, damage over time and execution. It resolves once-per-battle passives, survivability grants, Soul Death restrictions, Immortality expiry, and no-repeat actions after resurrection.
+- Added curated, source-attributed **Kris** (Death + passive Immortality) and **Rosie** (Death + revive two KO allies with 40% HP) to the existing sample skill kit selector. The old Rachel once-only revive works through the same pipeline. Only selected base effects are implemented; several enhancements/passive subeffects are not.
+- New **LIFE LAB** in Battle lets you grant Guts, Immortality and Auto Revive; simulate lethal damage; apply Soul Death; and revive a fallen member. **About → Death & Revival Library** explains all nine mechanics.
+- Stored life flags and remaining Immortality turns are retained in browser save data. The shared SPD initiative, class attack effects and Canvas renderer are unchanged.
+- Full build guide, sources and limitations: [Death & Revival skill system](docs/DEATH_REVIVAL_SYSTEM.md). Regressions include passive resurrection, boss KO, life-ring analogues, revive target selection, save restoration and UI smoke tests.
 
 ## v1.3 — Seven Knights–inspired Status Skill System / ระบบสถานะผิดปกติ
 
