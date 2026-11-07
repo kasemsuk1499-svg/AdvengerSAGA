@@ -19,8 +19,11 @@
  const value=(s,side,id,type)=>find(s,side,id,type)?.power||0;
  const heroStats=(id)=>{
   const char=g.AdvengerCharacters?.get(id);
-  const hp=char?.maxHP||1000;
-  return {attack:Math.round(char?.attack||hp*.23),defense:Math.round(char?.defense||hp*.15)};
+  const stats=g.AdvengerStatDB?.forCharacter(id);
+  const hp=stats?.MAX_HP??char?.maxHP??1000;
+  return {attack:stats?.P_ATK??Math.round(char?.attack??hp*.23),
+   magicAttack:stats?.M_ATK??Math.round(char?.magicAttack??char?.attack??hp*.23),
+   defense:stats?.DEF??Math.round(char?.defense??hp*.15)};
  };
  function ensure(s){
   if(!s.skillKits)s.skillKits={}; // Opt in per character; old approved combat stays unchanged.
@@ -165,8 +168,10 @@
     if(!Number.isFinite(current)||current<=0)continue;
     if(fx.type==='damage'){
      for(let i=0;i<Math.max(1,Math.min(12,fx.hits||1));i++){
-      const raw=Math.max(0,Math.round(stats.attack*(fx.attackPct||0)+stats.defense*(fx.defensePct||0)));
-      const amount=adjustDamage(s,'ally',actorId,t.side,t.id,raw*(s.boost?1.25:1),skill.damageType||(DB.get(s.skillKits[actorId])?.role==='Support'?'magic':'physical'));
+      const damageType=skill.damageType||(DB.get(s.skillKits[actorId])?.role==='Support'?'magic':'physical');
+      const attackStat=damageType==='magic'?stats.magicAttack:stats.attack;
+      const raw=Math.max(0,Math.round(attackStat*(fx.attackPct||0)+stats.defense*(fx.defensePct||0)));
+      const amount=adjustDamage(s,'ally',actorId,t.side,t.id,raw*(s.boost?1.25:1),damageType);
       if(t.side==='enemy'){
        const hit=g.AdvengerBattleCore.hitEnemy(s,t.id,amount);
        events.push({kind:'damage',id:t.id,side:t.side,amount:hit,hitIndex:i+1});

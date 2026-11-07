@@ -160,6 +160,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <link rel="stylesheet" href="css/character-assets.css?v=0.8">
 <link rel="stylesheet" href="css/encounters.css?v=0.9">
 <link rel="stylesheet" href="css/skill-system.css?v=1.0">
+<link rel="stylesheet" href="css/stats.css?v=1.1">
 </head>
 <body>
 <div class="shell">
@@ -253,6 +254,10 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
      <div id="assistActions" class="support-actions"></div>
      <p class="small" style="margin:8px 0 0">แต่ละช่องใช้ได้หนึ่งครั้งต่อไฟต์ · กดเริ่มไฟต์ใหม่เพื่อเติมสิทธิ์</p>
    </section>
+   <details class="panel stats-panel">
+     <summary>🧬 สถานะตัวละครที่เลือก · 30 STATS</summary>
+     <div id="statLive" class="stat-live"></div>
+   </details>
    <details class="panel battle-log-panel">
      <summary>📜 บันทึกการต่อสู้ <span class="small">แตะเพื่อเปิด / ปิด</span></summary>
      <div id="battleLog" class="logbox" aria-live="polite"></div>
@@ -266,6 +271,9 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
  <div class="panel"><h2>สิ่งที่ใช้ได้ในรุ่นนี้</h2><p>จัดตำแหน่งสมาชิกหลัก 4 ช่อง สลับผู้ช่วย 2 ช่อง บันทึกทีมอัตโนมัติ สลับตัวละครที่ควบคุมในสนามทดลอง และใช้การช่วยเหลือแบบจำกัดจำนวนครั้ง พร้อมจัดการ HP/EX และการเลือกเป้าหมายศัตรูผ่านระบบกลาง</p>
  <p class="help">รุ่นนี้เป็น <b>4-Character Training Arena</b> สมาชิกหลักทั้งสี่คนยืนในสนามพร้อมกัน แต่ผู้เล่นสั่งโจมตีทีละคน ส่วนผู้ช่วยยังเป็นตัวต้นแบบ และมีเทิร์นศัตรูแบบกำหนดเป้าหมายล่วงหน้า รองรับศัตรูหลายตัวและบอสทดลอง มีระบบสกิลกลางอ้างอิงข้อมูล Re:BIRTH (ตัวอย่างที่ผ่านการตรวจสอบ) แต่ยังไม่มี AI เชิงกลยุทธ์ / เซิร์ฟเวอร์เซฟ</p>
  <div class="chips" id="labLinks"></div></div>
+ <div class="panel stat-dictionary"><h2>🧬 Universal Stat Database</h2>
+ <p class="help">สแตตทั้ง 30 รายการใช้ร่วมกันได้ทั้งตัวละคร ศัตรู และบอส · ค่าเปอร์เซ็นต์เก็บเป็นสัดส่วน เช่น 0.40 = 40% · สูตรต่อสู้จะตกลงกันภายหลัง</p>
+ <div id="statCatalog" aria-label="สารานุกรมค่าสถานะทั้งหมด"></div></div>
 </section>
 <footer class="footer">AdvengerSAGA · Fan-made prototype · Local save (this browser) · No external dependencies</footer>
 </div>
@@ -275,6 +283,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <script src="classes/mage/animations.js?v=0.7"></script>
 <script src="classes/tank/animations.js?v=0.7"></script>
 <script src="classes/gunner/animations.js?v=0.7"></script>
+<script src="js/stat-db.js?v=1.1"></script>
 <script src="js/character-registry.js?v=0.7"></script>
 <script src="characters/manifest.js?v=0.8"></script>
 <script src="js/team-effects.js?v=0.4"></script>

@@ -31,7 +31,8 @@
     };
    if(typeof character.art!=='string'||!character.art.startsWith('characters/'+character.id+'/'))
     throw new Error('Character art must be inside its own folder: '+character.id);
-   const u=Object.freeze({...character,perform});
+   const stats=g.AdvengerStatDB?.create(character)||character.stats||null;
+   const u=Object.freeze({...character,stats,perform});
    table.set(u.id,u);return u;
   },
   get(id){return table.get(id)||null},

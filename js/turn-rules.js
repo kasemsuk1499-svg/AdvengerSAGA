@@ -2,7 +2,7 @@
    Data and damage rules live separately from the renderer. No RNG is required. */
 (function(g){
  'use strict';
- const hpMax=id=>Math.max(1,Math.round(g.AdvengerCharacters.get(id)?.maxHP||1000));
+ const hpMax=id=>Math.max(1,Math.round(g.AdvengerCharacters.get(id)?.stats?.MAX_HP??g.AdvengerCharacters.get(id)?.maxHP??1000));
  const maxHP=party=>Object.fromEntries(party.map(id=>[id,hpMax(id)]));
  const counters=party=>Object.fromEntries(party.map(id=>[id,false]));
  const initial=party=>({

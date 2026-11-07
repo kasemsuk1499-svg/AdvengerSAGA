@@ -14,7 +14,7 @@ const MOVES=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).skil
 const ELEMENTS=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).colors]));
 const CORE=AdvengerBattleCore,ENCOUNTERS=AdvengerEncounters;
 const SKILLS=AdvengerSkillEngine,SKILL_DB=AdvengerSkillDB;
-const RULES=AdvengerTurnRules;
+const RULES=AdvengerTurnRules,STATS=AdvengerStatDB;
 const $=id=>document.getElementById(id);
 const fresh=()=>{
  const party=['saber','mage','tank','gunner'];
@@ -26,6 +26,7 @@ const fresh=()=>{
   elements:Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).defaultElement])),
   logs:['AdvengerSAGA · Turn-Based · ROUND 1'],screen:'formation'
  };
+ STATS.resetRuntime(initial);
  return SKILLS.clear(initial);
 };
 function read(){
@@ -76,6 +77,7 @@ function read(){
    state.acted=RULES.counters(state.party);state.guarded=RULES.counters(state.party);
   }
   if(!legacy&&d.skillKits)SKILLS.restore(state,d);
+  STATS.restoreRuntime(state,!legacy?d.statRuntime:null);
   const available=RULES.available(state.party,state.hp,state.acted);
   state.active=available.includes(d.active)?d.active:
    (available[0]||RULES.alive(state.party,state.hp)[0]||state.party[0]);
@@ -226,6 +228,7 @@ function renderBattle(){
  if(frameReady){arena?.syncEnemies(state.enemies,state.targetId);
   arena?.status(state.hp,RULES.maxHP(state.party),state.acted,state.guarded,state.phase,state.active);}
  renderSkillDatabase(canAct);
+ renderStatLive();
 }
 function render(){renderFormation();renderBattle();if(frameReady)arena?.energy(state.energy);store()}
 function show(tab){
@@ -263,6 +266,7 @@ function choose(type,index,id){
    state.battleVersion=CORE.version;state.active=state.party[0];
    state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);state.enemyCursor=0;
    SKILLS.clear(state);
+   STATS.resetRuntime(state);
    state.energy=Object.fromEntries(UNITS.map(unitId=>[unitId,100]));
    state.used=[false,false];state.boost=false;
    partyMounted='';arena?.reset();
@@ -446,6 +450,7 @@ function resetEncounter(){
  state.battleVersion=CORE.version;state.active=state.party[0];
  state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);state.enemyCursor=0;
  SKILLS.clear(state);
+ STATS.resetRuntime(state);
  state.used=[false,false];state.boost=false;
  state.energy=Object.fromEntries(UNITS.map(id=>[id,100]));
  arena?.reset();arena?.syncEnemies(state.enemies,state.targetId);
@@ -466,6 +471,32 @@ function setEncounter(id){
  if(state.encounterId===id)return;
  state.encounterId=id;resetEncounter();
  log('⚔️ เลือกสนาม '+ENCOUNTERS.get(id).nameTh);render();
+}
+
+
+function renderStatLive(){
+ const root=$('statLive');if(!root)return;
+ const data=STATS.battleView(state,'ally',state.active);if(!data)return;
+ const names=['MAX_HP','P_ATK','M_ATK','DEF','SPD'];
+ root.innerHTML='<div class="stat-core-list">'+names.map(id=>
+  '<span><b>'+esc(STATS.get(id).nameTh)+'</b><strong>'+data.stats[id]+'</strong></span>'
+ ).join('')+'</div>'+
+ '<p class="stat-runtime-summary">HP '+data.hp.current+'/'+data.hp.max+
+ ' · EX '+data.ex.current+'/'+data.ex.max+' · SHIELD '+data.shield+' · '+data.lifeState+'</p>'+
+ '<p class="stat-runtime-summary">บัฟ '+data.buffs.length+' · ดีบัฟ '+data.debuffs.length+
+ ' · คูลดาวน์ '+Object.values(data.cooldowns).filter(n=>n>0).length+
+ ' · สแต็ก '+Object.values(data.stacks).reduce((v,n)=>v+n,0)+'</p>';
+}
+function renderStatCatalog(){
+ const root=$('statCatalog');if(!root)return;
+ root.innerHTML=Object.entries(STATS.groups).map(([group,label])=>{
+  const entries=STATS.all().filter(x=>x.group===group);
+  return '<section class="stat-group"><h3>'+esc(label)+' ('+entries.length+')</h3>'+
+   '<div class="stat-rows">'+entries.map(x=>
+    '<div class="stat-row"><span><b>'+esc(x.nameTh)+'</b><small>'+esc(x.name)+'</small></span>'+
+    '<code>'+esc(x.id)+'</code><small>'+esc(x.description)+'</small></div>'
+   ).join('')+'</div></section>';
+ }).join('');
 }
 
 function renderSkillDatabase(canAct){
@@ -581,6 +612,7 @@ $('resetTeam').addEventListener('click',()=>{
  if(view==='battle')ensureArena(true);
  log('↻ จัดทีมใหม่เป็น 4 อาชีพต้นแบบ');render();notice('คืนค่าการจัดทีมเรียบร้อย');
 });
+renderStatCatalog();
 $('labLinks').innerHTML=UNITS.map(id=>'<a class="button ghost" target="_blank" rel="noopener" href="characters/'+id+'/lab.html">'+UNIT[id].emoji+' '+UNIT[id].name+'</a>').join('');
 render();
 })();

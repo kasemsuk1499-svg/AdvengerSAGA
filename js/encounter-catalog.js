@@ -27,11 +27,13 @@
    const actor=opt.characterId&&g.AdvengerCharacters?.get(opt.characterId);
    const base=actor||types[opt.kind];
    if(!base)throw new Error('Unknown enemy or character: '+(opt.characterId||opt.kind));
-   const maxHP=Math.max(1,Math.round(opt.maxHP||base.maxHP||1000));
-   const attack=Math.max(1,Math.round(opt.attack||base.attack||150));
+   const maxHP=Math.max(1,Math.round(opt.maxHP??opt.stats?.MAX_HP??base.maxHP??base.stats?.MAX_HP??1000));
+   const attack=Math.max(1,Math.round(opt.attack??opt.stats?.P_ATK??base.attack??base.stats?.P_ATK??150));
+   const stats=g.AdvengerStatDB?.create({maxHP,attack,
+    stats:{...(base.stats||{}),...(opt.stats||{}),MAX_HP:maxHP,P_ATK:attack}})||null;
    return {id:'foe-'+index,kind:opt.characterId||opt.kind,characterId:opt.characterId||null,
     name:base.name,nameTh:base.nameTh,icon:base.icon||'◆',
-    hp:maxHP,maxHP,attack,art:base.art||sprites,fallback:base.fallback||base.art||sprites,
+    hp:maxHP,maxHP,attack,stats,art:base.art||sprites,fallback:base.fallback||base.art||sprites,
     statusOnHit:opt.statusOnHit||base.statusOnHit||null,boss:!!(opt.boss??base.boss)};
   });
  }
