@@ -14,7 +14,12 @@
    name:labels[classId]+' · '+moves[kind]
   }))));
  const map=Object.freeze(Object.fromEntries(entries.map(x=>[x.id,x])));
- const get=id=>typeof id==='string'&&Object.hasOwn(map,id)?map[id]:null;
+ const describe=entry=>{
+  if(!entry)return null;
+  const skill=g.AdvengerCharacters?.get(entry.classId)?.skills?.[entry.kind];
+  return skill?{...entry,name:entry.name+' · '+skill}:entry;
+ };
+ const get=id=>describe(typeof id==='string'&&Object.hasOwn(map,id)?map[id]:null);
  const noOp=()=>{};
  const ready=()=>Promise.resolve();
  // This samples existing deterministic base damage from the real source
@@ -34,6 +39,6 @@
   return hits;
  }
  g.AdvengerAnimations=Object.freeze({
-  version:1,all:()=>entries.slice(),get,has:id=>!!get(id),capture
+  version:1,all:()=>entries.map(describe),get,has:id=>!!get(id),capture
  });
 })(window);
