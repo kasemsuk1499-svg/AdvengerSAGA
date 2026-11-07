@@ -70,7 +70,7 @@
    case 'guts':x.uses=integer(raw.uses??1,1,limits.uses,'จำนวนครั้ง');break;
    case 'immortality':
     x.turns=integer(raw.turns??2,1,999,'เวลาอมตะ');
-    x.uses=integer(raw.uses??1,1,9,'จำนวนครั้ง');
+    x.uses=integer(raw.uses??1,1,limits.uses,'จำนวนครั้ง');
     break;
    case 'execute':
     x.hpThresholdPct=percent(raw.hpThresholdPct??.24,'HP ที่สำเร็จโทษ',limits.power);
