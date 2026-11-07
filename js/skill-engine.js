@@ -244,7 +244,7 @@
       // DOM events or per-hit JS loops. A Guts/Auto-Revive can still
       // consume multiple protection charges across lethal boundaries.
       const summary={kind:'damage',id:t.id,side:t.side,amount:0,
-       hits,compact:true,hitIndex:1};
+       hits,compact:true,hitIndex:1,packets:[]};
       events.push(summary);
       const previous={id:t.id,side:t.side,amount:0,hitIndex:1,hitCount:0};
       let left=hits;
@@ -262,6 +262,12 @@
        const dealt=doDamage(safeAmount(amountPerHit*packet));
        if(dealt<=0)break; // immunity/immortality: no hit landed
        summary.amount+=dealt;
+       // A packet represents landed real damage at the current HP /
+       // Guts boundary. Store its per-hit distribution compactly so the
+       // renderer can show REAL individual damage values, not total sums.
+       // Max packets are bounded by the existing finite life protection
+       // charges (and the configured hit count), not DOM sprite count.
+       summary.packets.push({hits:packet,perHit:amountPerHit,damage:dealt});
        previous.amount+=dealt;previous.hitCount+=packet;
        if(events.length<512)events.push(...STATUS.onHit(s,t.side,t.id,dealt));
        else STATUS.onHit(s,t.side,t.id,dealt);
