@@ -15,7 +15,7 @@
     Number(v)<lo||Number(v)>hi)throw Error(label+' ต้องอยู่ระหว่าง '+lo+'–'+hi);
   return Number(v);
  };
- const percent=(v,label)=>num(v,0,10000,label)/100;
+ const percent=(v,label)=>num(v,0,100,label); // fractions: 1 = 100%; UI divides percent inputs
  const integer=(v,lo,hi,label)=>{
   const n=num(v,lo,hi,label);
   if(!Number.isInteger(n))throw Error(label+' ต้องเป็นจำนวนเต็ม');
