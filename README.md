@@ -1,4 +1,4 @@
-# AdvengerSAGA — Shared Battle Core, Enemy Encounters & Tanjiro (v0.9)
+# AdvengerSAGA — Modular Anime Battle Engine + 7K Skill Database (v1.0)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -9,6 +9,15 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
 
+## v1.0 — Central Seven Knights Re:BIRTH–referenced Skill System
+
+- **Playable reference kits:** Rachel, Lucy, and Ellen, with a curated subset of sourced factual skill names, percentages, hit counts, target scope and cooldowns. This is not the whole Seven Knights database.
+- **Two layers stay independent:** The original approved class/individual Basic, Skill and Ultimate animations are untouched; the new **DB Basic / Active 1 / Active 2** buttons apply data-driven skills with shared arena FX.
+- **Turn integration:** Skill cast consumes one hero action, uses target selection, round-based cooldowns, status and passive triggers. Burning damage, buffs/debuffs, healing, cleanse, magic immunity, weakness bonuses and single-use revive are supported in the adapted rules.
+- **Cooldown adaptation:** 30 seconds of source cooldown = 1 AdvengerSAGA round (ceiling). Numeric damage and effect probability are adapted to this game; they are not the original combat simulation.
+- **Extendable:** Load more reviewed source records with `node scripts/import-skill-db.cjs verified.json` to generate `js/skill-imports.js`, without changing the battle engine.
+- **Source credit, schemas and limitations:** [Central skill-system documentation](docs/SKILL_SYSTEM.md).
+- **Regression tests:** `node --test tests/*.test.cjs` through GitHub Actions. Real-browser/mobile playtesting still required.
 ## v0.9 — ระบบต่อสู้กลาง / Shared Battle Core
 
 The browser game now runs three **data-defined encounter presets** using the same character animations and optimized Canvas effect renderer:
