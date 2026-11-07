@@ -48,8 +48,40 @@
     passive:{name:'Evasive Maneuvers',target:'self',
      triggers:[{event:'battleStart',target:'self',effect:status('magicImmunity',1,2)}]}
    }}
+ ,
+  {id:'kris',name:'Kris',nameTh:'คริส',role:'Attack',
+   source:'https://gamewith.net/sevenknights-rebirth/70600',sourceChecked:'2026-11-07',
+   notes:'Curated base skills only; barrier and team heal on enemy KO are not yet modeled.',
+   skills:{
+    basic:{name:'Normal Attack',target:'singleEnemy',effects:[damage(1)]},
+    skill1:{name:'Dark Slash',target:'singleEnemy',cooldownSeconds:60,
+     effects:[damage(3.05),status('death',.2,3,.5)]},
+    skill2:{name:'Dark Whispers',target:'allEnemies',cooldownSeconds:80,
+     effects:[damage(1),status('death',.2,3,.25)]},
+    passive:{name:'Soul Drain (Immortality)',triggers:[
+     {event:'lethal',target:'self',effect:{type:'immortality',turns:2,oncePerBattle:true}}
+    ]}
+   }},
+  {id:'rosie',name:'Rosie',nameTh:'โรซี่',role:'Support',
+   source:'https://gamewith.net/sevenknights-rebirth/70501',sourceChecked:'2026-11-07',
+   notes:'Curated base skill kit; passive auto DEF increase and Guts-on-revive enhancement are not enabled.',
+   skills:{
+    basic:{name:'Normal Attack',target:'twoEnemies',damageType:'magic',
+     effects:[{type:'damage',attackPct:.3,hpPct:.07,hits:1}]},
+    skill1:{name:'Judgment of Moonlight',target:'allEnemies',damageType:'magic',
+     cooldownSeconds:80,effects:[
+      {type:'damage',attackPct:.3,hpPct:.07,hits:2},
+      status('death',.2,3,.25)
+     ]},
+    skill2:{name:'Holy Prayer',target:'twoAllies',cooldownSeconds:112,
+     effects:[
+      {type:'revive',target:'twoAllies',hpPct:.4},
+      {type:'reduceBuffDuration',target:'allEnemies',turns:2}
+     ]},
+    passive:{name:'Blessing of the Dead (not fully modeled)',triggers:[]}
+   }}
  ];
- const VALID_TARGETS=new Set(['self','singleEnemy','threeEnemies','fourEnemies','allEnemies','allAllies','singleAlly','twoAllies']);
+ const VALID_TARGETS=new Set(['self','singleEnemy','twoEnemies','threeEnemies','fourEnemies','allEnemies','allAllies','singleAlly','twoAllies']);
  const VALID_TYPES=new Set(['damage','heal','status','cleanse','reduceBuffDuration','revive','guts','autoRevive','immortality','execute']);
  function register(entry,replace=false){
   if(!entry||typeof entry.id!=='string'||!/^[a-z][a-z0-9-]*$/.test(entry.id)||(!replace&&all.has(entry.id)))
