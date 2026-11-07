@@ -1,4 +1,4 @@
-# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.6)
+# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v2.0)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,15 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v2.0 — Playable RPG Campaign / โหมดผจญภัยจริง
+
+- The first page is now **🏰 ผจญภัย**: an original linear story with **2 chapters / 6 playable missions**. Each mission has a story briefing, objective, tuned enemy roster, a battle using the existing SPD combat system, an epilogue after victory and an unlockable next stage.
+- Winning gives **3/2/1 stars** based on surviving party count, plus **EXP and Gold on the first clear only**. Replays can improve the best star score but cannot duplicate rewards. EXP raises a shared team level and applies **+4% ally damage per level** (max +60%) only in story mode.
+- Earned Gold can buy **Healing Potions** (restore up to 40% HP) and **Phoenix Feathers** (revive an eligible KO ally at 40% HP). These consumables are persistent and each uses **one acting SPD turn** when equipped in the in-battle item panel.
+- A campaign run resumes from browser battle save, including partial HP/EX, status and SPD queue, through **↩ กลับสู่ภารกิจที่ค้าง**. Defeat allows retry; story rewards are granted only when the real battle system reports victory.
+- Training-only **STATUS LAB / LIFE LAB and kit switches are blocked in story combat**. The original four active fighters + two supports, character/skill creation, stat modules and approved lightweight class VFX are unchanged.
+- This is a **playable vertical slice**, not yet the full intended cross-world Story Recruitment, branching narrative or account-synced RPG. Progress is still saved locally in the current browser. Read [Campaign Game v2.0](docs/CAMPAIGN_GAME.md) for step-by-step gameplay, current limitations and technical architecture.
 
 ## v1.6 — One Original Character Creator / สร้างตัวละครเอง 1 ตัว
 
