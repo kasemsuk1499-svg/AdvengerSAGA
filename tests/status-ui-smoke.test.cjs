@@ -98,7 +98,7 @@ function boot({customHero=false}={}){
 }
 test('Character Creator changes innate element and chooses animations for four skill slots',()=>{
  const app=boot();
- a.match(app.nodes.get('charLabElement').innerHTML,/ธาตุ/);
+ a.match(app.nodes.get('charLabElement').innerHTML,/value="fire"/);
  a.match(app.nodes.get('charLabSkills').innerHTML,/data-char-animation="basic"/);
  app.nodes.get('charLabName').value='Element Hero';
  app.nodes.get('charLabNameTh').value='ฮีโร่ไฟ';
