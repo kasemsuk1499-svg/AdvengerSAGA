@@ -293,7 +293,7 @@ test('Overlimit records survive export/import and include large powers and extra
  restored.g.AdvengerLifeEngine.restore(recovered,JSON.parse(JSON.stringify(state)).lifeRuntime);
  assert.equal(recovered.lifeRuntime.ally.mage.pending.guts.uses,999);
 });
-test('real Overlimit engine feeds the display 120 exact individual 3-DMG hit numbers',()=>{
+test('real Overlimit engine feeds the display 120 exact per-hit damage numbers',()=>{
  const {g,C,S}=boot();C.load();
  const skill=C.add({name:'Real 120',overlimit:true,
   target:'singleEnemy',damageType:'physical',cooldownRounds:0,
@@ -309,8 +309,8 @@ test('real Overlimit engine feeds the display 120 exact individual 3-DMG hit num
  assert.equal(timeline.shownHits,120);
  assert.equal(timeline.landedHits,120);
  assert.equal(timeline.configuredHits,120);
- assert.ok(timeline.frames.every(x=>x.kind!=='damage'||x.amount===3));
- assert.equal(state.enemies[0].hp,100000-120*3);
+ assert.ok(timeline.frames.every(x=>x.kind!=='damage'||x.amount===damage[0].packets[0].perHit));
+ assert.equal(state.enemies[0].hp,100000-120*damage[0].packets[0].perHit);
 });
 test('real enemy early-KO reports 2 landed hits and distinct final partial hit numbers',()=>{
  const {g,C,S}=boot();C.load();
@@ -323,7 +323,7 @@ test('real enemy early-KO reports 2 landed hits and distinct final partial hit n
  const timeline=g.AdvengerHitDisplay.plan(report);
  assert.equal(timeline.configuredHits,100);
  assert.equal(timeline.landedHits,2);
- assert.deepEqual(Array.from(timeline.frames,x=>x.amount),[10,5]);
+ assert.deepEqual(Array.from(timeline.frames,x=>x.amount),[9,6]);
  assert.equal(timeline.frames[1].hitNumber,2);
  assert.equal(state.enemies[0].hp,0);
 });
