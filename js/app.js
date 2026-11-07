@@ -16,6 +16,8 @@ const CORE=AdvengerBattleCore,ENCOUNTERS=AdvengerEncounters;
 const SKILLS=AdvengerSkillEngine,SKILL_DB=AdvengerSkillDB;
 const RULES=AdvengerTurnRules,STATS=AdvengerStatDB,INIT=AdvengerInitiative;
 const AILMENTS=AdvengerStatusDB,STATUS=AdvengerStatusEngine,LIFE=AdvengerLifeEngine,LIFE_TYPES=AdvengerLifeDB;
+const CREATOR=AdvengerSkillCreator;
+CREATOR.load();
 const $=id=>document.getElementById(id);
 const fresh=()=>{
  const party=['saber','mage','tank','gunner'];
@@ -242,6 +244,7 @@ function renderBattle(){
  if(frameReady){arena?.syncEnemies(state.enemies,state.targetId);
   arena?.status(state.hp,RULES.maxHP(state.party),state.acted,state.guarded,state.phase,state.active);}
  renderSkillDatabase(canAct);
+ renderCreatedBattleSkills(canAct);
  renderStatLive();
  renderAilmentDemo();
  renderLifeLab();
@@ -729,6 +732,69 @@ function renderSkillDatabase(canAct){
  $('dbStatusInfo').textContent='สถานะ '+UNIT[id].name+': '+(ally||'ปกติ')+
    ' | เป้าหมาย: '+(enemy||'ปกติ');
 }
+
+const CREATED_SLOT_LABELS={basic:'BASIC',skill1:'SKILL 1',skill2:'SKILL 2',ultimate:'ULTIMATE'};
+function renderCreatedBattleSkills(canAct){
+ const root=$('createdBattleSkills');if(!root)return;
+ const id=state.active;
+ const equipped=CREATOR.slots.map(slot=>({slot,skill:CREATOR.equipped(id,slot)}))
+  .filter(x=>!!x.skill);
+ root.innerHTML=equipped.length?equipped.map(({slot,skill})=>{
+  const remaining=SKILLS.createdRemaining(state,id,skill.id);
+  const enough=slot!=='ultimate'||state.energy[id]>=100;
+  const ready=canAct&&enough&&SKILLS.readyCreated(state,id,skill,slot);
+  const note=remaining>0?'CD '+remaining+' รอบ':
+   !enough?'ต้องมี EX 100':'พร้อม · '+skill.effects.length+' ขั้น';
+  return '<button type="button" data-created-skill="'+esc(slot)+'" '+
+   (ready?'':'disabled')+'><strong>'+esc(CREATED_SLOT_LABELS[slot])+
+   ' · '+esc(skill.name)+'</strong><small>'+esc(note)+'</small></button>';
+ }).join(''):'<p class="created-battle-empty">ยังไม่ได้ติดตั้งสกิลที่สร้างเอง · ไปที่แท็บ สร้างสกิล เพื่อออกแบบและติดตั้งให้ตัวละครได้ค่ะ</p>';
+}
+function sendCreatedSkill(slot){
+ if(view!=='battle'||actionBusy||!frameReady||state.phase!=='player'||
+  !CREATOR.slots.includes(slot))return;
+ const id=state.active,queued=INIT.current(state),skill=CREATOR.equipped(id,slot);
+ if(!skill||queued?.side!=='ally'||queued.id!==id||state.hp[id]<=0||
+  state.acted[id]||!CORE.living(state).length)return;
+ if(slot==='ultimate'&&state.energy[id]<100)
+  return notice('EX ไม่ถึง 100 สำหรับ Ultimate');
+ if(!SKILLS.readyCreated(state,id,skill,slot))
+  return notice('ยังใช้ไม่ได้: คูลดาวน์หรือสถานะจำกัดการใช้สกิล');
+ actionBusy=true;
+ const previousEX=state.energy[id];
+ if(slot==='ultimate')state.energy[id]=0;
+ const report=SKILLS.cast(state,id,slot,state.targetId,skill);
+ if(!report.ok){
+  if(slot==='ultimate')state.energy[id]=previousEX;
+  actionBusy=false;
+  render();return notice('ใช้สกิลไม่สำเร็จ: '+report.reason);
+ }
+ renderBattle();
+ (async()=>{
+  try{
+   await arena.playDatabaseSkill(id,report.skill,report);
+   const damage=report.events.filter(e=>e.kind==='damage')
+    .reduce((v,e)=>v+(e.amount||0),0);
+   const healing=report.events.filter(e=>e.kind==='heal')
+    .reduce((v,e)=>v+(e.amount||0),0);
+   log('🧪 '+UNIT[id].name+' · '+skill.name+' · '+damage+' DMG · '+healing+' HEAL');
+   reportLifeEvents();
+   if(damage>0&&state.boost)state.boost=false;
+   if(slot!=='ultimate')state.energy[id]=Math.min(100,state.energy[id]+15);
+   state.acted[id]=true;
+   await finishHeroTurn();
+  }catch(err){
+   console.error('Created skill execution:',err);
+   log('⚠️ การแสดงผลสกิลที่สร้างเองขัดข้อง · ตรวจสอบบันทึกการต่อสู้');
+   reportLifeEvents();
+   state.acted[id]=true;
+   if(state.phase==='player')await finishHeroTurn();
+  }finally{
+   actionBusy=false;arena?.energy(state.energy);render();resumeEnemyTurn();
+  }
+ })();
+}
+
 function setSkillKit(kitId){
  if(actionBusy||state.phase==='enemy')return notice('เปลี่ยนชุดสกิลได้หลังแอนิเมชันจบ');
  if(kitId&&!SKILL_DB.get(kitId))return;
@@ -793,6 +859,7 @@ document.addEventListener('click',e=>{
  if(btn.dataset.targetEnemy){selectEnemy(btn.dataset.targetEnemy);return}
  if(btn.dataset.command){sendCommand(btn.dataset.command);return}
  if(btn.dataset.dbSkill){sendDatabaseSkill(btn.dataset.dbSkill);return}
+ if(btn.dataset.createdSkill){sendCreatedSkill(btn.dataset.createdSkill);return}
  if(btn.dataset.lifeTest){testLife(btn.dataset.lifeTest);return}
  if(btn.dataset.elementChoice){setElement(btn.dataset.elementChoice);return}
  if(btn.dataset.assist!==undefined){useSupport(Number(btn.dataset.assist));return}
