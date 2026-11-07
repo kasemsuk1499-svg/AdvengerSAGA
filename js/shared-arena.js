@@ -321,7 +321,13 @@
     AdvengerCharacters.get(id)?.defaultElement||'arcane';
    const color=window.AdvengerElements?.get(element)?.color||this.field.color(element);
    try{
-    this.announce('SKILL DATABASE · '+skill.name,'Data-driven ability · '+report.hero.name);
+    const programmedHits=skill.overlimit?
+     report.events.filter(evt=>evt.kind==='damage').reduce((sum,evt)=>
+      sum+(evt.hits||1),0):0;
+    this.announce(programmedHits>32?'☄️ OVERLIMIT · '+
+     programmedHits.toLocaleString('en-US')+' HIT':
+     'SKILL DATABASE · '+skill.name,
+     'Data-driven ability · '+report.hero.name);
     const point=this.field.point(actor);
     if(!choreographed){
      this.field.emit('charge',point,point,color,this.reduced?130:480);
@@ -378,7 +384,10 @@
      }
     }
     await wait(this.reduced?110:450);
-    this.announce('SKILL COMPLETE',skill.name+' · '+report.events.length+' effects');
+    this.announce(programmedHits>32?'☄️ OVERLIMIT COMPLETE':'SKILL COMPLETE',
+     skill.name+' · '+(programmedHits>32?
+      programmedHits.toLocaleString('en-US')+' HIT (configured)':
+      report.events.length+' effects'));
     return true;
    }finally{
     this.busy=false;this.stage.classList.remove('as-busy');
