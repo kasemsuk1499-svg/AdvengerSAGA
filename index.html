@@ -163,6 +163,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <link rel="stylesheet" href="css/stats.css?v=1.1">
 <link rel="stylesheet" href="css/initiative.css?v=1.2">
 <link rel="stylesheet" href="css/status-effects.css?v=1.3">
+<link rel="stylesheet" href="css/life-system.css?v=1.4">
 </head>
 <body>
 <div class="shell">
@@ -246,6 +247,22 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
       <div id="dbStatusInfo" class="db-status-line" aria-live="polite"></div>
       <a id="dbSource" class="db-source" target="_blank" rel="noopener noreferrer" hidden>แหล่งข้อมูลสกิลที่ตรวจสอบ</a>
       <p class="db-notice">ข้อมูลจาก Seven Knights Re:BIRTH เป็นตัวอย่างชุดสกิลที่ตรวจสอบแล้ว · คูลดาวน์ 30 วินาที = 1 รอบ (สูตรดาเมจดัดแปลงสำหรับ AdvengerSAGA) · เปลี่ยนชุดสกิลแล้วเริ่มไฟต์ใหม่</p>
+    </details>
+    <details class="life-lab" id="lifePanel">
+      <summary>💀 LIFE LAB · ตาย / ฟื้นคืนชีพ <span class="small">ทดลองกลไก ไม่กินเทิร์น</span></summary>
+      <label for="lifeDemoTarget">ตัวละครที่ทดสอบ</label>
+      <select id="lifeDemoTarget" aria-label="เลือกตัวละครที่จะทดสอบการตายหรือชุบชีวิต"></select>
+      <div id="lifeDemoInfo" class="life-demo-info"></div>
+      <div class="life-lab-grid">
+       <button type="button" data-life-test="guts">🛡️ มอบ Guts 1 ครั้ง</button>
+       <button type="button" data-life-test="immortality">✨ มอบ Immortality 2 รอบ</button>
+       <button type="button" data-life-test="autoRevive">💠 Auto Revive 60%</button>
+       <button type="button" data-life-test="soulDeath">🔒 Soul Death 3 รอบ</button>
+       <button type="button" data-life-test="damage">💀 โจมตีถึงตาย</button>
+       <button type="button" data-life-test="revive">🌱 ชุบชีวิต 40%</button>
+       <button type="button" data-life-test="cleanse">🕊️ ล้างสถานะผิดปกติ</button>
+      </div>
+      <p class="small">ทดลองได้กับสมาชิกทีมหลัก รวมตัวละคร KO · ถ้ามี Soul Death การชุบชีวิตจะถูกปฏิเสธ · ค่าทดลองไม่ใช่ค่าที่บังคับใช้กับทุกสกิล</p>
     </details>
     <details class="ailment-lab" id="ailmentPanel">
       <summary>🧪 STATUS LAB · ทดสอบสถานะผิดปกติ <span class="small">ไม่ใช้เทิร์น · เฉพาะสนามทดลอง</span></summary>
