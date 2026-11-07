@@ -49,7 +49,7 @@
      triggers:[{event:'battleStart',target:'self',effect:status('magicImmunity',1,2)}]}
    }}
  ];
- const VALID_TARGETS=new Set(['self','singleEnemy','threeEnemies','allEnemies','allAllies','singleAlly']);
+ const VALID_TARGETS=new Set(['self','singleEnemy','threeEnemies','fourEnemies','allEnemies','allAllies','singleAlly']);
  const VALID_TYPES=new Set(['damage','heal','status','cleanse','reduceBuffDuration','revive']);
  function register(entry,replace=false){
   if(!entry||typeof entry.id!=='string'||!/^[a-z][a-z0-9-]*$/.test(entry.id)||(!replace&&all.has(entry.id)))

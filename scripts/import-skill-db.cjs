@@ -14,7 +14,7 @@ if(!file){
 const source=JSON.parse(fs.readFileSync(path.resolve(file),'utf8'));
 const records=Array.isArray(source)?source:source.heroes;
 if(!Array.isArray(records))throw Error('Expect a JSON array or {"heroes":[...]}');
-const allowedTargets=new Set(['self','singleEnemy','threeEnemies','allEnemies','allAllies','singleAlly']);
+const allowedTargets=new Set(['self','singleEnemy','threeEnemies','fourEnemies','allEnemies','allAllies','singleAlly']);
 const allowedEffects=new Set(['damage','heal','status','cleanse','reduceBuffDuration','revive']);
 const seen=new Set();
 for(const hero of records){

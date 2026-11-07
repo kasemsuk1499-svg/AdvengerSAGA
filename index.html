@@ -162,12 +162,13 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <link rel="stylesheet" href="css/skill-system.css?v=1.0">
 <link rel="stylesheet" href="css/stats.css?v=1.1">
 <link rel="stylesheet" href="css/initiative.css?v=1.2">
+<link rel="stylesheet" href="css/status-effects.css?v=1.3">
 </head>
 <body>
 <div class="shell">
 <header>
  <div class="logo"><div class="mark">✦</div><div><div class="eyebrow">4 + 2 Party System</div><div class="brand">AdvengerSAGA</div><div class="sub">Anime Combat · Optimized Battle Labs</div></div></div>
- <span class="tag">SPD INITIATIVE · v1.2</span>
+ <span class="tag">STATUS ENGINE · v1.3</span>
 </header>
 <nav aria-label="การนำทาง">
  <button class="nav-btn active" data-screen="formation">🧩 จัดทีม</button>
@@ -246,6 +247,20 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
       <a id="dbSource" class="db-source" target="_blank" rel="noopener noreferrer" hidden>แหล่งข้อมูลสกิลที่ตรวจสอบ</a>
       <p class="db-notice">ข้อมูลจาก Seven Knights Re:BIRTH เป็นตัวอย่างชุดสกิลที่ตรวจสอบแล้ว · คูลดาวน์ 30 วินาที = 1 รอบ (สูตรดาเมจดัดแปลงสำหรับ AdvengerSAGA) · เปลี่ยนชุดสกิลแล้วเริ่มไฟต์ใหม่</p>
     </details>
+    <details class="ailment-lab" id="ailmentPanel">
+      <summary>🧪 STATUS LAB · ทดสอบสถานะผิดปกติ <span class="small">ไม่ใช้เทิร์น · เฉพาะสนามทดลอง</span></summary>
+      <div class="ailment-lab-controls">
+        <label for="ailmentDemoKind">เลือกสถานะ</label>
+        <select id="ailmentDemoKind" aria-label="สถานะที่ต้องการทดสอบ"></select>
+        <label for="ailmentDemoTurns">ระยะเวลา</label>
+        <select id="ailmentDemoTurns"><option value="1">1 เทิร์น</option><option value="2" selected>2 เทิร์น</option><option value="3">3 เทิร์น</option><option value="4">4 เทิร์น</option></select>
+      </div>
+      <div class="ailment-lab-buttons">
+        <button type="button" id="ailmentDemoEnemy">🎯 ใส่สถานะให้ศัตรูเป้าหมาย</button>
+        <button type="button" id="ailmentDemoAlly">🛡️ ใส่สถานะให้ตัวละครปัจจุบัน</button>
+      </div>
+      <p class="small">ทดสอบสถานะโดยตรง ไม่ใช่สกิลตัวละคร · บังคับโอกาสติด 100% แต่ภูมิคุ้มกันยังมีผล</p>
+    </details>
     <details class="element-picker" id="elementPanel"><summary>✧ ปรับธาตุของเอฟเฟกต์ <span class="small">แตะเพื่อเลือกสี</span></summary><div id="elementChoices" class="element-choices" role="group" aria-label="เลือกธาตุ"></div></details>
    </section>
   </div>
@@ -272,6 +287,12 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
  <div class="panel"><h2>สิ่งที่ใช้ได้ในรุ่นนี้</h2><p>จัดตำแหน่งสมาชิกหลัก 4 ช่อง สลับผู้ช่วย 2 ช่อง บันทึกทีมอัตโนมัติ สลับตัวละครที่ควบคุมในสนามทดลอง และใช้การช่วยเหลือแบบจำกัดจำนวนครั้ง พร้อมจัดการ HP/EX และการเลือกเป้าหมายศัตรูผ่านระบบกลาง</p>
  <p class="help">รุ่นนี้เป็น <b>4-Character Training Arena</b> สมาชิกหลักทั้งสี่คนยืนในสนามพร้อมกัน แต่ผู้เล่นสั่งโจมตีทีละคน ส่วนผู้ช่วยยังเป็นตัวต้นแบบ และมีเทิร์นศัตรูแบบกำหนดเป้าหมายล่วงหน้า รองรับศัตรูหลายตัวและบอสทดลอง มีระบบสกิลกลางอ้างอิงข้อมูล Re:BIRTH (ตัวอย่างที่ผ่านการตรวจสอบ) แต่ยังไม่มี AI เชิงกลยุทธ์ / เซิร์ฟเวอร์เซฟ</p>
  <div class="chips" id="labLinks"></div></div>
+ <div class="panel ailment-dictionary">
+  <h2>🩺 Status Effect Library · 17 สถานะ</h2>
+  <p class="help">สถานะต่อเนื่อง ควบคุมการกระทำ และจำกัดความสามารถ โดยอ้างอิงรูปแบบ Seven Knights Re:BIRTH</p>
+  <div id="ailmentCatalog"></div>
+  <p class="help">แหล่งข้อมูล: <a href="https://gamewith.net/sevenknights-rebirth/70421" target="_blank" rel="noopener noreferrer">GameWith — Seven Knights Re:BIRTH Statuses</a></p>
+ </div>
  <div class="panel stat-dictionary"><h2>🧬 Universal Stat Database</h2>
  <p class="help">สแตตทั้ง 30 รายการใช้ร่วมกันได้ทั้งตัวละคร ศัตรู และบอส · ค่าเปอร์เซ็นต์เก็บเป็นสัดส่วน เช่น 0.40 = 40% · สูตรต่อสู้จะตกลงกันภายหลัง</p>
  <div id="statCatalog" aria-label="สารานุกรมค่าสถานะทั้งหมด"></div></div>
@@ -295,6 +316,8 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <script src="js/initiative.js?v=1.2"></script>
 <script src="js/skill-db.js?v=1.0"></script>
 <script src="js/skill-imports.js?v=1.0"></script>
-<script src="js/skill-engine.js?v=1.0"></script>
+<script src="js/status-db.js?v=1.3"></script>
+<script src="js/status-engine.js?v=1.3"></script>
+<script src="js/skill-engine.js?v=1.3"></script>
 <script src="js/character-loader.js?v=0.8"></script>
 </body></html>
