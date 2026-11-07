@@ -303,6 +303,8 @@ async function enemyPhase(){
   await arena.enemyAttack(move.heroId,move.damage,move.guarded,foe.name);
   const dealt=CORE.applyStrike(state,move);
   if(SKILLS.onLethal(state,move.heroId))log('✦ '+UNIT[move.heroId].name+' · Passive REVIVE!');
+  if(state.hp[move.heroId]>0&&foe.statusOnHit&&SKILLS.addStatus(state,'ally',move.heroId,foe.statusOnHit,foe.id))
+   log('🌀 '+foe.name+' ติดสถานะ '+foe.statusOnHit.key+' ให้ '+UNIT[move.heroId].name);
   log('🔴 '+foe.name+' → '+UNIT[move.heroId].name+' −'+dealt+' HP'+(move.guarded?' [GUARD]':''));
   state.enemyCursor=i+1;renderBattle();store();
  }
