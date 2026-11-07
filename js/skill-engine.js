@@ -140,6 +140,8 @@
   let x=Math.max(0,Number(amount)||0);
   if(value(s,toSide,toId,'magicImmunity')&&damageType==='magic')return 0;
   x*=1-value(s,fromSide,fromId,'attackDown');
+  const weakness=value(s,fromSide,fromId,'weaknessBoost');
+  if(weakness>0&&rand(s)<weakness)x*=1.30;
   if(damageType==='physical')x*=1+value(s,fromSide,fromId,'physicalDamageUp');
   if(damageType==='physical')x*=1+value(s,toSide,toId,'physicalVulnerability');
   x*=1+value(s,toSide,toId,'defenseDown')*.6;
