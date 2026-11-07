@@ -394,7 +394,15 @@ async function finishHeroTurn(){
  await runInitiative();
 }
 function resumeEnemyTurn(){
- if(view!=='battle'||!frameReady||actionBusy||state.phase!=='enemy')return;
+ if(view!=='battle'||!frameReady||actionBusy)return;
+ const next=INIT.current(state);
+ // Also auto-resolve an allied turn that is blocked by Crowd Control.
+ // Otherwise a user testing Stun/Paralysis on the current hero could lock
+ // out every command without advancing the SPD queue.
+ const blockedAlly=next?.side==='ally'&&
+  !STATUS.canUse(state,'ally',next.id,'basic');
+ if(state.phase!=='enemy'&&!blockedAlly&&next)return;
+ if(['victory','defeat'].includes(state.phase))return;
  actionBusy=true;
  runInitiative().catch(err=>{
   console.error('SPD initiative resume failed',err);
@@ -589,7 +597,7 @@ function testAilment(side){
  if(!ok)return notice('เป้าหมายมีสถานะคุ้มกันหรือไม่สามารถติดสถานะนี้');
  const targetName=side==='enemy'?enemy.name:UNIT[target].name;
  log('🧪 ทดลอง · '+AILMENTS.labels[key]+' → '+targetName+' ('+turns+' รอบ)');
- render();
+ render();resumeEnemyTurn();
 }
 
 function renderSkillDatabase(canAct){
