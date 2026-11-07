@@ -14,13 +14,14 @@
  const encounters=Object.freeze({
   training:Object.freeze({name:'Training Grounds',nameTh:'ฝึกต่อสู้ · ศัตรู 1 ตัว',enemies:['sentinel']}),
   skirmish:Object.freeze({name:'Three-Way Skirmish',nameTh:'ปะทะหมู่ · ศัตรู 3 ตัว',enemies:['scout','guardian','wisp']}),
-  boss:Object.freeze({name:'Abyss Boss',nameTh:'บอส + ลูกสมุน 2 ตัว',enemies:['wisp','overlord','scout']})
+  boss:Object.freeze({name:'Abyss Boss',nameTh:'บอส + ลูกสมุน 2 ตัว',enemies:['wisp','overlord','scout']}),
+  horde:Object.freeze({name:'Four Foe Skill Lab',nameTh:'ห้องทดลองสกิล · ศัตรู 4 ตัว',enemies:['sentinel','scout','guardian','wisp']})
  });
  /* Encounter entries may be enemy-type IDs or registered character modules.
     This lets the same character fight as ally, enemy or boss in story content. */
  function instantiate(list){
-  if(!Array.isArray(list)||!list.length||list.length>3)
-   throw new Error('Encounter needs 1–3 enemies');
+  if(!Array.isArray(list)||!list.length||list.length>4)
+   throw new Error('Encounter needs 1–4 enemies');
   return list.map((entry,index)=>{
    const opt=typeof entry==='string'?{kind:entry}:entry;
    if(!opt||typeof opt!=='object')throw new Error('Invalid enemy entry');
