@@ -164,16 +164,18 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <link rel="stylesheet" href="css/initiative.css?v=1.2">
 <link rel="stylesheet" href="css/status-effects.css?v=1.3">
 <link rel="stylesheet" href="css/life-system.css?v=1.4">
+<link rel="stylesheet" href="css/skill-creator.css?v=1.5">
 </head>
 <body>
 <div class="shell">
 <header>
  <div class="logo"><div class="mark">✦</div><div><div class="eyebrow">4 + 2 Party System</div><div class="brand">AdvengerSAGA</div><div class="sub">Anime Combat · Optimized Battle Labs</div></div></div>
- <span class="tag">DEATH & REVIVAL · v1.4</span>
+ <span class="tag">SKILL CREATOR LAB · v1.5</span>
 </header>
 <nav aria-label="การนำทาง">
  <button class="nav-btn active" data-screen="formation">🧩 จัดทีม</button>
  <button class="nav-btn" data-screen="battle">⚔️ สนามทดสอบ</button>
+ <button class="nav-btn" data-screen="creator">🧪 สร้างสกิล</button>
  <button class="nav-btn" data-screen="about">📖 ข้อมูล</button>
 </nav>
 <section id="formation" class="screen active">
@@ -264,6 +266,11 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
       </div>
       <p class="small">ทดลองได้กับสมาชิกทีมหลัก รวมตัวละคร KO · ถ้ามี Soul Death การชุบชีวิตจะถูกปฏิเสธ · ค่าทดลองไม่ใช่ค่าที่บังคับใช้กับทุกสกิล</p>
     </details>
+    <details class="created-skill-panel" id="createdSkillPanel" open>
+      <summary>🧪 MY CREATED SKILLS <span class="small">สกิลที่ติดตั้งจาก Skill Creator Lab</span></summary>
+      <div id="createdBattleSkills" class="created-battle-skills"></div>
+      <button type="button" class="button ghost" data-screen="creator">+ ไปสร้าง / ติดตั้งสกิล</button>
+    </details>
     <details class="ailment-lab" id="ailmentPanel">
       <summary>🧪 STATUS LAB · ทดสอบสถานะผิดปกติ <span class="small">ไม่ใช้เทิร์น · เฉพาะสนามทดลอง</span></summary>
       <div class="ailment-lab-controls">
@@ -299,6 +306,84 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
   </aside>
  </div>
 </section>
+
+<section id="creator" class="screen" aria-label="แล็บสร้างสกิลตัวละคร">
+ <div class="hero-banner creator-banner">
+  <div class="eyebrow">ADVENGERSAGA · SKILL CREATOR v1.5</div>
+  <h1>🧪 สร้างสกิลตัวละคร</h1>
+  <p>เลือกเอฟเฟกต์จากฐานข้อมูลกลาง แล้วกำหนดให้ทำงานทีละขั้น 1 → 2 → 3 สร้างได้ทั้งโจมตีหลายเป้าหมาย หลายฮิต ดีบัฟ บัฟ ฮีล และคืนชีพ จากนั้นติดตั้งให้ตัวละครที่ต้องการ</p>
+ </div>
+ <div class="skill-creator-layout">
+  <div class="panel creator-editor">
+   <div class="panel-head"><h2>✦ Skill Workshop</h2><span class="chip">ORDERED EFFECTS</span></div>
+   <div class="creator-picker">
+    <label for="skillLabList">เลือกสกิลที่เคยบันทึก</label>
+    <select id="skillLabList" aria-label="คลังสกิลที่สร้างแล้ว"><option value="">— สกิลใหม่ —</option></select>
+    <button id="skillLabNew" class="button ghost" type="button">+ สกิลใหม่</button>
+    <button id="skillLabExample" class="button ghost" type="button">⚡ ตัวอย่าง 4×4</button>
+   </div>
+   <div class="creator-fields">
+    <label>ชื่อสกิล
+      <input id="skillLabName" maxlength="70" placeholder="เช่น Thunder Judgment" autocomplete="off">
+    </label>
+    <label>เป้าหมายหลัก
+      <select id="skillLabTarget"></select>
+    </label>
+    <label>ชนิดความเสียหาย
+      <select id="skillLabDamageType"><option value="physical">กายภาพ (P_ATK)</option><option value="magic">เวทมนตร์ (M_ATK)</option></select>
+    </label>
+    <label>คูลดาวน์ (รอบ)
+      <input id="skillLabCooldown" type="number" min="0" max="30" step="1" value="3">
+    </label>
+   </div>
+   <div class="creator-step-header">
+    <div><h3>เอฟเฟกต์ตามลำดับ</h3><p>ระบบทำขั้นที่ 1 ให้เสร็จก่อน จึงเริ่มขั้นถัดไป</p></div>
+    <button id="skillLabAdd" class="button primary" type="button">+ เพิ่มเอฟเฟกต์</button>
+   </div>
+   <div id="skillLabEffects" class="creator-step-list" aria-label="ขั้นตอนเอฟเฟกต์สกิล"></div>
+   <div id="skillLabMessage" class="creator-feedback" role="status" aria-live="polite"></div>
+   <div class="creator-footer-actions">
+    <button id="skillLabSave" class="button primary" type="button">💾 บันทึกลงคลัง</button>
+    <button id="skillLabDuplicate" class="button ghost" type="button">ทำสำเนา</button>
+    <button id="skillLabDelete" class="button ghost" type="button">ลบสกิล</button>
+   </div>
+  </div>
+  <div class="creator-side">
+   <div class="panel">
+    <div class="panel-head"><h2>⚔️ ติดตั้งให้ตัวละคร</h2><span class="chip">EQUIP</span></div>
+    <p class="help">บันทึกสกิลก่อน แล้วเลือกตัวละครและช่องที่จะติดตั้ง สกิลที่สร้างสามารถติดตั้งให้หลายตัวละครได้</p>
+    <label class="creator-label" for="skillLabHero">ตัวละคร</label>
+    <select id="skillLabHero"></select>
+    <label class="creator-label" for="skillLabSlot">ช่องสกิล</label>
+    <select id="skillLabSlot">
+     <option value="basic">Basic · โจมตีปกติ</option>
+     <option value="skill1">Skill 1 · สกิล 1</option>
+     <option value="skill2">Skill 2 · สกิล 2</option>
+     <option value="ultimate">Ultimate · อัลติเมท (EX 100)</option>
+    </select>
+    <div id="skillLabEquipped" class="creator-equipped">ยังไม่มีสกิลติดตั้ง</div>
+    <div class="creator-equip-actions">
+     <button id="skillLabEquip" class="button primary" type="button">✓ ติดตั้งสกิลนี้</button>
+     <button id="skillLabUnequip" class="button ghost" type="button">ถอดออก</button>
+    </div>
+    <button id="skillLabBattle" class="button ghost wide" type="button" data-screen="battle">⚔️ ไปทดลองในสนาม</button>
+   </div>
+   <div class="panel">
+    <h2>🧾 ตัวอย่างข้อมูลสกิล</h2>
+    <p class="help">ดูข้อมูลจริงที่ใช้บันทึก เอฟเฟกต์ยังคงอยู่ในลำดับที่กำหนด และสามารถส่งออกเป็น JSON ได้</p>
+    <pre id="skillLabPreview" class="creator-json" aria-label="ข้อมูล JSON ของสกิล"></pre>
+    <h3>สำรองข้อมูล / ย้ายเครื่อง</h3>
+    <p class="help">ไฟล์สกิลเก็บในเบราว์เซอร์เครื่องนี้ ไม่ได้อัปโหลดขึ้น GitHub อัตโนมัติ</p>
+    <textarea id="skillLabTransfer" rows="5" placeholder="JSON สำหรับส่งออกหรือนำเข้าคลังสกิล"></textarea>
+    <div class="creator-transfer-actions">
+     <button id="skillLabExport" class="button ghost" type="button">📤 ส่งออก JSON</button>
+     <button id="skillLabImport" class="button ghost" type="button">📥 นำเข้า JSON</button>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
 <section id="about" class="screen">
  <div class="hero-banner"><div class="eyebrow">DEVELOPMENT ROADMAP</div><h1>AdvengerSAGA</h1><p>ระบบต่อสู้แสดงสมาชิกหลักทั้ง 4 คนในสนามเดียวกัน และผู้ช่วยอีก 2 ช่อง แยกข้อมูลและชุดท่าโจมตีเป็นโฟลเดอร์ของแต่ละตัวละคร พร้อมเปลี่ยนภาพเป็น PNG ในอนาคต</p></div>
  <div class="panel"><h2>สิ่งที่ใช้ได้ในรุ่นนี้</h2><p>จัดตำแหน่งสมาชิกหลัก 4 ช่อง สลับผู้ช่วย 2 ช่อง บันทึกทีมอัตโนมัติ สลับตัวละครที่ควบคุมในสนามทดลอง และใช้การช่วยเหลือแบบจำกัดจำนวนครั้ง พร้อมจัดการ HP/EX และการเลือกเป้าหมายศัตรูผ่านระบบกลาง</p>
@@ -343,6 +428,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <script src="js/status-engine.js?v=1.3"></script>
 <script src="js/life-db.js?v=1.4"></script>
 <script src="js/life-engine.js?v=1.4"></script>
-<script src="js/skill-engine.js?v=1.3"></script>
+<script src="js/skill-engine.js?v=1.5"></script>
+<script src="js/skill-creator.js?v=1.5"></script>
 <script src="js/character-loader.js?v=0.8"></script>
 </body></html>
