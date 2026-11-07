@@ -159,12 +159,13 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <link rel="stylesheet" href="css/turn-battle.css?v=0.5">
 <link rel="stylesheet" href="css/character-assets.css?v=0.8">
 <link rel="stylesheet" href="css/encounters.css?v=0.9">
+<link rel="stylesheet" href="css/skill-system.css?v=1.0">
 </head>
 <body>
 <div class="shell">
 <header>
  <div class="logo"><div class="mark">✦</div><div><div class="eyebrow">4 + 2 Party System</div><div class="brand">AdvengerSAGA</div><div class="sub">Anime Combat · Optimized Battle Labs</div></div></div>
- <span class="tag">TURN-BASED · v0.5</span>
+ <span class="tag">SKILL ENGINE · v1.0</span>
 </header>
 <nav aria-label="การนำทาง">
  <button class="nav-btn active" data-screen="formation">🧩 จัดทีม</button>
@@ -231,6 +232,18 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
       <button type="button" class="combat-command ultimate" data-command="ultimate"><span class="command-seal">III</span><span class="combat-command-icon">✶</span><span class="command-type">LIMIT BREAK</span><strong>ULTIMATE</strong><small id="ultimateLabel">ใช้ EX 100</small><em>L</em></button>
     </div>
     <div class="turn-utility"><button type="button" class="guard-command" id="guardCommand" data-command="guard">🛡️ ป้องกัน / ผ่านเทิร์น</button><small>รับความเสียหายลดลง 50% เมื่อถูกโจมตีรอบนี้ · EX +15</small></div>
+    <details class="skill-database" id="dbSkillPanel" open>
+      <summary>✦ SEVEN KNIGHTS · ฐานข้อมูลสกิล <span class="small">ทดลองใช้สกิลข้อมูลจริง ผ่านกติกาเกมเรา</span></summary>
+      <div class="db-kit-head">
+        <label for="dbHeroKit">ชุดสกิลอ้างอิงสำหรับตัวที่เลือก</label>
+        <select id="dbHeroKit"><option value="">ไม่ใช้ฐานข้อมูล</option></select>
+      </div>
+      <p class="db-hint" id="dbPassiveInfo">เลือกชุดสกิลเพื่อดู Passive และท่าพิเศษ</p>
+      <div id="dbSkillButtons" class="db-skill-buttons"></div>
+      <div id="dbStatusInfo" class="db-status-line" aria-live="polite"></div>
+      <a id="dbSource" class="db-source" target="_blank" rel="noopener noreferrer" hidden>แหล่งข้อมูลสกิลที่ตรวจสอบ</a>
+      <p class="db-notice">ข้อมูลจาก Seven Knights Re:BIRTH เป็นตัวอย่างชุดสกิลที่ตรวจสอบแล้ว · คูลดาวน์ 30 วินาที = 1 รอบ (สูตรดาเมจดัดแปลงสำหรับ AdvengerSAGA) · เปลี่ยนชุดสกิลแล้วเริ่มไฟต์ใหม่</p>
+    </details>
     <details class="element-picker" id="elementPanel"><summary>✧ ปรับธาตุของเอฟเฟกต์ <span class="small">แตะเพื่อเลือกสี</span></summary><div id="elementChoices" class="element-choices" role="group" aria-label="เลือกธาตุ"></div></details>
    </section>
   </div>
@@ -251,7 +264,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <section id="about" class="screen">
  <div class="hero-banner"><div class="eyebrow">DEVELOPMENT ROADMAP</div><h1>AdvengerSAGA</h1><p>ระบบต่อสู้แสดงสมาชิกหลักทั้ง 4 คนในสนามเดียวกัน และผู้ช่วยอีก 2 ช่อง แยกข้อมูลและชุดท่าโจมตีเป็นโฟลเดอร์ของแต่ละตัวละคร พร้อมเปลี่ยนภาพเป็น PNG ในอนาคต</p></div>
  <div class="panel"><h2>สิ่งที่ใช้ได้ในรุ่นนี้</h2><p>จัดตำแหน่งสมาชิกหลัก 4 ช่อง สลับผู้ช่วย 2 ช่อง บันทึกทีมอัตโนมัติ สลับตัวละครที่ควบคุมในสนามทดลอง และใช้การช่วยเหลือแบบจำกัดจำนวนครั้ง พร้อมจัดการ HP/EX และการเลือกเป้าหมายศัตรูผ่านระบบกลาง</p>
- <p class="help">รุ่นนี้เป็น <b>4-Character Training Arena</b> สมาชิกหลักทั้งสี่คนยืนในสนามพร้อมกัน แต่ผู้เล่นสั่งโจมตีทีละคน ส่วนผู้ช่วยยังเป็นตัวต้นแบบ และมีเทิร์นศัตรูแบบกำหนดเป้าหมายล่วงหน้า รองรับศัตรูหลายตัวและบอสทดลอง แต่ยังไม่มี AI เชิงกลยุทธ์ / เซิร์ฟเวอร์เซฟ</p>
+ <p class="help">รุ่นนี้เป็น <b>4-Character Training Arena</b> สมาชิกหลักทั้งสี่คนยืนในสนามพร้อมกัน แต่ผู้เล่นสั่งโจมตีทีละคน ส่วนผู้ช่วยยังเป็นตัวต้นแบบ และมีเทิร์นศัตรูแบบกำหนดเป้าหมายล่วงหน้า รองรับศัตรูหลายตัวและบอสทดลอง มีระบบสกิลกลางอ้างอิงข้อมูล Re:BIRTH (ตัวอย่างที่ผ่านการตรวจสอบ) แต่ยังไม่มี AI เชิงกลยุทธ์ / เซิร์ฟเวอร์เซฟ</p>
  <div class="chips" id="labLinks"></div></div>
 </section>
 <footer class="footer">AdvengerSAGA · Fan-made prototype · Local save (this browser) · No external dependencies</footer>
@@ -269,5 +282,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid #374469a5;background:#0
 <script src="js/turn-rules.js?v=0.5"></script>
 <script src="js/encounter-catalog.js?v=0.9"></script>
 <script src="js/battle-core.js?v=0.9"></script>
+<script src="js/skill-db.js?v=1.0"></script>
+<script src="js/skill-engine.js?v=1.0"></script>
 <script src="js/character-loader.js?v=0.8"></script>
 </body></html>
