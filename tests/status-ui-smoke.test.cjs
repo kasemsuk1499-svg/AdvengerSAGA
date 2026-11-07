@@ -5,7 +5,7 @@
 const test=require('node:test'),a=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
-function boot(){
+function boot({customHero=false}={}){
  const nodes=new Map(),listeners={};
  const make=id=>{
   if(nodes.has(id))return nodes.get(id);
@@ -35,7 +35,7 @@ function boot(){
   body:{append(){},appendChild(){}}
  };
  const store=new Map(),localStorage={
-  getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)
+  getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)
  };
  const attacks=[];
  const g={document,localStorage,setTimeout:()=>0,console};
@@ -50,8 +50,15 @@ function boot(){
   'characters/tank/character.js','characters/gunner/character.js',
   'js/team-effects.js','js/turn-rules.js','js/encounter-catalog.js',
   'js/battle-core.js','js/initiative.js','js/skill-db.js',
-  'js/status-db.js','js/status-engine.js','js/life-db.js','js/life-engine.js','js/skill-engine.js','js/skill-creator.js'
+  'js/status-db.js','js/status-engine.js','js/life-db.js','js/life-engine.js','js/skill-engine.js','js/skill-creator.js','js/character-creator.js'
  ])load(p);
+ if(customHero){
+  const c=g.AdvengerCharacterCreator;
+  const stats=c.initial('gunner');stats.SPD=170;stats.P_ATK=440;
+  c.save({name:'My Original',nameTh:'ออริจินัล',classId:'gunner',
+   description:'Character Lab Test',stats,slots:{},portrait:null});
+  c.boot();
+ }
  g.AdvengerSharedArena=class{
   constructor(){ }
   mount(){ }
@@ -69,11 +76,26 @@ function boot(){
  };
  load('js/app.js');
  load('js/skill-creator-ui.js');
+ load('js/character-creator-ui.js');
  const click=data=>listeners.click({
   target:{closest:selector=>selector==='button'?{dataset:data}:null}
  });
  return {g,nodes,click,listeners,attacks};
 }
+test('saved custom hero appears in party picker, swaps into team and takes SPD priority',()=>{
+ const app=boot({customHero:true});
+ a.match(app.nodes.get('charLabStats').innerHTML,/MAX_HP/);
+ a.match(app.nodes.get('charLabStats').innerHTML,/CRIT_RATE/);
+ app.click({mainSlot:0});
+ a.match(app.nodes.get('pickerOptions').innerHTML,/My Original/);
+ app.click({pick:'custom-hero'});
+ const saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(saved.party[0],'custom-hero');
+ app.click({screen:'battle'});
+ a.match(app.nodes.get('turnOrder').innerHTML,/My Original/);
+ a.match(app.nodes.get('turnOrder').innerHTML,/SPD 170/);
+ a.match(app.nodes.get('activeName').textContent,/My Original/);
+});
 test('app boots cleanly and auto-selects highest-SPD Gunner',()=>{
  const app=boot();app.click({screen:'battle'});
  a.match(app.nodes.get('activeName').textContent,/Gunner/);
