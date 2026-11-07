@@ -1,4 +1,4 @@
-# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.5)
+# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.6)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,16 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v1.6 — One Original Character Creator / สร้างตัวละครเอง 1 ตัว
+
+- New playable **👤 Character Creator** browser workshop: create and edit **one original character** with its own name/Thai display name, class, description, all **30 stats**, optional PNG/JPG/WebP portrait, and **four** skill slots linked to v1.5 Skill Creator.
+- Supports the four approved class starting stat templates (Saber / Mage / Tank / Gunner) and lets users override every individual stat. The character inherits the chosen class's lightweight **original combat animations**; no new animation renderer or heavy 3D loop was added.
+- **Save → reload → choose in จัดทีม:** the generated hero registers alongside original modular characters, then may replace **one of four** main-party slots. Shared SPD initiative, HP, damage, status, KO/revive and equipped skill rules apply in Battle. The custom hero is not a fifth simultaneous fighter.
+- User art is stored **only on the current browser** (max 600 KB, PNG/JPG/WebP). Built-in class SVG remains the fallback. Character/skills are **not** uploaded to GitHub Pages or synchronized to other players automatically.
+- One-click JSON backup includes the hero, portrait and current Skill Creator library; JSON import uses whitelisted classes, stat IDs, skill effects and raster image data.
+- The editor supports one local character with the persistent ID \`custom-hero\`; new unique passive skill logic and custom character animation design are separate future tasks.
+- Full guide: [Character Creator Lab](docs/CHARACTER_CREATOR_LAB.md). Regression tests verify 30 stats, custom classes, portrait safety, save/reload, skill equip, SPD attacks and formation selection.
 
 ## v1.5 — Skill Creator Lab / ห้องทดลองสร้างสกิลตัวละคร
 
