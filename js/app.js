@@ -13,11 +13,12 @@ const UNITS=Object.keys(UNIT),SUPPORTS=Object.keys(SUPPORT);
 const MOVES=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).skills]));
 const ELEMENTS=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).colors]));
 const CORE=AdvengerBattleCore,ENCOUNTERS=AdvengerEncounters;
+const SKILLS=AdvengerSkillEngine,SKILL_DB=AdvengerSkillDB;
 const RULES=AdvengerTurnRules;
 const $=id=>document.getElementById(id);
 const fresh=()=>{
  const party=['saber','mage','tank','gunner'];
- return {
+ const initial={
   ...RULES.initial(party),battleVersion:CORE.version,party,assist:['focus','battery'],active:party[0],
    encounterId:'training',enemies:CORE.spawn('training'),targetId:'foe-0',enemyCursor:0,
   energy:Object.fromEntries(UNITS.map(id=>[id,100])),
@@ -25,6 +26,7 @@ const fresh=()=>{
   elements:Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).defaultElement])),
   logs:['AdvengerSAGA · Turn-Based · ROUND 1'],screen:'formation'
  };
+ return SKILLS.clear(initial);
 };
 function read(){
  try{
@@ -73,6 +75,7 @@ function read(){
    state.round=Math.min(999,state.round+1);
    state.acted=RULES.counters(state.party);state.guarded=RULES.counters(state.party);
   }
+  if(!legacy&&d.skillKits)SKILLS.restore(state,d);
   const available=RULES.available(state.party,state.hp,state.acted);
   state.active=available.includes(d.active)?d.active:
    (available[0]||RULES.alive(state.party,state.hp)[0]||state.party[0]);
@@ -222,6 +225,7 @@ function renderBattle(){
  $('fullDemo').href='characters/'+id+'/lab.html';
  if(frameReady){arena?.syncEnemies(state.enemies,state.targetId);
   arena?.status(state.hp,RULES.maxHP(state.party),state.acted,state.guarded,state.phase,state.active);}
+ renderSkillDatabase(canAct);
 }
 function render(){renderFormation();renderBattle();if(frameReady)arena?.energy(state.energy);store()}
 function show(tab){
@@ -258,6 +262,7 @@ function choose(type,index,id){
    Object.assign(state,RULES.initial(state.party));
    state.battleVersion=CORE.version;state.active=state.party[0];
    state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);state.enemyCursor=0;
+   SKILLS.clear(state);
    state.energy=Object.fromEntries(UNITS.map(unitId=>[unitId,100]));
    state.used=[false,false];state.boost=false;
    partyMounted='';arena?.reset();
@@ -293,14 +298,22 @@ async function enemyPhase(){
   state.enemyCursor=i;store();
   const move=CORE.strike(state,foe,i);
   if(!move)continue;
+  move.damage=SKILLS.adjustDamage(state,'enemy',foe.id,'ally',move.heroId,move.damage);
   arena.selectTarget(foe.id);
   await arena.enemyAttack(move.heroId,move.damage,move.guarded,foe.name);
   const dealt=CORE.applyStrike(state,move);
+  if(SKILLS.onLethal(state,move.heroId))log('✦ '+UNIT[move.heroId].name+' · Passive REVIVE!');
   log('🔴 '+foe.name+' → '+UNIT[move.heroId].name+' −'+dealt+' HP'+(move.guarded?' [GUARD]':''));
   state.enemyCursor=i+1;renderBattle();store();
  }
  state.enemyCursor=0;
  state.guarded=RULES.counters(state.party);
+ const statuses=SKILLS.advanceRound(state);
+ for(const effect of statuses){
+  if(effect.amount)log('☄️ '+(effect.side==='enemy'?
+    (state.enemies.find(e=>e.id===effect.id)?.name||'Enemy'):
+    (UNIT[effect.id]?.name||'Ally'))+' · '+effect.key+' −'+effect.amount+' HP');
+ }
  const result=CORE.outcome(state);
  if(result==='defeat'){
   state.phase='defeat';log('💀 DEFEAT · ทีมหลักทั้งหมด HP เป็นศูนย์');
@@ -347,7 +360,8 @@ function sendCommand(kind){
  if(kind==='ultimate')state.energy[id]=0;
  renderBattle();arena.energy(state.energy); // provisional EX is only persisted after the move completes
  const takeDamage=raw=>{
-  const dealt=CORE.hitEnemy(state,attackTarget,raw,bonus);
+  const scaled=SKILLS.adjustDamage(state,'ally',id,'enemy',attackTarget,raw,'physical');
+  const dealt=CORE.hitEnemy(state,attackTarget,scaled,bonus);
   hits++;damageDone+=dealt;
   const foe=state.enemies.find(e=>e.id===attackTarget);
   if(foe){
@@ -429,6 +443,7 @@ function resetEncounter(){
  Object.assign(state,newRound);
  state.battleVersion=CORE.version;state.active=state.party[0];
  state.enemies=CORE.spawn(state.encounterId);CORE.select(state,null);state.enemyCursor=0;
+ SKILLS.clear(state);
  state.used=[false,false];state.boost=false;
  state.energy=Object.fromEntries(UNITS.map(id=>[id,100]));
  arena?.reset();arena?.syncEnemies(state.enemies,state.targetId);
@@ -449,6 +464,75 @@ function setEncounter(id){
  if(state.encounterId===id)return;
  state.encounterId=id;resetEncounter();
  log('⚔️ เลือกสนาม '+ENCOUNTERS.get(id).nameTh);render();
+}
+
+function renderSkillDatabase(canAct){
+ const id=state.active,kitId=state.skillKits[id]||'';
+ const kit=SKILL_DB.get(kitId);
+ const select=$('dbHeroKit');
+ select.innerHTML='<option value="">ไม่ใช้ชุดสกิลอ้างอิง</option>'+
+  SKILL_DB.all().map(x=>'<option value="'+esc(x.id)+'"'+(kitId===x.id?' selected':'')+
+   '>'+esc(x.name)+' · '+esc(x.role)+'</option>').join('');
+ select.value=kitId;
+ select.disabled=actionBusy||state.phase==='enemy';
+ $('dbPassiveInfo').textContent=kit?
+  '✧ PASSIVE: '+kit.skills.passive.name+' · ใช้เมื่อเข้าไฟต์และเมื่อเข้าเงื่อนไข':
+  'เลือกตัวละครอ้างอิงเพื่อเปิดใช้ Active Skill 1, Active Skill 2 และ Passive ในระบบกลาง';
+ $('dbSkillButtons').innerHTML=kit?['skill1','skill2'].map((kind,i)=>{
+  const skill=kit.skills[kind],remaining=SKILLS.remaining(state,id,kind);
+  const available=canAct&&SKILLS.ready(state,id,kind);
+  const text=remaining>0?'CD '+remaining+' รอบ':skill.requiresDebuff&&!SKILLS.ready(state,id,kind)?
+   'ต้องมีดีบัฟให้ล้าง':'พร้อมใช้ · CD '+SKILL_DB.rounds(skill.cooldownSeconds)+' รอบ';
+  return '<button type="button" class="db-skill-button" data-db-skill="'+kind+'" '+
+   (available?'':'disabled')+'>'+
+   '<strong>'+(i+1)+' · '+esc(skill.name)+'</strong>'+
+   '<small>'+esc(text)+' · '+esc(skill.target)+'</small></button>';
+ }).join(''):'';
+ const source=$('dbSource');
+ source.hidden=!kit;
+ if(kit){source.href=kit.source;source.textContent='อ้างอิงชุดสกิล: '+kit.name;}
+ const foe=CORE.target(state);
+ const ally=SKILLS.statusText(state,'ally',id);
+ const enemy=foe?SKILLS.statusText(state,'enemy',foe.id):'';
+ $('dbStatusInfo').textContent='สถานะ '+UNIT[id].name+': '+(ally||'ปกติ')+
+   ' | เป้าหมาย: '+(enemy||'ปกติ');
+}
+function setSkillKit(kitId){
+ if(actionBusy||state.phase==='enemy')return notice('เปลี่ยนชุดสกิลได้หลังแอนิเมชันจบ');
+ if(kitId&&!SKILL_DB.get(kitId))return;
+ const id=state.active;
+ if(state.skillKits[id]===(kitId||null))return;
+ state.skillKits[id]=kitId||null;
+ resetEncounter();
+ log('📚 '+UNIT[id].name+' ใช้ฐานข้อมูลสกิล '+(kitId||'ไม่ใช้'));render();
+}
+function sendDatabaseSkill(kind){
+ if(view!=='battle'||actionBusy||!frameReady||state.phase!=='player')return;
+ const id=state.active;
+ if(state.hp[id]<=0||state.acted[id]||!CORE.living(state).length)return;
+ if(!SKILLS.ready(state,id,kind))return notice('สกิลติดคูลดาวน์หรือเงื่อนไขยังไม่ครบ');
+ actionBusy=true;
+ // The engine is pure data-driven: effects resolve once, the shared field only animates results.
+ const report=SKILLS.cast(state,id,kind,state.targetId);
+ if(!report.ok){actionBusy=false;return notice('ใช้สกิลไม่ได้: '+report.reason)}
+ renderBattle();store();
+ (async()=>{
+  try{
+   await arena.playDatabaseSkill(id,report.skill,report);
+   const damage=report.events.filter(e=>e.kind==='damage').reduce((v,e)=>v+e.amount,0);
+   const healing=report.events.filter(e=>e.kind==='heal').reduce((v,e)=>v+e.amount,0);
+   log('📖 '+UNIT[id].name+' · '+report.skill.name+' · '+damage+' DMG · '+healing+' HEAL');
+   if(damage>0&&state.boost)state.boost=false;
+   state.energy[id]=Math.min(100,state.energy[id]+15);
+   state.acted[id]=true;
+   await finishHeroTurn();
+  }catch(err){
+   console.error(err);
+   log('⚠️ แอนิเมชันสกิลฐานข้อมูลขัดข้อง แต่ผลการใช้สกิลถูกบันทึกแล้ว');
+   state.acted[id]=true;
+   if(state.phase==='player')await finishHeroTurn();
+  }finally{actionBusy=false;arena?.energy(state.energy);render()}
+ })();
 }
 // Portraits and cut-ins may point to PNG files not uploaded yet.
 // Use the unit's generic SVG placeholder instead of rendering a broken image.
@@ -471,6 +555,7 @@ document.addEventListener('click',e=>{
  if(btn.dataset.targetPick){selectEnemy(btn.dataset.targetPick);return}
  if(btn.dataset.targetEnemy){selectEnemy(btn.dataset.targetEnemy);return}
  if(btn.dataset.command){sendCommand(btn.dataset.command);return}
+ if(btn.dataset.dbSkill){sendDatabaseSkill(btn.dataset.dbSkill);return}
  if(btn.dataset.elementChoice){setElement(btn.dataset.elementChoice);return}
  if(btn.dataset.assist!==undefined){useSupport(Number(btn.dataset.assist));return}
 });
@@ -483,6 +568,7 @@ document.addEventListener('keydown',e=>{
  }else if(key==='r'){e.preventDefault();resetEncounter()}
 });
 $('cancelPicker').addEventListener('click',()=>{picker=null;renderPicker()});
+$('dbHeroKit').addEventListener('change',e=>setSkillKit(e.target.value));
 $('encounterSelect').addEventListener('change',e=>setEncounter(e.target.value));
 $('startBattle').addEventListener('click',()=>show('battle'));
 $('battleReset').addEventListener('click',resetEncounter);
