@@ -90,6 +90,23 @@ test('app applying Paralysis to active ally automatically advances to next SPD a
  a.match(app.nodes.get('activeName').textContent,/Saber/);
  a.match(app.nodes.get('battleLog').innerHTML,/เสียคิวตาม SPD/);
 });
+test('Life Lab Guts keeps a hero at 1 HP, second lethal KO, manual revive restores 40%',()=>{
+ const app=boot();app.click({screen:'battle'});
+ app.nodes.get('lifeDemoTarget').value='gunner';
+ app.click({lifeTest:'guts'});
+ app.click({lifeTest:'damage'});
+ let data=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(data.hp.gunner,1);
+ a.equal(data.lifeRuntime.ally.gunner.pending.guts.uses,0);
+ a.match(app.nodes.get('battleLog').innerHTML,/GUTS/);
+ app.click({lifeTest:'damage'});
+ data=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(data.hp.gunner,0);
+ app.click({lifeTest:'revive'});
+ data=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(data.hp.gunner,360);
+ a.match(app.nodes.get('battleLog').innerHTML,/REVIVE/);
+});
 test('fastest enemy acts automatically before any ally in three-enemy skirmish',async()=>{
  const app=boot();app.click({screen:'battle'});
  app.nodes.get('encounterSelect').value='skirmish';
