@@ -29,7 +29,7 @@
   }
   window.AdvengerCharacterCreator?.boot();
   await load('js/app.js?v=2.2');
-  await load('js/skill-creator-ui.js?v=2.2');
+  await load('js/skill-creator-ui.js?v=2.3');
   await load('js/character-creator-ui.js?v=2.2');
   await load('js/campaign-ui.js?v=2.0');
  }catch(err){
