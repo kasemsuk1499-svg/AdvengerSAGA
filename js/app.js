@@ -1,4 +1,4 @@
-/* AdvengerSAGA v0.5 — 4 visible heroes, 1-row formation and sequential turn system.
+/* AdvengerSAGA v0.9 — shared encounters, multiple enemies and resumable turn system.
    Each character owns its skills, element colors, artwork and attack code.
    The approved standalone labs remain in character-owned folders for reference. */
 (function(){
