@@ -106,7 +106,8 @@ test('one registered character module can also be assigned to the enemy or boss 
  assert.equal(enemies[0].boss,true);
  assert.match(enemies[0].art,/characters\/tanjiro\/assets\//);
  assert.throws(()=>E.instantiate([]));
- assert.throws(()=>E.instantiate(['scout','scout','scout','scout']));
+ assert.equal(E.instantiate(['scout','scout','scout','scout']).length,4);
+ assert.throws(()=>E.instantiate(['scout','scout','scout','scout','scout']));
 });
 test('browser entrypoint loads core in order and all referenced modules exist',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
