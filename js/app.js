@@ -15,6 +15,7 @@ const ELEMENTS=Object.fromEntries(UNITS.map(id=>[id,AdvengerCharacters.get(id).c
 const CORE=AdvengerBattleCore,ENCOUNTERS=AdvengerEncounters;
 const SKILLS=AdvengerSkillEngine,SKILL_DB=AdvengerSkillDB;
 const RULES=AdvengerTurnRules,STATS=AdvengerStatDB,INIT=AdvengerInitiative;
+const AILMENTS=AdvengerStatusDB,STATUS=AdvengerStatusEngine;
 const $=id=>document.getElementById(id);
 const fresh=()=>{
  const party=['saber','mage','tank','gunner'];
@@ -221,7 +222,8 @@ function renderBattle(){
  indicator.classList.toggle('enemy',state.phase==='enemy');
  for(const command of document.querySelectorAll('[data-command]')){
   const kind=command.dataset.command;
-  command.disabled=!canAct||(kind==='ultimate'&&state.energy[id]<100);
+  command.disabled=!canAct||(kind==='ultimate'&&state.energy[id]<100)||
+   !STATUS.canUse(state,'ally',id,kind);
   command.title=kind==='ultimate'&&state.energy[id]<100?'EX 100 จึงใช้ท่าไม้ตายได้':'';
  }
  $('basicLabel').textContent=MOVES[id].basic;
@@ -239,6 +241,7 @@ function renderBattle(){
   arena?.status(state.hp,RULES.maxHP(state.party),state.acted,state.guarded,state.phase,state.active);}
  renderSkillDatabase(canAct);
  renderStatLive();
+ renderAilmentDemo();
 }
 function render(){renderFormation();renderBattle();if(frameReady)arena?.energy(state.energy);store()}
 function show(tab){
@@ -337,6 +340,18 @@ async function runInitiative(){
    next=INIT.sync(state);
    if(!next)return;
   }
+  const control=STATUS.consumeControl(state,next.side,next.id);
+  if(control?.blocked){
+   const label=next.side==='ally'?(UNIT[next.id]?.name||next.id):
+    (state.enemies.find(x=>x.id===next.id)?.name||next.id);
+   log('🚫 '+label+' · '+(AILMENTS.labels[control.key]||control.key)+' · เสียคิวตาม SPD');
+   for(const event of control.expired||[])if(event.amount)
+    log('✦ '+label+' · '+AILMENTS.labels[event.key]+' −'+event.amount+' HP');
+   INIT.complete(state,next.side,next.id);
+   CORE.select(state,state.targetId);
+   renderBattle();store();
+   continue;
+  }
   if(next.side==='ally'){
    arena?.focus(next.id);
    CORE.select(state,state.targetId);
@@ -354,6 +369,9 @@ async function runInitiative(){
    try{await arena.enemyAttack(move.heroId,move.damage,move.guarded,foe.name)}
    catch(err){console.error('Enemy animation failed; applying the turn result',err)}
    const dealt=CORE.applyStrike(state,move);
+   const reactions=STATUS.onHit(state,'ally',move.heroId,dealt);
+   for(const effect of reactions)if(effect.amount)
+    log('✦ '+UNIT[move.heroId].name+' · '+AILMENTS.labels[effect.key]+' −'+effect.amount+' HP');
    if(SKILLS.onLethal(state,move.heroId))
     log('✦ '+UNIT[move.heroId].name+' · Passive REVIVE!');
    if(state.hp[move.heroId]>0&&foe.statusOnHit&&
@@ -394,6 +412,8 @@ function sendCommand(kind){
  if(!c||INIT.current(state)?.side!=='ally'||INIT.current(state)?.id!==id||
   state.hp[id]<=0||state.acted[id]||!CORE.living(state).length)return;
  if(kind==='ultimate'&&state.energy[id]<100)return notice('EX ไม่ถึง 100');
+ if(!STATUS.canUse(state,'ally',id,kind))
+  return notice('ติดสถานะ '+STATUS.statusText(state,'ally',id)+' · ใช้คำสั่งนี้ไม่ได้');
  actionBusy=true;
  const oldEnergy=state.energy[id],bonus=state.boost?1.25:1;
  const attackTarget=state.targetId;
@@ -402,7 +422,14 @@ function sendCommand(kind){
  renderBattle();arena.energy(state.energy); // provisional EX is only persisted after the move completes
  const takeDamage=raw=>{
   const scaled=SKILLS.adjustDamage(state,'ally',id,'enemy',attackTarget,raw,'physical');
-  const dealt=CORE.hitEnemy(state,attackTarget,scaled,bonus);
+  const fromKind=kind==='basic'?'basic':'skill';
+  const rawAmount=STATUS.isFumble(state,'ally',id,fromKind)?scaled*.8:scaled;
+  const dealt=CORE.hitEnemy(state,attackTarget,rawAmount,bonus);
+  if(dealt>0){
+   for(const reaction of STATUS.onHit(state,'enemy',attackTarget,dealt))
+    if(reaction.amount)log('✦ '+(state.enemies.find(e=>e.id===attackTarget)?.name||'Enemy')+
+     ' · '+AILMENTS.labels[reaction.key]+' −'+reaction.amount+' HP');
+  }
   hits++;damageDone+=dealt;
   const foe=state.enemies.find(e=>e.id===attackTarget);
   if(foe){
@@ -528,6 +555,43 @@ function renderStatCatalog(){
  }).join('');
 }
 
+
+function renderAilmentCodex(){
+ const root=$('ailmentCatalog');if(!root)return;
+ root.innerHTML=Object.entries(AILMENTS.groups).map(([type,label])=>
+  '<section class="ailment-group"><h3>'+esc(label)+'</h3>'+
+  '<div class="ailment-grid">'+AILMENTS.all().filter(item=>item.category===type)
+   .map(item=>'<div class="ailment-card"><strong>'+esc(item.nameTh)+
+    ' <small>'+esc(item.name)+'</small></strong><p>'+esc(item.description)+'</p>'+
+    '<code>'+esc(item.id)+'</code></div>').join('')+'</div></section>'
+ ).join('');
+}
+function renderAilmentDemo(){
+ const selector=$('ailmentDemoKind');
+ if(!selector)return;
+ if(!selector.options.length)
+  selector.innerHTML=AILMENTS.all().map(x=>
+   '<option value="'+esc(x.id)+'">'+esc(x.nameTh)+' · '+esc(x.name)+'</option>').join('');
+ const enemy=CORE.target(state);
+ $('ailmentDemoEnemy').disabled=actionBusy||!enemy||state.phase!=='player';
+ $('ailmentDemoAlly').disabled=actionBusy||state.hp[state.active]<=0||state.phase!=='player';
+}
+function testAilment(side){
+ if(actionBusy||state.phase!=='player')return notice('ทดลองสถานะได้เฉพาะช่วงเลือกคำสั่ง');
+ const key=$('ailmentDemoKind').value;
+ if(!AILMENTS.get(key))return;
+ const turns=Number($('ailmentDemoTurns').value)||2;
+ const enemy=CORE.target(state);
+ const target=side==='enemy'?enemy?.id:state.active;
+ if(!target)return notice('ไม่มีเป้าหมายที่มีชีวิต');
+ const source=side==='enemy'?state.active:(enemy?.id||'foe-0');
+ const ok=STATUS.apply(state,side,target,{key,turns,chance:1,ignoreResistance:true},source);
+ if(!ok)return notice('เป้าหมายมีสถานะคุ้มกันหรือไม่สามารถติดสถานะนี้');
+ const targetName=side==='enemy'?enemy.name:UNIT[target].name;
+ log('🧪 ทดลอง · '+AILMENTS.labels[key]+' → '+targetName+' ('+turns+' รอบ)');
+ render();
+}
+
 function renderSkillDatabase(canAct){
  const id=state.active,kitId=state.skillKits[id]||'';
  const kit=SKILL_DB.get(kitId);
@@ -542,7 +606,7 @@ function renderSkillDatabase(canAct){
   'เลือกตัวละครอ้างอิงเพื่อเปิดใช้ Active Skill 1, Active Skill 2 และ Passive ในระบบกลาง';
  $('dbSkillButtons').innerHTML=kit?['basic','skill1','skill2'].map((kind,i)=>{
   const skill=kit.skills[kind],remaining=SKILLS.remaining(state,id,kind);
-  const available=canAct&&SKILLS.ready(state,id,kind);
+  const available=canAct&&SKILLS.ready(state,id,kind)&&STATUS.canUse(state,'ally',id,kind);
   const text=remaining>0?'CD '+remaining+' รอบ':skill.requiresDebuff&&!SKILLS.ready(state,id,kind)?
    'ต้องมีดีบัฟให้ล้าง':'พร้อมใช้ · CD '+SKILL_DB.rounds(skill.cooldownSeconds)+' รอบ';
   return '<button type="button" class="db-skill-button" data-db-skill="'+kind+'" '+
@@ -573,7 +637,7 @@ function sendDatabaseSkill(kind){
  const id=state.active;
  if(INIT.current(state)?.side!=='ally'||INIT.current(state)?.id!==id||
    state.hp[id]<=0||state.acted[id]||!CORE.living(state).length)return;
- if(!SKILLS.ready(state,id,kind))return notice('สกิลติดคูลดาวน์หรือเงื่อนไขยังไม่ครบ');
+ if(!SKILLS.ready(state,id,kind))return notice('สกิลติดคูลดาวน์หรือโดนสถานะห้ามใช้');
  actionBusy=true;
  // The engine is pure data-driven: effects resolve once, the shared field only animates results.
  const report=SKILLS.cast(state,id,kind,state.targetId);
@@ -634,6 +698,8 @@ document.addEventListener('keydown',e=>{
 });
 $('cancelPicker').addEventListener('click',()=>{picker=null;renderPicker()});
 $('dbHeroKit').addEventListener('change',e=>setSkillKit(e.target.value));
+$('ailmentDemoEnemy').addEventListener('click',()=>testAilment('enemy'));
+$('ailmentDemoAlly').addEventListener('click',()=>testAilment('ally'));
 $('encounterSelect').addEventListener('change',e=>setEncounter(e.target.value));
 $('startBattle').addEventListener('click',()=>show('battle'));
 $('battleReset').addEventListener('click',resetEncounter);
@@ -643,6 +709,7 @@ $('resetTeam').addEventListener('click',()=>{
  log('↻ จัดทีมใหม่เป็น 4 อาชีพต้นแบบ');render();notice('คืนค่าการจัดทีมเรียบร้อย');
 });
 renderStatCatalog();
+renderAilmentCodex();
 $('labLinks').innerHTML=UNITS.map(id=>'<a class="button ghost" target="_blank" rel="noopener" href="characters/'+id+'/lab.html">'+UNIT[id].emoji+' '+UNIT[id].name+'</a>').join('');
 render();
 })();
