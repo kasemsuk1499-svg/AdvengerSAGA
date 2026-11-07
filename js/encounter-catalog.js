@@ -15,17 +15,31 @@
   skirmish:Object.freeze({name:'Three-Way Skirmish',nameTh:'ปะทะหมู่ · ศัตรู 3 ตัว',enemies:['scout','guardian','wisp']}),
   boss:Object.freeze({name:'Abyss Boss',nameTh:'บอส + ลูกสมุน 2 ตัว',enemies:['wisp','overlord','scout']})
  });
+ /* Encounter entries may be enemy-type IDs or registered character modules.
+    This lets the same character fight as ally, enemy or boss in story content. */
+ function instantiate(list){
+  if(!Array.isArray(list)||!list.length||list.length>3)
+   throw new Error('Encounter needs 1–3 enemies');
+  return list.map((entry,index)=>{
+   const opt=typeof entry==='string'?{kind:entry}:entry;
+   if(!opt||typeof opt!=='object')throw new Error('Invalid enemy entry');
+   const actor=opt.characterId&&g.AdvengerCharacters?.get(opt.characterId);
+   const base=actor||types[opt.kind];
+   if(!base)throw new Error('Unknown enemy or character: '+(opt.characterId||opt.kind));
+   const maxHP=Math.max(1,Math.round(opt.maxHP||base.maxHP||1000));
+   const attack=Math.max(1,Math.round(opt.attack||base.attack||150));
+   return {id:'foe-'+index,kind:opt.characterId||opt.kind,characterId:opt.characterId||null,
+    name:base.name,nameTh:base.nameTh,icon:base.icon||'◆',
+    hp:maxHP,maxHP,attack,art:base.art||sprites,boss:!!(opt.boss??base.boss)};
+  });
+ }
  function spawn(id){
   const encounter=encounters[id];
   if(!encounter)throw new Error('Unknown encounter: '+id);
-  return encounter.enemies.map((kind,index)=>{
-   const type=types[kind];
-   return {id:'foe-'+index,kind,name:type.name,nameTh:type.nameTh,icon:type.icon,
-    hp:type.maxHP,maxHP:type.maxHP,attack:type.attack,art:type.art,boss:type.boss};
-  });
+  return instantiate(encounter.enemies);
  }
  g.AdvengerEncounters=Object.freeze({
-  types,encounters,spawn,
+  types,encounters,spawn,instantiate,
   get:id=>encounters[id]||null,
   all:()=>Object.entries(encounters).map(([id,data])=>({id,...data}))
  });
