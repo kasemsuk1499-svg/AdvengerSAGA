@@ -61,7 +61,7 @@
  }
  function nextRound(state){
   state.round=Math.min(999,Math.max(1,Math.round(state.round||1))+1);
-  state.phase='player';
+  state.phase='player';state.enemyCursor=0;
   state.acted=Object.fromEntries(state.party.map(id=>[id,false]));
   state.guarded=Object.fromEntries(state.party.map(id=>[id,false]));
   state.active=state.party.find(id=>state.hp[id]>0)||state.party[0];
