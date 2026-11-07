@@ -36,6 +36,7 @@
     '<div class="as-foes" id="asFoes"></div>'+
     '<canvas class="as-fx" id="asFx" aria-hidden="true"></canvas>'+
     '<div id="asAction" class="as-action" aria-live="polite">เลือกสมาชิกแล้วกดโจมตี</div>'+
+    '<div id="asCombo" class="as-combo" aria-hidden="true" hidden></div>'+
     '<div id="asCinematic" class="as-cinematic" aria-hidden="true">'+
     '<div class="as-portrait"></div><div class="as-cinematic-copy"><small>ULTIMATE TECHNIQUE</small>'+
     '<strong></strong><span></span></div></div>';
@@ -220,18 +221,23 @@
     {transform:'translate3d(0,0,0)',filter:'brightness(1)'}],
     {duration:340,easing:'ease-out'});
   }
-  hitNumber(n,color,node=this.target){
+  hitNumber(n,color,node=this.target,options={}){
+   if(!node||!this.field||!this.stage)return;
    const tgt=this.field.point(node),el=document.createElement('span');
-   el.className='as-number';el.textContent='−'+n;el.style.cssText='left:'+tgt.x+'px;top:'+(tgt.y-30)+'px;color:'+color;
+   el.className='as-number'+(options.combo?' as-number-combo':'');
+   el.textContent='−'+Math.max(0,Math.round(n)).toLocaleString('en-US');
+   const shift=options.combo?(options.index%4)*8:0;
+   el.style.cssText='left:'+tgt.x+'px;top:'+(tgt.y-30-shift)+'px;color:'+color;
    this.stage.append(el);
+   const duration=options.combo?580:890;
    if(el.animate&&!this.reduced){
-    let a=el.animate([{opacity:0,transform:'translate(-50%,0) scale(.7)'},
+    const a=el.animate([{opacity:0,transform:'translate(-50%,0) scale(.7)'},
       {offset:.28,opacity:1,transform:'translate(-50%,-18px) scale(1.13)'},
       {offset:.72,opacity:1,transform:'translate(-50%,-38px) scale(1)'},
       {opacity:0,transform:'translate(-50%,-65px) scale(.93)'}],
-      {duration:890,easing:'ease-out'});
+      {duration,easing:'ease-out'});
     a.finished.then(()=>el.remove()).catch(()=>el.remove());
-   }else setTimeout(()=>el.remove(),600);
+   }else setTimeout(()=>el.remove(),options.combo?450:600);
   }
   async play(id,kind,element,onDamage,sourceHeroId=null){
    if(this.busy||!this.party.includes(id))return false;
@@ -321,13 +327,17 @@
     AdvengerCharacters.get(id)?.defaultElement||'arcane';
    const color=window.AdvengerElements?.get(element)?.color||this.field.color(element);
    try{
-    const programmedHits=skill.overlimit?
-     report.events.filter(evt=>evt.kind==='damage').reduce((sum,evt)=>
-      sum+(evt.hits||1),0):0;
-    this.announce(programmedHits>32?'☄️ OVERLIMIT · '+
-     programmedHits.toLocaleString('en-US')+' HIT':
-     'SKILL DATABASE · '+skill.name,
-     'Data-driven ability · '+report.hero.name);
+    // Actual combat is already resolved by SkillEngine.cast. This timeline
+    // plays REAL per-hit amounts; for huge combos it samples bounded frames
+    // and shows an explicit live HIT counter without doing damage again.
+    const timeline=g.AdvengerHitDisplay?.plan(report);
+    const programmedHits=timeline?.configuredHits??0;
+    const landedHits=timeline?.landedHits??0;
+    const overpowered=skill.overlimit||programmedHits>32;
+    const number=n=>Math.max(0,n).toLocaleString('en-US');
+    const headline=overpowered?'☄️ OVERLIMIT · '+number(programmedHits)+' HIT':
+     '⚔️ '+skill.name;
+    this.announce(headline,'ดาเมจแยกตามฮิต · '+report.hero.name);
     const point=this.field.point(actor);
     if(!choreographed){
      this.field.emit('charge',point,point,color,this.reduced?130:480);
@@ -340,54 +350,61 @@
     }).filter(({el})=>el);
     if(!choreographed){
      for(const {t,el} of targets){
-      const dest=this.field.point(el);
-      const ally=t.side==='ally';
+      const dest=this.field.point(el),ally=t.side==='ally';
       this.field.emit(ally?'shield':'projectile',point,dest,
        ally?'#78f3c9':color,this.reduced?170:340,{role:ally?'heal':'orb'});
      }
      await wait(this.reduced?85:330);
     }
-    // A god-tier skill can produce thousands of logical events. Render
-    // at most a handful of COMBINED per-target hits; the Skill Engine has
-    // already applied every underlying gameplay consequence exactly once.
-    let visibleEvents=report.events;
-    if(report.events.length>48){
-     const grouped=new Map(),other=new Map();
-     for(const evt of report.events){
-      const key=evt.side+'/'+evt.id+'/'+evt.kind;
-      if(evt.kind==='damage'||evt.kind==='heal'){
-       if(!grouped.has(key))grouped.set(key,{...evt,amount:0,compact:true});
-       grouped.get(key).amount=Math.min(Number.MAX_SAFE_INTEGER,
-        grouped.get(key).amount+Math.max(0,evt.amount||0));
-      }else if(other.size<16&&!other.has(key)){
-       other.set(key,evt);
-      }
-     }
-     visibleEvents=[...grouped.values(),...other.values()].slice(0,24);
-     this.announce('☄️ OVERLIMIT · '+report.events.length+' EFFECTS',
-      'รวมภาพการโจมตีเพื่อประหยัดประสิทธิภาพ');
+    const frames=timeline?.frames??report.events.slice(0,64);
+    const combo=this.stage.querySelector?.('#asCombo');
+    if(combo&&programmedHits){
+     combo.hidden=false;
+     combo.textContent='⚔️ 0 / '+number(programmedHits)+' HIT';
     }
-    for(const evt of visibleEvents){
+    const delay=landedHits<=24?(this.reduced?24:70):
+     timeline?.sampled?(this.reduced?14:34):(this.reduced?17:27);
+    let visibleHits=0,otherImpact=0;
+    for(const evt of frames){
      const node=evt.side==='ally'?this.actor(evt.id):
       Array.from(this.stage.querySelectorAll('[data-target-enemy]')).find(n=>n.dataset.targetEnemy===evt.id);
      if(!node)continue;
      const pos=this.field.point(node),heal=evt.kind==='heal';
-     this.field.impact(pos,heal?'#6df2bd':color,heal?.7:1,
-      heal?'heal':'magic');
-     if(evt.amount>0&&(evt.kind==='damage'||heal)){
-      if(heal){
+     if(evt.kind==='damage'){
+      if(!(evt.amount>0))continue;
+      visibleHits++;
+      // Original 4x4 combos show each impact. Million-hit combos
+      // retain their damage amounts but limit expensive FX emissions.
+      if(!timeline?.sampled||visibleHits%3===1)
+       this.field.impact(pos,color,1,'magic');
+      this.hitNumber(evt.amount,color,node,
+       {combo:true,index:visibleHits});
+      if(combo&&evt.hitNumber){
+       combo.textContent='⚔️ '+number(evt.hitNumber)+' / '+
+        number(programmedHits)+' HIT';
+      }
+      await wait(delay);
+     }else{
+      if(otherImpact++<16)
+       this.field.impact(pos,heal?'#6df2bd':color,heal?.7:1,
+        heal?'heal':'magic');
+      if(heal&&evt.amount>0){
        const n=document.createElement('span');n.className='as-number';
        n.style.cssText='left:'+pos.x+'px;top:'+(pos.y-20)+'px;color:#82ffbe';
-       n.textContent='+'+evt.amount;this.stage.append(n);
+       n.textContent='+'+number(evt.amount);this.stage.append(n);
        setTimeout(()=>n.remove(),this.reduced?350:850);
-      }else this.hitNumber(evt.amount,color,node);
+      }
      }
     }
-    await wait(this.reduced?110:450);
-    this.announce(programmedHits>32?'☄️ OVERLIMIT COMPLETE':'SKILL COMPLETE',
-     skill.name+' · '+(programmedHits>32?
-      programmedHits.toLocaleString('en-US')+' HIT (configured)':
-      report.events.length+' effects'));
+    if(combo&&programmedHits){
+     combo.textContent='⚔️ '+number(landedHits)+' / '+number(programmedHits)+
+      ' HIT · โดนจริง';
+     setTimeout(()=>{combo.hidden=true},1300);
+    }
+    await wait(this.reduced?65:220);
+    this.announce(overpowered?'☄️ OVERLIMIT COMPLETE':'SKILL COMPLETE',
+     skill.name+' · '+number(landedHits)+'/'+number(programmedHits)+
+     ' HIT ลงจริง'+(timeline?.sampled?' · แสดงแบบสุ่มตัวอย่าง':''));
     return true;
    }finally{
     this.busy=false;this.stage.classList.remove('as-busy');
