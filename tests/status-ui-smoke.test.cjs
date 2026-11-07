@@ -30,7 +30,7 @@ function boot({customHero=false}={}){
   getElementById:make,
   querySelector:()=>null,
   querySelectorAll:()=>[],
-  addEventListener:(type,fn)=>listeners[type]=fn,
+  addEventListener:(type,fn)=>(listeners[type]||=[]).push(fn),
   createElement:()=>make('tmp-'+nodes.size),
   body:{append(){},appendChild(){}}
  };
@@ -78,9 +78,9 @@ function boot({customHero=false}={}){
  load('js/skill-creator-ui.js');
  load('js/character-creator-ui.js');
  load('js/campaign-ui.js');
- const click=data=>listeners.click({
-  target:{closest:selector=>selector==='button'?{dataset:data}:null}
- });
+ const click=data=>{const event={target:{closest:selector=>selector==='button'?{dataset:data}:null}};
+  for(const listener of listeners.click||[])listener(event);
+ };
  return {g,nodes,click,listeners,attacks};
 }
 test('saved custom hero appears in party picker, swaps into team and takes SPD priority',()=>{
