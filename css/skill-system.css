@@ -7,7 +7,7 @@
 #battle #dbHeroKit{color:#eef5ff;background:#172745;border:1px solid #7b7dab;border-radius:7px;padding:8px;font:inherit;min-height:36px;max-width:100%}
 #battle #dbHeroKit:disabled{opacity:.45}
 #battle .db-hint{font-size:11px;color:#c3d3ee;margin:9px 0 6px;line-height:1.55}
-#battle .db-skill-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#battle .db-skill-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 #battle .db-skill-button{min-width:0;min-height:76px;padding:11px;border-radius:9px;border:1px solid #8b88b9;background:linear-gradient(150deg,#453c70,#222b52);color:#faf5ff;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:3px}
 #battle .db-skill-button:nth-child(2){border-color:#6babb5;background:linear-gradient(150deg,#225c73,#203552)}
 #battle .db-skill-button strong{font-size:12px;line-height:1.35}
@@ -17,4 +17,4 @@
 #battle .db-status-line{min-height:19px;color:#b6d7df;font-size:10px;padding-top:6px}
 #battle .db-source{display:inline-block;margin-top:7px;font-size:10px;text-decoration:underline;color:#b9e5ff}
 #battle .db-notice{font-size:9px;line-height:1.5;color:#94a8c7;margin:8px 0 0}
-@media(max-width:580px){#battle .skill-database{padding:9px}#battle .db-skill-button{padding:8px;min-height:70px}#battle .db-skill-button strong{font-size:11px}}
+@media(max-width:580px){#battle .db-skill-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}#battle .skill-database{padding:9px}#battle .db-skill-button{padding:8px;min-height:70px}#battle .db-skill-button strong{font-size:11px}}
