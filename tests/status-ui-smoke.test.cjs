@@ -100,7 +100,7 @@ test('Overlimit UI generates and saves a powerful 99,999-hit template with no fo
  const app=boot();
  const UI=app.nodes;
  const btn=UI.get('skillLabOverlimitExample');
- assert.equal(typeof btn.events.click,'function');
+ a.equal(typeof btn.events.click,'function');
  btn.events.click();
  assert.equal(UI.get('skillLabOverlimit').checked,true);
  assert.match(UI.get('skillLabEffects').innerHTML,/max="1000000"/);
