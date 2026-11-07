@@ -68,6 +68,7 @@ function boot(){
   async enemyAttack(id,damage,guarded,name){attacks.push({id,damage,name})}
  };
  load('js/app.js');
+ load('js/skill-creator-ui.js');
  const click=data=>listeners.click({
   target:{closest:selector=>selector==='button'?{dataset:data}:null}
  });
@@ -106,6 +107,23 @@ test('Life Lab Guts keeps a hero at 1 HP, second lethal KO, manual revive restor
  data=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
  a.equal(data.hp.gunner,360);
  a.match(app.nodes.get('battleLog').innerHTML,/REVIVE/);
+});
+test('custom authored skill appears for equipped character and casts on their SPD turn',async()=>{
+ const app=boot();
+ a.match(app.nodes.get('skillLabEffects').innerHTML,/ขั้นที่ 1/);
+ const created=app.g.AdvengerSkillCreator.add({
+  name:'Thunder Practice',target:'singleEnemy',damageType:'magic',
+  cooldownRounds:3,effects:[{type:'damage',hits:2,attackPct:1,defensePct:0,hpPct:0}]
+ });
+ app.g.AdvengerSkillCreator.assign('gunner','skill1',created.id);
+ app.click({screen:'battle'});
+ a.match(app.nodes.get('createdBattleSkills').innerHTML,/Thunder Practice/);
+ app.click({createdSkill:'skill1'});
+ await new Promise(resolve=>setImmediate(resolve));
+ const saved=JSON.parse(app.g.localStorage.getItem('AdvengerSAGA_FORMATION_V1'));
+ a.equal(saved.acted.gunner,true);
+ a.equal(saved.createdSkillTimers.gunner[created.id],4);
+ a.match(app.nodes.get('battleLog').innerHTML,/Thunder Practice/);
 });
 test('fastest enemy acts automatically before any ally in three-enemy skirmish',async()=>{
  const app=boot();app.click({screen:'battle'});
