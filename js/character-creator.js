@@ -54,7 +54,10 @@
    for(const key of g.AdvengerSkillCreator.slots){
     const id=raw.slots[key];
     if(id==null||id==='')continue;
-    if(!g.AdvengerSkillCreator.resolve(id))
+    // A created skill may be restored from a bundled JSON backup *after*
+    // character data is normalized. Preserve its safe ID until library load.
+    if(!g.AdvengerSkillCreator.resolve(id)&&
+       !(typeof id==='string'&&/^created-[1-9]\d{0,8}$/.test(id)))
      throw Error('ไม่พบสกิลที่เลือกสำหรับช่อง '+key);
     // Missing skills may be imported later; they will not be installed
     // unless present in the local, validated Skill Creator library.
