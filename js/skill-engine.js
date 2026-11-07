@@ -156,6 +156,10 @@
   x*=1+value(s,toSide,toId,'defenseDown')*.6;
   x*=1+value(s,toSide,toId,'damageReductionDown');
   x*=1-value(s,toSide,toId,'defenseUp')*.5;
+  // Campaign level progression grants ATK power only in story battles;
+  // training/lab damage remains identical to the original validated rules.
+  if(fromSide==='ally'&&s.mode==='campaign'&&g.AdvengerCampaign?.stage(s.campaignStage))
+   x*=1+g.AdvengerCampaign.attackBonus();
   return Math.max(0,Math.round(x));
  }
  function cast(s,actorId,kind,selectedId,createdSkill=null){
