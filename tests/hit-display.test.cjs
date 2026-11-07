@@ -48,8 +48,8 @@ test('4-hit skill shows four independent damage values, not their sum',()=>{
  const p=planner.plan({events:[damage(120,1),damage(90,2),damage(80,3),damage(70,4)]});
  a.equal(p.configuredHits,4);a.equal(p.landedHits,4);
  a.equal(p.shownHits,4);a.equal(p.sampled,false);
- a.deepEqual(p.frames.map(x=>x.amount),[120,90,80,70]);
- a.deepEqual(p.frames.map(x=>x.hitNumber),[1,2,3,4]);
+ a.deepEqual(Array.from(p.frames,x=>x.amount),[120,90,80,70]);
+ a.deepEqual(Array.from(p.frames,x=>x.hitNumber),[1,2,3,4]);
 });
 test('4 targets × 4 hits keeps all 16 independent number frames',()=>{
  const {planner}=boot();
@@ -74,8 +74,8 @@ test('100 programmed hits but target dies after 3: display 40,40,20 and 3/100, n
   packets:[{hits:3,perHit:40,damage:100}]
  }]});
  a.equal(p.configuredHits,100);a.equal(p.landedHits,3);
- a.deepEqual(p.frames.map(x=>x.amount),[40,40,20]);
- a.deepEqual(p.frames.map(x=>x.hitNumber),[1,2,3]);
+ a.deepEqual(Array.from(p.frames,x=>x.amount),[40,40,20]);
+ a.deepEqual(Array.from(p.frames,x=>x.hitNumber),[1,2,3]);
 });
 test('1M landed hits show at most 120 accurate sampled amounts with a 1M counter',()=>{
  const {planner}=boot();
@@ -100,7 +100,7 @@ test('Overlimit four enemies killed on first landed hit: counter truthfully says
  a.equal(p.configuredHits,399996);
  a.equal(p.landedHits,4);
  a.equal(p.shownHits,4);
- a.deepEqual(p.frames.map(x=>x.amount),[400,400,400,400]);
+ a.deepEqual(Array.from(p.frames,x=>x.amount),[400,400,400,400]);
 });
 test('revive/Guts packets preserve individual numbers at each lethal boundary',()=>{
  const {planner}=boot();
@@ -109,7 +109,7 @@ test('revive/Guts packets preserve individual numbers at each lethal boundary',(
   packets:[{hits:2,perHit:40,damage:65},
    {hits:2,perHit:40,damage:65}]
  }]});
- a.deepEqual(p.frames.map(x=>x.amount),[40,25,40,25]);
+ a.deepEqual(Array.from(p.frames,x=>x.amount),[40,25,40,25]);
  a.equal(p.landedHits,4);
 });
 test('arena displays actual numbers one by one and updates HIT meter incrementally',async()=>{
