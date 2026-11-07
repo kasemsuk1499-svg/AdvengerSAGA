@@ -26,7 +26,7 @@
   {id:'lucy',name:'Lucy',nameTh:'ลูซี่',role:'Support',source:'https://gamewith.net/sevenknights-rebirth/70557',
    sourceChecked:'2026-11-07',
    skills:{
-    basic:{name:'Normal Attack',target:'singleEnemy',
+    basic:{name:'Normal Attack',target:'singleEnemy',damageType:'magic',
      effects:[{type:'damage',attackPct:.5,defensePct:.6,hits:1},status('attackDown',.09,2)]},
     skill1:{name:'Mystic Dance',cooldownSeconds:95,target:'allAllies',
      effects:[{type:'heal',defensePct:1}],enhancements:[{type:'healDefensePct',value:1.2}]},
