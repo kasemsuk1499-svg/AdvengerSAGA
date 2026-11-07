@@ -95,7 +95,7 @@
   }
   return result;
  }
- const empty=()=>({version:VERSION,nextId:1,skills:[],assignments:{}});
+ const empty=()=>({version:VERSION,nextId:1,skills:[],assignments:{},animations:{}});
  let db=empty();
  const clone=x=>JSON.parse(JSON.stringify(x));
  function validHero(id){return !!g.AdvengerCharacters?.get(id)}
@@ -175,6 +175,21 @@
  }
  function equippedSource(hero,slot){return resolve(db.assignments[hero]?.[slot])}
  function assignments(){return clone(db.assignments)}
+ function assignAnimation(hero,slot,animationId){
+  if(!validHero(hero)||!slots.includes(slot))
+   throw Error('ช่องแอนิเมชันหรือตัวละครไม่ถูกต้อง');
+  if(animationId&&!g.AdvengerAnimations?.has(animationId))
+   throw Error('แอนิเมชันนี้ไม่อยู่ในคลังท่าที่รองรับ');
+  const assigned=db.animations[hero]||={};
+  if(animationId)assigned[slot]=animationId;
+  else delete assigned[slot];
+  persist();return animationId||null;
+ }
+ function animationFor(hero,slot){
+  const id=db.animations?.[hero]?.[slot];
+  return g.AdvengerAnimations?.get(id)||null;
+ }
+ function animationAssignments(){return clone(db.animations||{})}
  function importData(raw,persistResult=true){
   if(!plain(raw)||!Array.isArray(raw.skills)||raw.skills.length>maxSkills)
    throw Error('รูปแบบ JSON ไม่ถูกต้องหรือจำนวนสกิลเกินกำหนด');
@@ -196,7 +211,17 @@
        as[hero][slot]=assignments[slot];
    }
   const max=skills.reduce((v,s)=>Math.max(v,Number(s.id.slice(8))),0);
-  db={version:VERSION,nextId:Math.max(max+1,1),skills,assignments:as};
+  const animations={};
+  if(plain(raw.animations))
+   for(const [hero,entries] of Object.entries(raw.animations)){
+    if(!validHero(hero)||!plain(entries))continue;
+    for(const slot of slots){
+     if(g.AdvengerAnimations?.has(entries[slot])){
+      (animations[hero]||={})[slot]=entries[slot];
+     }
+    }
+   }
+  db={version:VERSION,nextId:Math.max(max+1,1),skills,assignments:as,animations};
   if(persistResult)persist();
   return list();
  }
@@ -213,6 +238,7 @@
  g.AdvengerSkillCreator=Object.freeze({
   version:VERSION,storageKey:KEY,slots,types,maxEffects,
   load,list,get,add,update,remove,assign,equipped,equippedSource,catalog,resolve,assignments,
+  assignAnimation,animationFor,animationAssignments,
   exportData,importData,validate:normalize,example
  });
 })(window);
