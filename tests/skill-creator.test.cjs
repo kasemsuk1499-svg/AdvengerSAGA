@@ -202,6 +202,97 @@ test('silence cannot be circumvented by placing an existing active kit in Basic'
  assert.equal(S.readyCreated(state,'saber',reference,'basic'),false);
  assert.equal(S.readyCreated(state,'saber',basic,'basic'),true);
 });
+test('Overlimit opt-in lifts hit / multiplier / step / cooldown caps without weakening normal validation',()=>{
+ const {C}=boot();C.load();
+ const god=C.overlimitExample();
+ assert.equal(god.overlimit,true);
+ assert.equal(god.effects[0].hits,99999);
+ const chosen=C.add(god);
+ assert.equal(chosen.overlimit,true);
+ assert.equal(chosen.effects[0].attackPct,1000);
+ assert.equal(chosen.cooldownRounds,0);
+ assert.equal(C.normalLimits.hits,12);
+ assert.equal(C.overlimitLimits.hits,1000000);
+ const full=C.validate({...god,cooldownRounds:999,
+  effects:[...Array.from({length:128},()=>({
+   type:'damage',hits:1000000,attackPct:1000000}))]});
+ assert.equal(full.effects.length,128);
+ assert.equal(full.effects[0].hits,1000000);
+ assert.throws(()=>C.validate({...god,overlimit:false}),/ฮิต/);
+ assert.throws(()=>C.validate({...god,effects:[{type:'damage',hits:1000001}]}),/ฮิต/);
+ assert.throws(()=>C.validate({...god,effects:[...full.effects,{type:'damage'}]}),/128/);
+ assert.throws(()=>C.validate({...god,effects:[{type:'damage',attackPct:1000001}]}),/พลังโจมตี/);
+ assert.throws(()=>C.validate({...god,effects:[{type:'status',key:'paralysis',chance:null}]}),/โอกาส/);
+ assert.equal(C.validate({...god,effects:[{type:'guts',uses:999}]}).effects[0].uses,999);
+});
+test('God-tier AOE ends battle in 4 compact damage events, not 399,996 renderer events',()=>{
+ const {g,C,S}=boot();C.load();
+ const ability=C.add(C.overlimitExample());
+ const state=setup(g);
+ const out=S.cast(state,'saber','skill1','foe-0',ability);
+ assert.equal(out.ok,true);
+ assert.equal(out.events.filter(x=>x.kind==='damage').length,4);
+ assert.ok(out.events.every(e=>e.kind!=='damage'||e.compact));
+ assert.ok(out.events.length<20,'event log must not scale with requested millions of hit visuals');
+ assert.ok(state.enemies.every(x=>x.hp===0));
+ assert.equal(g.AdvengerStatusEngine.value(state,'ally','saber','attackUp'),10);
+ assert.equal(S.createdRemaining(state,'saber',ability.id),0);
+});
+test('one million actual hits on surviving 2M-HP target are computed as one damage record and compact ailment roll',()=>{
+ const {g,C,S}=boot();C.load();
+ const ability=C.add({name:'Infinite Thunder',overlimit:true,
+  target:'singleEnemy',damageType:'physical',cooldownRounds:0,
+  effects:[{type:'damage',hits:1000000,attackPct:.005},
+   {type:'status',key:'paralysis',chance:.01,turns:999,eachHit:true}]});
+ const state=setup(g);
+ state.enemies[0].maxHP=2000000;state.enemies[0].hp=2000000;
+ const result=S.cast(state,'saber','skill1','foe-0',ability);
+ assert.equal(result.ok,true);
+ const dmg=result.events.filter(e=>e.kind==='damage');
+ assert.equal(dmg.length,1);
+ assert.equal(dmg[0].hits,1000000);
+ assert.equal(dmg[0].landedHits,1000000);
+ assert.equal(dmg[0].amount,1000000);
+ assert.equal(state.enemies[0].hp,1000000);
+ assert.equal(result.events.filter(e=>e.kind==='status'&&e.key==='paralysis').length,1);
+ assert.equal(g.AdvengerStatusEngine.has(state,'enemy','foe-0','paralysis'),true);
+ assert.ok(result.events.length<20);
+});
+test('Overlimit hits still consume Guts protection multiple times without materializing hits',()=>{
+ const {g,C,S}=boot();C.load();
+ const ability=C.add({name:'Guts Breaker',overlimit:true,
+  target:'singleEnemy',damageType:'physical',cooldownRounds:0,
+  effects:[{type:'damage',hits:1000000,attackPct:1}]});
+ const state=setup(g);
+ g.AdvengerLifeEngine.grant(state,'enemy','foe-0',{type:'guts',uses:5});
+ const result=S.cast(state,'saber','skill1','foe-0',ability);
+ assert.equal(result.ok,true);
+ assert.equal(state.enemies[0].hp,0,'follow-up lethal packets must remove repeated Guts');
+ assert.equal(result.events.filter(e=>e.kind==='damage').length,1);
+ assert.ok(result.events.length<20);
+});
+test('Overlimit records survive export/import and include large powers and extra Guts uses',()=>{
+ const storage=new Map();let {C}=boot(storage);C.load();
+ const ability=C.add({name:'Godmode Ward',overlimit:true,
+  target:'self',damageType:'magic',cooldownRounds:0,effects:[
+   {type:'status',key:'attackUp',chance:1,power:1000000,turns:999},
+   {type:'guts',uses:999}]});
+ C.assign('mage','ultimate',ability.id);
+ const json=C.exportData();
+ let restored=boot(new Map());restored.C.load();
+ restored.C.importData(json);
+ const read=restored.C.equipped('mage','ultimate');
+ assert.equal(read.overlimit,true);
+ assert.equal(read.effects[0].power,1000000);
+ assert.equal(read.effects[1].uses,999);
+ const state=setup(restored.g);
+ const result=restored.S.cast(state,'mage','ultimate',null,read);
+ assert.equal(result.ok,true);
+ assert.equal(restored.g.AdvengerStatusEngine.value(state,'ally','mage','attackUp'),1000000);
+ const recovered=setup(restored.g);
+ restored.g.AdvengerLifeEngine.restore(recovered,JSON.parse(JSON.stringify(state)).lifeRuntime);
+ assert.equal(recovered.lifeRuntime.ally.mage.pending.guts.uses,999);
+});
 test('browser mounts Skill Creator before app, and full UI loads after app',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const src=[...html.matchAll(/<script src="([^"]+)"/g)].map(x=>x[1].split('?')[0]);
