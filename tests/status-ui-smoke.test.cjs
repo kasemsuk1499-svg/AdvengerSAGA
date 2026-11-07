@@ -50,7 +50,7 @@ function boot(){
   'characters/tank/character.js','characters/gunner/character.js',
   'js/team-effects.js','js/turn-rules.js','js/encounter-catalog.js',
   'js/battle-core.js','js/initiative.js','js/skill-db.js',
-  'js/status-db.js','js/status-engine.js','js/skill-engine.js'
+  'js/status-db.js','js/status-engine.js','js/life-engine.js','js/skill-engine.js'
  ])load(p);
  g.AdvengerSharedArena=class{
   constructor(){ }

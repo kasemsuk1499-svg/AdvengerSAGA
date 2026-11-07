@@ -17,7 +17,7 @@ function fresh(){const s={party:['saber','mage','tank','gunner'],round:1,
  enemies:C.spawn('skirmish'),hp:{saber:1000,mage:800,tank:1500,gunner:900},
  skillKits:{saber:'rachel',mage:'lucy',tank:null,gunner:'ellen'}};return S.clear(s)}
 test('sourced starter catalog and seconds conversion',()=>{
- a.equal(DB.all().length,3);a.equal(DB.get('rachel').skills.skill1.cooldownSeconds,84);
+ a.equal(DB.all().length,5);a.equal(DB.get('rachel').skills.skill1.cooldownSeconds,84);
  a.equal(DB.rounds(84),3);a.equal(DB.rounds(95),4);
  a.ok(DB.get('lucy').source.includes('gamewith.net'));a.throws(()=>DB.register(DB.get('rachel')));
 });
