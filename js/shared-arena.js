@@ -279,6 +279,53 @@
     this.stage.classList.remove('as-busy');
    }
   }
+  async playDatabaseSkill(id,skill,report){
+   if(this.busy||!this.party.includes(id)||!report?.ok)return false;
+   const actor=this.actor(id);
+   if(!actor)return false;
+   this.busy=true;this.focus(id);this.stage.classList.add('as-busy');
+   const element=AdvengerCharacters.get(id)?.defaultElement||'arcane';
+   const color=this.field.color(element);
+   try{
+    this.announce('SKILL DATABASE · '+skill.name,'Data-driven ability · '+report.hero.name);
+    const point=this.field.point(actor);
+    this.field.emit('charge',point,point,color,this.reduced?130:480);
+    await wait(this.reduced?80:350);
+    const targets=report.targets.map(t=>{
+     const el=t.side==='ally'?this.actor(t.id):
+      Array.from(this.stage.querySelectorAll('[data-target-enemy]')).find(n=>n.dataset.targetEnemy===t.id);
+     return {t,el};
+    }).filter(({el})=>el);
+    for(const {t,el} of targets){
+     const dest=this.field.point(el);
+     const ally=t.side==='ally';
+     this.field.emit(ally?'shield':'projectile',point,dest,
+      ally?'#78f3c9':color,this.reduced?170:340,{role:ally?'heal':'orb'});
+    }
+    await wait(this.reduced?85:330);
+    for(const evt of report.events){
+     const node=evt.side==='ally'?this.actor(evt.id):
+      Array.from(this.stage.querySelectorAll('[data-target-enemy]')).find(n=>n.dataset.targetEnemy===evt.id);
+     if(!node)continue;
+     const pos=this.field.point(node),heal=evt.kind==='heal';
+     this.field.impact(pos,heal?'#6df2bd':color,heal?.7:1,
+      heal?'heal':'magic');
+     if(evt.amount>0&&(evt.kind==='damage'||heal)){
+      if(heal){
+       const n=document.createElement('span');n.className='as-number';
+       n.style.cssText='left:'+pos.x+'px;top:'+(pos.y-20)+'px;color:#82ffbe';
+       n.textContent='+'+evt.amount;this.stage.append(n);
+       setTimeout(()=>n.remove(),this.reduced?350:850);
+      }else this.hitNumber(evt.amount,color,node);
+     }
+    }
+    await wait(this.reduced?110:450);
+    this.announce('SKILL COMPLETE',skill.name+' · '+report.events.length+' effects');
+    return true;
+   }finally{
+    this.busy=false;this.stage.classList.remove('as-busy');
+   }
+  }
   reset(){
    if(this.busy)return;
    this.field?.clear();
