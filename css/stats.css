@@ -1,0 +1,18 @@
+/* AdvengerSAGA v1.1 — compact stat snapshot and full encyclopedia */
+#battle .stats-panel{padding:12px 14px}
+#battle .stats-panel summary{cursor:pointer;font-size:12px;font-weight:800;color:#d6e9ff}
+#battle .stat-core-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px}
+#battle .stat-core-list span{padding:7px 9px;border:1px solid #566e94;border-radius:8px;display:flex;justify-content:space-between;gap:6px;font-size:11px}
+#battle .stat-core-list strong{color:#ffe5a0;font-variant-numeric:tabular-nums}
+#battle .stat-runtime-summary{color:#aec5e7;font-size:11px;line-height:1.6;margin:8px 0 0}
+.stat-dictionary{margin-top:15px}
+.stat-dictionary .stat-group{padding-top:10px}
+.stat-dictionary .stat-group h3{font-size:14px;color:#dfebff;margin:12px 0 8px}
+.stat-dictionary .stat-rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.stat-dictionary .stat-row{border:1px solid #425773;border-radius:9px;padding:9px;background:#17253c;min-height:70px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.stat-dictionary .stat-row span{flex:1;min-width:150px;display:flex;flex-direction:column;gap:3px}
+.stat-dictionary .stat-row span b{font-size:11px}
+.stat-dictionary .stat-row span small{font-size:10px;color:#b2c7e2}
+.stat-dictionary .stat-row code{font-size:10px;color:#f0dca9;overflow-wrap:anywhere}
+.stat-dictionary .stat-row>small{width:100%;font-size:10px;color:#b3c2d9;line-height:1.4}
+@media(max-width:580px){.stat-dictionary .stat-rows{grid-template-columns:1fr}}
