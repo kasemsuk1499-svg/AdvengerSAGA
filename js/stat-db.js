@@ -62,7 +62,7 @@
   if(!overrides||typeof overrides!=='object'||Array.isArray(overrides))
    throw new Error('stats must be a dictionary of stat IDs');
   for(const [id,value] of Object.entries(overrides)){
-   if(!metadata[id])throw new Error('Unknown stat ID: '+id);
+   if(!Object.hasOwn(metadata,id))throw new Error('Unknown stat ID: '+id);
    if(!Number.isFinite(value)||value<0)throw new Error('Invalid value for '+id);
   }
   const classHP=g.AdvengerClasses?.[entity.classId]?.defaultHP;
@@ -162,7 +162,7 @@
  g.AdvengerStatDB=Object.freeze({
   version:1,groups,definitions:metadata,keys,runtimeDefinitions,
   count:records.length,all:()=>records.slice(),
-  get:id=>metadata[id]||null,create,forCharacter,forEnemy,
+  get:id=>Object.hasOwn(metadata,id)?metadata[id]:null,create,forCharacter,forEnemy,
   resetRuntime,restoreRuntime,battleView
  });
 })(window);

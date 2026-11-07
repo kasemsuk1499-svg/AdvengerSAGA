@@ -20,6 +20,8 @@ test('exact 30 approved stat IDs exist in the correct categories',()=>{
  const expected='MAX_HP P_ATK M_ATK DEF SPD CRIT_RATE CRIT_DMG WEAK_RATE WEAK_DMG DMG_BOOST DMG_AMP DEF_PEN CRUSH BLOCK_RATE DMG_REDUCTION RESILIENCE PHYS_RESIST MAG_RESIST EVASION EFFECT_HIT EFFECT_RESIST STATUS_BOOST CC_RESIST COUNTER_RATE FOLLOWUP_RATE HEAL_POWER HEAL_RECEIVED LIFESTEAL CD_REDUCTION EX_GAIN'.split(' ');
  for(const key of expected)a.ok(DB.get(key),key);
  a.equal(DB.get('CRIT_RATE').unit,'rate');
+ a.equal(DB.get('constructor'),null);
+ a.throws(()=>DB.create({stats:{constructor:100}}));
 });
 test('legacy characters get defaults; new ones can customize every field',()=>{
  const legacy=g.AdvengerCharacters.register({
@@ -37,7 +39,7 @@ test('legacy characters get defaults; new ones can customize every field',()=>{
   id:'test-custom',classId:'mage',name:'Custom',
   art:'characters/test-custom/art.svg',
   skills:{basic:'B',skill:'S',ultimate:'U'},
-  stats:{MAX_HP:1200,P_ATK:320,M_ATK:480,DEF:250,SPD:180,
+  maxHP:800,stats:{MAX_HP:1200,P_ATK:320,M_ATK:480,DEF:250,SPD:180,
    CRIT_RATE:.25,EFFECT_HIT:.4,CC_RESIST:.15}
  });
  a.equal(custom.stats.MAX_HP,1200);

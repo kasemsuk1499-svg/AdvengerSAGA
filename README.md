@@ -1,4 +1,4 @@
-# AdvengerSAGA — Modular Anime Battle Engine + 7K Skill Database (v1.0)
+# AdvengerSAGA — Modular Anime Battle Engine + Skill & Stat Databases (v1.1)
 
 **A lightweight browser-based anime battle prototype with four main characters standing in one shared battlefield, two support slots and selectable enemy encounters.** This version replaces the earlier single-hero iframe preview. It keeps modular character definitions and the original approved optimized single-hero demonstrations.
 
@@ -8,6 +8,15 @@ Game URL after GitHub Pages is enabled: https://kasemsuk1499-svg.github.io/Adven
 
 Repository **Settings → Pages → Build and deployment → Source: Deploy from a branch → main → /(root) → Save**. The project is a static HTML/CSS/JS site with no build step.
 
+
+## v1.1 — Universal Stat Database
+
+- **30 permanent stats** defined in the central `js/stat-db.js` registry (5 Core, 8 Offensive, 6 Defensive, 4 Effect, 7 Utility). Every item has a stable ID, Thai/English label, group, unit and description.
+- Character modules can declare `stats: {MAX_HP:1200,P_ATK:320,M_ATK:200,DEF:180,SPD:110,CRIT_RATE:0.25}`; missing stats inherit safe initial values. Old `maxHP`, `attack` and `defense` properties remain supported.
+- All four classes, custom playable heroes, enemies, and bosses use the same stat schema. Existing turn state remains authoritative; a separate `statRuntime` reservoir holds shield/stack/counter data for future skills, with local save recovery.
+- New **Stat Encyclopedia** on the About tab and a compact live stat snapshot in Battle.
+- **Not yet activated:** formulas for crit, evasion, block, penetration, cooldown reduction and stat-based skill effects. Their storage/IDs are ready; balance and stacking rules are not yet decided.
+- [Full stat catalog and character example](docs/STAT_DATABASE.md). Note: the earlier numbered list actually totaled 30, not 31.
 
 ## v1.0 — Central Seven Knights Re:BIRTH–referenced Skill System
 
